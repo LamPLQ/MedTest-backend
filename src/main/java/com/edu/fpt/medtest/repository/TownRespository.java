@@ -9,7 +9,5 @@ import java.util.Optional;
 
 @Repository
 public interface TownRespository extends JpaRepository<Town, String> {
-    //List<Town> findByDistrictCode(String DistrictCode);
 
-    //Optional<Town> findByTownCodeAndDistrictCode(String TownCode, String DistrictCode);
 }
