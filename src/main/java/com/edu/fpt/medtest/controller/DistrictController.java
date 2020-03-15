@@ -47,7 +47,7 @@ public class DistrictController {
         return new ResponseEntity<>(getDistrict,HttpStatus.OK);
     }
 
-    //delete 1 user
+    //delete 1 district
     @DeleteMapping(value = "/detail/delete/{code}")
     public ResponseEntity<?> deleteDistrict(@PathVariable("code") String code){
         Optional<District> getDistrict = districtService.findDistrictByCode(code);
@@ -59,7 +59,7 @@ public class DistrictController {
         return new ResponseEntity<>(new ApiResponse(true,"Delete district successfully!"),HttpStatus.OK);
     }
 
-    //update 1 user detail
+    //update 1 district detail
     @PutMapping(value = "/detail/update/{code}")
     public ResponseEntity<?> updateDistrict(@RequestBody District district,@PathVariable("code") String code){
         Optional<District> getDistrict = Optional.ofNullable(districtService.findDistrictByCode(code)
