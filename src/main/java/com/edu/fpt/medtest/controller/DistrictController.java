@@ -42,7 +42,8 @@ public class DistrictController {
     //View detail of 1 district
     @GetMapping(value = "/detail/{code}")
     public ResponseEntity<?> getDistrict(@PathVariable("code") String code) {
-        Optional<District> getDistrict = Optional.ofNullable(districtService.findDistrictByCode(code).orElseThrow(() -> new ResourceNotFoundException("District", "DistrictCode", code)));
+        Optional<District> getDistrict = Optional.ofNullable(districtService.findDistrictByCode(code)
+                .orElseThrow(() -> new ResourceNotFoundException("District", "DistrictCode", code)));
         return new ResponseEntity<>(getDistrict,HttpStatus.OK);
     }
 

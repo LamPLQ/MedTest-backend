@@ -14,39 +14,39 @@ public class User {
     private String phoneNumber;
 
     @Column(name = "Name")
-    private String Name;
+    private String name;
 
     @Column(name = "DOB")
-    private Date DOB;
+    private Date dob;
 
     @Column(name = "Address")
-    private String Address;
+    private String address;
 
     @Column(name = "Password")
-    private String Password;
+    private String password;
 
     @Column(name = "Active")
     //boolean type active = 1, non-active = 0
-    private int Active;
+    private int active;
 
     @Column(name = "Email")
-    private String Email;
+    private String email;
 
     @Column(name = "Role")
-    private String Role;
+    private String role;
 
     @Column(name = "Gender")
     //boolean type: female = 0, male = 1;
-    private int Gender;
+    private int gender;
 
     @Column(name = "Image")
-    private String Image;
+    private String image;
 
     @Column(name = "TownCode")
-    private String TownCode;
+    private String townCode;
 
     @Column(name = "DistrictCode")
-    private String DistrictCode;
+    private String districtCode;
 
     public int getId() {
         return id;
@@ -65,90 +65,90 @@ public class User {
     }
 
     public String getName() {
-        return Name;
+        return name;
     }
 
     public void setName(String name) {
-        Name = name;
+        this.name = name;
     }
 
-    public Date getDOB() {
-        return DOB;
+    public Date getDob() {
+        return dob;
     }
 
-    public void setDOB(Date DOB) {
-        this.DOB = DOB;
+    public void setDob(Date DOB) {
+        this.dob = DOB;
     }
 
     public String getAddress() {
-        return Address;
+        return address;
     }
 
     public void setAddress(String address) {
-        Address = address;
+        this.address = address;
     }
 
     public String getPassword() {
-        return Password;
+        return password;
     }
 
     public void setPassword(String password) {
-        Password = password;
+        this.password = password;
     }
 
     public int getActive() {
-        return Active;
+        return active;
     }
 
     public void setActive(int active) {
-        Active = active;
+        this.active = active;
     }
 
     public String getEmail() {
-        return Email;
+        return email;
     }
 
     public void setEmail(String email) {
-        Email = email;
+        this.email = email;
     }
 
     public String getRole() {
-        return Role;
+        return role;
     }
 
     public void setRole(String role) {
-        Role = "Customer";
+        this.role = "Customer";
     }
 
     public int getGender() {
-        return Gender;
+        return gender;
     }
 
     public void setGender(int gender) {
-        Gender = gender;
+        this.gender = gender;
     }
 
     public String getImage() {
-        return Image;
+        return image;
     }
 
     public void setImage(String image) {
-        Image = image;
+        this.image = image;
     }
 
     public String getTownCode() {
-        return TownCode;
+        return townCode;
     }
 
     public void setTownCode(String townCode) {
-        TownCode = townCode;
+        this.townCode = townCode;
     }
 
     public String getDistrictCode() {
-        return DistrictCode;
+        return districtCode;
     }
 
     public void setDistrictCode(String districtCode) {
-        DistrictCode = districtCode;
+        this.districtCode = districtCode;
     }
 }

@@ -1,7 +1,5 @@
 package com.edu.fpt.medtest.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import javax.persistence.*;
 
 @Entity
@@ -10,42 +8,36 @@ public class Town {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private String TownCode;
+    private String townCode;
 
     @Column(name = "TownName")
-    private String TownName;
+    private String townName;
 
-//    @OnDelete(action = OnDeleteAction.CASCADE)
-//    @JsonIgnore
+    @Column(name = "DistrictCode")
+    private String districtCode;
 
-//    @ManyToOne(cascade = CascadeType.ALL)
-//    @JoinColumn(name = "DistrictCode")
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
-    @JoinColumn(foreignKey = @ForeignKey(name = "DistrictCode"), name = "DistrictCode")
-    private District district;
+    public String getDistrictCode() {
+        return districtCode;
+    }
+
+    public void setDistrictCode(String districtCode) {
+        this.districtCode = districtCode;
+    }
 
     public String getTownCode() {
-        return TownCode;
+        return townCode;
     }
 
     public void setTownCode(String townCode) {
-        TownCode = townCode;
+        this.townCode = townCode;
     }
 
 
     public String getTownName() {
-        return TownName;
+        return townName;
     }
 
     public void setTownName(String townName) {
-        TownName = townName;
-    }
-
-    public District getDistrict() {
-        return district;
-    }
-
-    public void setDistrict(District district) {
-        this.district = district;
+        this.townName = townName;
     }
 }

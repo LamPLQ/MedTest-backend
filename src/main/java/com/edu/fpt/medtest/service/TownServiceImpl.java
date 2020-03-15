@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class TownServiceImpl implements TownService {
@@ -18,17 +19,9 @@ public class TownServiceImpl implements TownService {
     @Autowired
     private DistrictRepository districtRepository;
 
-    //xet xem districtCode cua 1 town da ton tai trong bang District chua
-    //not -> tao ra 1 district moi
     @Override
     public Town saveTown(Town town) {
-        District district = districtRepository.findById(town.getDistrict().getDistrictCode()).orElse(null);
-        if (district == null) {
-            System.out.println(district.getDistrictCode());
-        }
-        district.setDistrictName(town.getDistrict().getDistrictName());
-        town.setDistrict(district);
-        return townRespository.save(town);
+       return null;
     }
 
     @Override
@@ -41,4 +34,12 @@ public class TownServiceImpl implements TownService {
     public void deleteTown(String TownCode) {
         townRespository.deleteById(TownCode);
     }
+
+    @Override
+    public Optional<Town> getTownByCode(String townCode) {
+        Optional<Town> getTownByCode = townRespository.findById(townCode);
+        return Optional.empty();
+    }
+
+
 }
