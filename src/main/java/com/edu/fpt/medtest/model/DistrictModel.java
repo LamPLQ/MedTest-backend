@@ -1,9 +1,9 @@
 package com.edu.fpt.medtest.model;
 
 
-import com.edu.fpt.medtest.entity.Town;
+        import com.edu.fpt.medtest.entity.Town;
 
-import java.util.List;
+        import java.util.List;
 
 public class DistrictModel {
     private String districtCode;

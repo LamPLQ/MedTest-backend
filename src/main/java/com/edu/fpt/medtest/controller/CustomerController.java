@@ -34,7 +34,7 @@ public class CustomerController {
             }
         }
         userService.saveUser(user);
-        return new ResponseEntity<>(new ApiResponse(false, "Successfully registered"), HttpStatus.OK);
+        return new ResponseEntity<>(new ApiResponse(true, "Successfully registered"), HttpStatus.OK);
     }
 
     //list all customer

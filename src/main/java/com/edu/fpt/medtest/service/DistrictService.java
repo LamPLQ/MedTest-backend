@@ -9,7 +9,10 @@ import java.util.Optional;
 @Service
 public interface DistrictService {
     void saveDistrict(District district);
+
     Optional<District> findDistrictByCode(String DistrictCode);
+
     List<District> listDistrict();
+
     void deleteDistrict(String DistrictCode);
 }

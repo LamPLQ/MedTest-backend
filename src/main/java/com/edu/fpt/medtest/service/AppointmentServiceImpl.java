@@ -29,4 +29,11 @@ public class AppointmentServiceImpl implements AppointmentService {
         Optional<Appointment> getAppointment = appointmentRepository.findById(id);
         return getAppointment;
     }
+
+    @Override
+    public void update(Appointment appointment) {
+        Appointment appointmentByID = appointmentRepository.findById(appointment.getID()).get();
+        appointmentByID.setStatus(appointment.getStatus());
+        appointmentRepository.save(appointmentByID);
+    }
 }

@@ -1,23 +1,24 @@
 package com.edu.fpt.medtest.entity;
 
-import org.hibernate.annotations.CreationTimestamp;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
-import java.time.LocalDateTime;
 import java.util.Date;
+
 
 @Entity
 @Table(name = "appointment")
+@EntityListeners(AuditingEntityListener.class)
 public class Appointment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int ID;
 
+    @CreatedDate
     @Column(name = "CreatedTime")
-    @CreationTimestamp
-    @Temporal(TemporalType.TIMESTAMP)
-    private LocalDateTime createdTime;
+    private Date createdTime;
 
     @Column(name = "MeetingTime")
     private Date meetingTime;
@@ -27,6 +28,8 @@ public class Appointment {
 
     @Column(name = "Status")
     private int status;
+    //status int: 0 - pending appointment
+    //            1 - appointment OK
 
     @Column(name = "UserID")
     private int userID;
@@ -39,11 +42,11 @@ public class Appointment {
         this.ID = ID;
     }
 
-    public LocalDateTime getCreatedTime() {
+    public Date getCreatedTime() {
         return createdTime;
     }
 
-    public void setCreatedTime(LocalDateTime createdTime) {
+    public void setCreatedTime(Date createdTime) {
         this.createdTime = createdTime;
     }
 
@@ -77,8 +80,5 @@ public class Appointment {
 
     public void setUserID(int userID) {
         this.userID = userID;
-    }
-
-    public Appointment() {
     }
 }

@@ -23,6 +23,12 @@ public class DistrictController {
     @Autowired
     private DistrictService districtService;
 
+    @Autowired
+    private DistrictRepository districtRepository;
+
+    @Autowired
+    private TownRepository townRepository;
+
     // Get all district
     @GetMapping("/list")
     public ResponseEntity<?> list() {
@@ -79,9 +85,5 @@ public class DistrictController {
         return new ResponseEntity<>(lsResult, HttpStatus.OK);
     }
 
-    @Autowired
-    private DistrictRepository districtRepository;
 
-    @Autowired
-    private TownRepository townRepository;
 }
