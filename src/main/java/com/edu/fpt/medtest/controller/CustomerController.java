@@ -58,17 +58,15 @@ public class CustomerController {
     }
 
     //update customer
-//    @PatchMapping(value = "/customers/detail/update/{id}")
-////    public ResponseEntity<?> updateUser(@RequestBody User user, @PathVariable("id") int id) {
-////        Optional<User> getUser = userService.findUserByID(id);
-////        if (!getUser.isPresent()) {
-////            return new ResponseEntity<>(new ApiResponse(true, "User not found"), HttpStatus.NOT_FOUND);
-////        }
-////            User existingUser = getUser.get();
-////        System.out.println(user);
-////        user.setId(id);
-////        userService.saveUser(user);
-////        return new ResponseEntity<>(new ApiResponse(true, "Update user successfully"), HttpStatus.OK);
-////    }
+    @PutMapping(value = "/customers/detail/update/{id}")
+    public ResponseEntity<?> updateUser(@RequestBody User user, @PathVariable("id") int id) {
+        Optional<User> getUser = userService.findUserByID(id);
+        if (!getUser.isPresent()) {
+            return new ResponseEntity<>(new ApiResponse(true, "User not found"), HttpStatus.NOT_FOUND);
+        }
+        user.setId(id);
+        userService.update(user);
+        return new ResponseEntity<>(new ApiResponse(true, "Update user successfully"), HttpStatus.OK);
+    }
 
 }

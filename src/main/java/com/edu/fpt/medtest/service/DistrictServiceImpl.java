@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class DistrictServiceImpl implements DistrictService{
+public class DistrictServiceImpl implements DistrictService {
     @Autowired
     private DistrictRepository districtRepository;
 
@@ -26,7 +26,7 @@ public class DistrictServiceImpl implements DistrictService{
     }
 
     @Override
-    public List<District> getListDistrict() {
+    public List<District> listDistrict() {
         List<District> listDistrict = districtRepository.findAll();
         return listDistrict;
     }
