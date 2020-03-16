@@ -53,6 +53,7 @@ public class ArticleController {
             return new ResponseEntity<>(new ApiResponse(true, "Article not found"), HttpStatus.NOT_FOUND);
         }
         article.setID(id);
+        articleService.saveArticle(article);
         return new ResponseEntity<>(new ApiResponse(true, "Article update successfully"), HttpStatus.OK);
     }
 }
