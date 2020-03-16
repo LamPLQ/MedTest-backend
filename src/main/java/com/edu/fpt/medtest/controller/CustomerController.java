@@ -69,4 +69,20 @@ public class CustomerController {
         return new ResponseEntity<>(new ApiResponse(true, "Update user successfully"), HttpStatus.OK);
     }
 
+    //login
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody User user){
+        List<User> userList = userService.getListUser();
+        boolean login = false;
+        for(User userLogin:userList){
+            if(user.getPhoneNumber().equalsIgnoreCase(userLogin.getPhoneNumber()) && user.getPassword().equalsIgnoreCase(userLogin.getPassword())){
+                login = true;
+            }else {
+                login = false;
+            }
+        }
+        return new ResponseEntity<>(login,HttpStatus.OK);
+    }
+
+
 }
