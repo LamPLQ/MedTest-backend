@@ -1,7 +1,6 @@
 package com.edu.fpt.medtest.service;
 
 import com.edu.fpt.medtest.entity.Town;
-import com.edu.fpt.medtest.repository.DistrictRepository;
 import com.edu.fpt.medtest.repository.TownRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,7 +16,7 @@ public class TownServiceImpl implements TownService {
 
     @Override
     public void saveTown(Town town) {
-       townRepository.save(town);
+        townRepository.save(town);
     }
 
     @Override

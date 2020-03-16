@@ -10,7 +10,10 @@ import java.util.Optional;
 @Service
 public interface UserService {
     List<User> getListUser();
+
     void saveUser(User user);
+
     Optional<User> findUserByID(int id);
+
     void update(User user);
 }
