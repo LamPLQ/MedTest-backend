@@ -9,8 +9,8 @@ import java.util.Optional;
 
 @Service
 public interface TownService {
-    Town saveTown(Town town);
-    List<Town> getListTown();
+    void saveTown(Town town);
+    List<Town> listTown();
     void deleteTown(String TownCode);
     Optional<Town> getTownByCode(String townCode);
 }

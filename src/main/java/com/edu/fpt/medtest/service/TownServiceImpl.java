@@ -1,9 +1,8 @@
 package com.edu.fpt.medtest.service;
 
-import com.edu.fpt.medtest.entity.District;
 import com.edu.fpt.medtest.entity.Town;
 import com.edu.fpt.medtest.repository.DistrictRepository;
-import com.edu.fpt.medtest.repository.TownRespository;
+import com.edu.fpt.medtest.repository.TownRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,31 +13,28 @@ import java.util.Optional;
 public class TownServiceImpl implements TownService {
 
     @Autowired
-    private TownRespository townRespository;
-
-    @Autowired
-    private DistrictRepository districtRepository;
+    private TownRepository townRepository;
 
     @Override
-    public Town saveTown(Town town) {
-       return null;
+    public void saveTown(Town town) {
+       townRepository.save(town);
     }
 
     @Override
-    public List<Town> getListTown() {
-        List<Town> towns = townRespository.findAll();
-        return townRespository.findAll();
+    public List<Town> listTown() {
+        List<Town> towns = townRepository.findAll();
+        return townRepository.findAll();
     }
 
     @Override
     public void deleteTown(String TownCode) {
-        townRespository.deleteById(TownCode);
+        townRepository.deleteById(TownCode);
     }
 
     @Override
     public Optional<Town> getTownByCode(String townCode) {
-        Optional<Town> getTownByCode = townRespository.findById(townCode);
-        return Optional.empty();
+        Optional<Town> getTownByCode = townRepository.findById(townCode);
+        return getTownByCode;
     }
 
 

@@ -7,7 +7,7 @@ import javax.persistence.*;
 public class Town {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(columnDefinition = "text")
     private String townCode;
 
     @Column(name = "TownName")

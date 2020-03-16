@@ -10,6 +10,6 @@ import java.util.Optional;
 public interface DistrictService {
     void saveDistrict(District district);
     Optional<District> findDistrictByCode(String DistrictCode);
-    List<District> getListDistrict();
+    List<District> listDistrict();
     void deleteDistrict(String DistrictCode);
 }
