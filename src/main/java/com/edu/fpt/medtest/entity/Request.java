@@ -1,13 +1,10 @@
 package com.edu.fpt.medtest.entity;
 
-import com.sun.tools.javac.comp.Resolve;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 import javax.persistence.*;
 import java.util.Date;
-import java.util.List;
 
 @Entity
 @Table(name = "request")
