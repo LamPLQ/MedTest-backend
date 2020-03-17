@@ -37,7 +37,7 @@ public class AppoinmentController {
     @PostMapping("/create")
     public ResponseEntity<?> createNewAppointment(@RequestBody Appointment appointment) {
         appointment.setNote("");
-        appointment.setStatus(0);
+        appointment.setStatus("pending");
         appointmentService.saveAppointment(appointment);
         return new ResponseEntity<>(new ApiResponse(true, "Successfully create appointment"), HttpStatus.OK);
     }
@@ -46,7 +46,6 @@ public class AppoinmentController {
     @GetMapping("/detail/{id}")
     public ResponseEntity<?> getAppointment(@PathVariable("id") int id) {
         Optional<Appointment> getAppointment = appointmentService.getAppointmentByID(id);
-        //ArrayList<Object> displayAppoint = new ArrayList<>();
         UserAppointment userAppointment = new UserAppointment();
         if (!getAppointment.isPresent()) {
             return new ResponseEntity<>(new ApiResponse(true, "Appointment not found"), HttpStatus.NOT_FOUND);
@@ -57,11 +56,12 @@ public class AppoinmentController {
             for (User userTracking : user) {
                 if (userTracking.getId() == userAppoint.getId()) {
                     userAppoint = userTracking;
-                    userAppointment.setAppointment_userName(userAppoint.getName());
+                    userAppointment.setAppointment_customerName(userAppoint.getName());
                     userAppointment.setAppointment_phoneNumber(userAppoint.getPhoneNumber());
                     userAppointment.setAppointment_DOB(userAppoint.getDob());
                 }
             }
+            userAppointment.setAppointment_status(getAppointment.get().getStatus());
             userAppointment.setAppointment_note(getAppointment.get().getNote());
             userAppointment.setAppointment_meetingTime(getAppointment.get().getMeetingTime());
         }
@@ -79,4 +79,6 @@ public class AppoinmentController {
         appointmentService.update(appointment);
         return new ResponseEntity<>(new ApiResponse(true, "Update appointment successfully"), HttpStatus.OK);
     }
+
+
 }

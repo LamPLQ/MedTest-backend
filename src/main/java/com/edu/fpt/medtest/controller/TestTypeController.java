@@ -1,11 +1,8 @@
 package com.edu.fpt.medtest.controller;
 
-import com.edu.fpt.medtest.entity.District;
 import com.edu.fpt.medtest.entity.Test;
 import com.edu.fpt.medtest.entity.TestType;
-import com.edu.fpt.medtest.entity.Town;
 import com.edu.fpt.medtest.exception.ResourceNotFoundException;
-import com.edu.fpt.medtest.model.DistrictModel;
 import com.edu.fpt.medtest.model.TestTypeList;
 import com.edu.fpt.medtest.repository.TestRepository;
 import com.edu.fpt.medtest.service.TestTypeService;
@@ -49,6 +46,7 @@ public class TestTypeController {
     }
 
     //create a test type
+    //issue
     @PostMapping("/create")
     public ResponseEntity<?> createTestType(@RequestBody TestType testType) {
         List<TestType> lsTestType = testTypeService.lsTestType();
@@ -78,7 +76,7 @@ public class TestTypeController {
         for (TestType testType : list) {
             List<Test> testList = testRepository.getAllByTestTypeID(testType.getTestTypeID());
             TestTypeList testTypeList = new TestTypeList();
-            testTypeList.setTestTypeTestID(testType.getTestTypeID());
+            testTypeList.setTestTypeID(testType.getTestTypeID());
             testTypeList.setTestTypeName(testType.getTestTypeName());
             testTypeList.setListTest(testList);
             lsResult.add(testTypeList);

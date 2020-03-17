@@ -5,16 +5,16 @@ import com.edu.fpt.medtest.entity.Test;
 import java.util.List;
 
 public class TestTypeList {
-    private int testTypeTestID;
+    private int testTypeID;
     private String testTypeName;
     private List<Test> listTest;
 
-    public int getTestTypeTestID() {
-        return testTypeTestID;
+    public int getTestTypeID() {
+        return testTypeID;
     }
 
-    public void setTestTypeTestID(int testTypeTestID) {
-        this.testTypeTestID = testTypeTestID;
+    public void setTestTypeID(int testTypeID) {
+        this.testTypeID = testTypeID;
     }
 
     public String getTestTypeName() {
