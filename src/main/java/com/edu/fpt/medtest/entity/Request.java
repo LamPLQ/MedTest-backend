@@ -27,12 +27,6 @@ public class Request {
     @Column(name = "Address")
     private String address;
 
-    @Column(name = "DistrictCode")
-    private int districtCode;
-
-    @Column(name = "CityCode")
-    private int cityCode;
-
 
     public int getRequestID() {
         return requestID;
@@ -74,19 +68,5 @@ public class Request {
         this.address = address;
     }
 
-    public int getDistrictCode() {
-        return districtCode;
-    }
 
-    public void setDistrictCode(int districtCode) {
-        this.districtCode = districtCode;
-    }
-
-    public int getCityCode() {
-        return cityCode;
-    }
-
-    public void setCityCode(int cityCode) {
-        this.cityCode = cityCode;
-    }
 }
