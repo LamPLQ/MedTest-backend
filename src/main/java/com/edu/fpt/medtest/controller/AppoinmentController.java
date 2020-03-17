@@ -64,6 +64,7 @@ public class AppoinmentController {
             userAppointment.setAppointment_status(getAppointment.get().getStatus());
             userAppointment.setAppointment_note(getAppointment.get().getNote());
             userAppointment.setAppointment_meetingTime(getAppointment.get().getMeetingTime());
+            userAppointment.setAppointment_createdTime(getAppointment.get().getCreatedTime());
         }
         return new ResponseEntity<>(userAppointment, HttpStatus.OK);
     }

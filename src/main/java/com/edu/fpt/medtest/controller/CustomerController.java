@@ -94,26 +94,38 @@ public class CustomerController {
     public ResponseEntity<?> login(@RequestBody User user) throws NoSuchAlgorithmException {
         boolean login = false;
         User userLogin = userRepository.getUserByPhoneNumber(user.getPhoneNumber());
-        System.out.println(userLogin.getPassword());
-        System.out.println(toHexString(getSHA(user.getPassword())));
-        System.out.println(user.getPassword());
+        User returnUser = new User();
         if (userLogin.getPassword().equals(toHexString(getSHA(user.getPassword())))) {
             login = true;
+//            returnUser = userRepository.save(user);
+//        }else returnUser = userRepository.save(null);
         }
         return new ResponseEntity<>(login, HttpStatus.OK);
     }
 
-    //view list appointment
+    //view list appointment theo 1 customer
     @GetMapping("/customers/{id}/appointments/list")
     public  ResponseEntity<?> getListAppointment(@RequestBody User user, @PathVariable("id") int id){
         List<Appointment> lsAppointmentCustomer = appointmentRepository.findAllByCustomerID(id);
-        UserAppointment userAppointment = new UserAppointment();
-        Optional<User> getUser =  userService.findUserByID(id);
+//        UserAppointment userAppointment = new UserAppointment();
+          User userAppoint =  userService.findUserByID(id).get();
         if (lsAppointmentCustomer.isEmpty()) {
             return new ResponseEntity<>(new ApiResponse(true, "Appointment not found"), HttpStatus.NOT_FOUND);
         }
-        //them phan chi tiet 1 appointment
-        return new ResponseEntity<>(lsAppointmentCustomer,HttpStatus.OK);
+        //them phan chi tiet 1 appointment theo customer
+        UserAppointment userAppointment = new UserAppointment();
+        List<UserAppointment> listUserAppoinment = new ArrayList<>();
+        for (Appointment appointments: lsAppointmentCustomer) {
+            userAppointment.setAppointment_customerName(userAppoint.getName());
+            userAppointment.setAppointment_phoneNumber(userAppoint.getPhoneNumber());
+            userAppointment.setAppointment_DOB(userAppoint.getDob());
+            userAppointment.setAppointment_status(appointments.getStatus());
+            userAppointment.setAppointment_note(appointments.getNote());
+            userAppointment.setAppointment_meetingTime(appointments.getMeetingTime());
+            userAppointment.setAppointment_createdTime(appointments.getCreatedTime());
+        listUserAppoinment.add(userAppointment);
+        }
+        return new ResponseEntity<>(listUserAppoinment,HttpStatus.OK);
     }
 
 

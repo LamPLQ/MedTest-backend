@@ -15,6 +15,16 @@ public class UserAppointment {
 
     private String appointment_note;
 
+    private Date appointment_createdTime;
+
+    public Date getAppointment_createdTime() {
+        return appointment_createdTime;
+    }
+
+    public void setAppointment_createdTime(Date appointment_createdTime) {
+        this.appointment_createdTime = appointment_createdTime;
+    }
+
     public String getAppointment_note() {
         return appointment_note;
     }

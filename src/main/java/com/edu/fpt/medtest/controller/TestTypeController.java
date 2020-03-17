@@ -46,7 +46,6 @@ public class TestTypeController {
     }
 
     //create a test type
-    //issue
     @PostMapping("/create")
     public ResponseEntity<?> createTestType(@RequestBody TestType testType) {
         List<TestType> lsTestType = testTypeService.lsTestType();
