@@ -105,7 +105,7 @@ public class CustomerController {
 
     //view list appointment theo 1 customer
     @GetMapping("/customers/{id}/appointments/list")
-    public  ResponseEntity<?> getListAppointment(@RequestBody User user, @PathVariable("id") int id){
+    public  ResponseEntity<?> getListAppointment(@PathVariable("id") int id){
         List<Appointment> lsAppointmentCustomer = appointmentRepository.findAllByCustomerID(id);
 //        UserAppointment userAppointment = new UserAppointment();
           User userAppoint =  userService.findUserByID(id).get();
@@ -113,9 +113,9 @@ public class CustomerController {
             return new ResponseEntity<>(new ApiResponse(true, "Appointment not found"), HttpStatus.NOT_FOUND);
         }
         //them phan chi tiet 1 appointment theo customer
-        UserAppointment userAppointment = new UserAppointment();
         List<UserAppointment> listUserAppoinment = new ArrayList<>();
         for (Appointment appointments: lsAppointmentCustomer) {
+            UserAppointment userAppointment = new UserAppointment();
             userAppointment.setAppointment_customerName(userAppoint.getName());
             userAppointment.setAppointment_phoneNumber(userAppoint.getPhoneNumber());
             userAppointment.setAppointment_DOB(userAppoint.getDob());
