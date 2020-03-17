@@ -36,4 +36,6 @@ public class AppointmentServiceImpl implements AppointmentService {
         appointmentByID.setStatus(appointment.getStatus());
         appointmentRepository.save(appointmentByID);
     }
+
+
 }

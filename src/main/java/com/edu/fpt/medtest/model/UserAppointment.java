@@ -3,7 +3,7 @@ package com.edu.fpt.medtest.model;
 import java.util.Date;
 
 public class UserAppointment {
-    private String appointment_userName;
+    private String appointment_customerName;
 
     private String appointment_phoneNumber;
 
@@ -11,7 +11,7 @@ public class UserAppointment {
 
     private Date appointment_meetingTime;
 
-    private int appointment_status;
+    private String appointment_status;
 
     private String appointment_note;
 
@@ -23,12 +23,12 @@ public class UserAppointment {
         this.appointment_note = appointment_note;
     }
 
-    public String getAppointment_userName() {
-        return appointment_userName;
+    public String getAppointment_customerName() {
+        return appointment_customerName;
     }
 
-    public void setAppointment_userName(String appointment_userName) {
-        this.appointment_userName = appointment_userName;
+    public void setAppointment_customerName(String appointment_customerName) {
+        this.appointment_customerName = appointment_customerName;
     }
 
     public String getAppointment_phoneNumber() {
@@ -55,11 +55,11 @@ public class UserAppointment {
         this.appointment_meetingTime = appointment_meetingTime;
     }
 
-    public int getAppointment_status() {
+    public String getAppointment_status() {
         return appointment_status;
     }
 
-    public void setAppointment_status(int appointment_status) {
+    public void setAppointment_status(String appointment_status) {
         this.appointment_status = appointment_status;
     }
 }

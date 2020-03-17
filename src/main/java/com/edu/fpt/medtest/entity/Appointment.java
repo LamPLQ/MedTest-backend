@@ -27,12 +27,29 @@ public class Appointment {
     private String note;
 
     @Column(name = "Status")
-    private int status;
-    //status int: 0 - pending appointment
-    //            1 - appointment OK
+    private String status;
 
-    @Column(name = "UserID")
-    private int userID;
+    @Column(name = "CustomerID")
+    private int customerID;
+
+    @Column(name = "CoordinatorID")
+    private int coordinatorID;
+
+    public int getCustomerID() {
+        return customerID;
+    }
+
+    public void setCustomerID(int customerID) {
+        this.customerID = customerID;
+    }
+
+    public int getCoordinatorID() {
+        return coordinatorID;
+    }
+
+    public void setCoordinatorID(int coordinatorID) {
+        this.coordinatorID = coordinatorID;
+    }
 
     public int getID() {
         return ID;
@@ -66,19 +83,13 @@ public class Appointment {
         this.note = note;
     }
 
-    public int getStatus() {
+    public String getStatus() {
         return status;
     }
 
-    public void setStatus(int status) {
+    public void setStatus(String status) {
         this.status = status;
     }
 
-    public int getUserID() {
-        return userID;
-    }
 
-    public void setUserID(int userID) {
-        this.userID = userID;
-    }
 }
