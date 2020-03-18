@@ -117,7 +117,7 @@ public class User {
     }
 
     public void setRole(String role) {
-        this.role = "Customer";
+        this.role = role;
     }
 
     public int getGender() {
@@ -133,7 +133,7 @@ public class User {
     }
 
     public void setImage(String image) {
-        this.image = image;
+        this.image = "https://www.kindpng.com/picc/m/10-104902_simple-user-icon-user-icon-white-png-transparent.png";
     }
 
     public String getTownCode() {

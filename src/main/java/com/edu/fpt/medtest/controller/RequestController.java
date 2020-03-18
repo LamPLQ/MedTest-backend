@@ -1,12 +1,11 @@
 package com.edu.fpt.medtest.controller;
 
-import com.edu.fpt.medtest.entity.Appointment;
+import com.edu.fpt.medtest.utils.ApiResponse;
 import com.edu.fpt.medtest.entity.Request;
 import com.edu.fpt.medtest.service.RequestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;

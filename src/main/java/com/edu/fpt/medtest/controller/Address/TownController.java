@@ -1,8 +1,9 @@
-package com.edu.fpt.medtest.controller;
+package com.edu.fpt.medtest.controller.Address;
 
+import com.edu.fpt.medtest.utils.ApiResponse;
 import com.edu.fpt.medtest.entity.Town;
 import com.edu.fpt.medtest.exception.ResourceNotFoundException;
-import com.edu.fpt.medtest.service.TownService;
+import com.edu.fpt.medtest.service.Address.TownService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

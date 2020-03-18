@@ -1,5 +1,6 @@
 package com.edu.fpt.medtest.controller;
 
+import com.edu.fpt.medtest.utils.ApiResponse;
 import com.edu.fpt.medtest.entity.Article;
 import com.edu.fpt.medtest.service.ArticleService;
 import org.springframework.beans.factory.annotation.Autowired;
