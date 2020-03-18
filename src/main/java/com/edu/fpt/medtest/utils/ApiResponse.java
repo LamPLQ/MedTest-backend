@@ -1,4 +1,4 @@
-package com.edu.fpt.medtest.controller;
+package com.edu.fpt.medtest.utils;
 
 /**
  * Created by rajeevkumarsingh on 19/08/17.

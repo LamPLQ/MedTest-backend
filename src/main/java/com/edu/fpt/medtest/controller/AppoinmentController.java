@@ -1,5 +1,6 @@
 package com.edu.fpt.medtest.controller;
 
+import com.edu.fpt.medtest.utils.ApiResponse;
 import com.edu.fpt.medtest.entity.Appointment;
 import com.edu.fpt.medtest.entity.User;
 import com.edu.fpt.medtest.model.UserAppointment;

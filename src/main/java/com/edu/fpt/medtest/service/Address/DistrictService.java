@@ -1,4 +1,4 @@
-package com.edu.fpt.medtest.service;
+package com.edu.fpt.medtest.service.Address;
 
 import com.edu.fpt.medtest.entity.District;
 import org.springframework.stereotype.Service;

@@ -1,12 +1,13 @@
-package com.edu.fpt.medtest.controller;
+package com.edu.fpt.medtest.controller.Address;
 
+import com.edu.fpt.medtest.utils.ApiResponse;
 import com.edu.fpt.medtest.entity.District;
 import com.edu.fpt.medtest.entity.Town;
 import com.edu.fpt.medtest.exception.ResourceNotFoundException;
 import com.edu.fpt.medtest.model.DistrictModel;
 import com.edu.fpt.medtest.repository.DistrictRepository;
 import com.edu.fpt.medtest.repository.TownRepository;
-import com.edu.fpt.medtest.service.DistrictService;
+import com.edu.fpt.medtest.service.Address.DistrictService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

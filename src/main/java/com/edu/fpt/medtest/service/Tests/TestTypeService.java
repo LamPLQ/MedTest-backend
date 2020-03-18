@@ -1,4 +1,4 @@
-package com.edu.fpt.medtest.service;
+package com.edu.fpt.medtest.service.Tests;
 
 import com.edu.fpt.medtest.entity.TestType;
 import org.springframework.stereotype.Service;

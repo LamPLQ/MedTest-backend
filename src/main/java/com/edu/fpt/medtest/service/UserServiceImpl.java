@@ -42,4 +42,11 @@ public class UserServiceImpl implements UserService {
         userByID.setDistrictCode(user.getDistrictCode());
         userRepository.save(userByID);
     }
+
+    @Override
+    public Optional<User> findUserByRoleAndID(int id, String role) {
+        Optional<User> getUserByRoleAndID = userRepository.findUserByRoleAndId(id, role);
+        return getUserByRoleAndID;
+    }
+
 }

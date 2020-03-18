@@ -1,10 +1,9 @@
-package com.edu.fpt.medtest.controller;
+package com.edu.fpt.medtest.controller.Tests;
 
+import com.edu.fpt.medtest.utils.ApiResponse;
 import com.edu.fpt.medtest.entity.Test;
-import com.edu.fpt.medtest.entity.TestType;
 import com.edu.fpt.medtest.exception.ResourceNotFoundException;
-import com.edu.fpt.medtest.service.TestService;
-import com.edu.fpt.medtest.service.TestTypeService;
+import com.edu.fpt.medtest.service.Tests.TestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
