@@ -112,6 +112,7 @@ public class CustomerController {
         for (Appointment appointments : lsAppointmentCustomer) {
             UserAppointment userAppointment = new UserAppointment();
             //userAppointment.setAppointment_coordinatorName("" + appointments.getCoordinatorID());
+            userAppointment.setAppointment_id(userAppoint.getId());
             userAppointment.setAppointment_customerName(userAppoint.getName());
             userAppointment.setAppointment_phoneNumber(userAppoint.getPhoneNumber());
             userAppointment.setAppointment_DOB(userAppoint.getDob());
