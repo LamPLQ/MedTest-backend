@@ -71,7 +71,7 @@ public class CustomerController {
     }
 
     //get customer - view detail info
-    @GetMapping(value = "/detail/{id}")
+    @GetMapping("/detail/{id}")
     public ResponseEntity<?> getUser(@PathVariable("id") int id) {
         Optional<User> getUser = userService.findUserByID(id);
         if (!getUser.isPresent()) {
@@ -84,7 +84,7 @@ public class CustomerController {
     }
 
     //update customer info
-    @PutMapping(value = "/detail/update/{id}")
+    @PutMapping("/detail/update/{id}")
     public ResponseEntity<?> updateUser(@RequestBody User customer, @PathVariable("id") int id) {
         Optional<User> getUser = userService.findUserByID(id);
         if (!getUser.isPresent()) {
