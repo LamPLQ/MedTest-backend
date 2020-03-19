@@ -70,6 +70,7 @@ public class AppoinmentController {
                     userAppointment.setAppointment_DOB(userAppoint.getDob());
                 }
             }
+            userAppointment.setAppointment_id(getAppointment.get().getID());
             userAppointment.setAppointment_status(getAppointment.get().getStatus());
             userAppointment.setAppointment_note(getAppointment.get().getNote());
             userAppointment.setAppointment_meetingTime(getAppointment.get().getMeetingTime());
