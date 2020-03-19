@@ -2,6 +2,7 @@ package com.edu.fpt.medtest.controller.Users;
 
 
 import com.edu.fpt.medtest.entity.User;
+import com.edu.fpt.medtest.model.ChangePasswordModel;
 import com.edu.fpt.medtest.repository.UserRepository;
 import com.edu.fpt.medtest.service.UserService;
 import com.edu.fpt.medtest.utils.ApiResponse;
@@ -82,5 +83,24 @@ public class NurseController {
         nurse.setId(id);
         userService.update(nurse);
         return new ResponseEntity<>(new ApiResponse(true, "Update nurse successfully"), HttpStatus.OK);
+    }
+
+    //change Password
+    @PostMapping("/change-password/{id}")
+    public ResponseEntity<?> changePassword(@RequestBody ChangePasswordModel changePasswordModel, @PathVariable("id") int id) throws NoSuchAlgorithmException {
+        Optional<User> getNurse = userService.findUserByID(id);
+        if (!getNurse.isPresent()) {
+            return new ResponseEntity<>(new ApiResponse(true, "User not found"), HttpStatus.NOT_FOUND);
+        }
+        if (!getNurse.get().getRole().equals("NURSE")) {
+            return new ResponseEntity<>(new ApiResponse(true, "User is not allowed"), HttpStatus.NOT_FOUND);
+        }
+        if(!getNurse.get().getPassword().equals(toHexString(getSHA(changePasswordModel.getOldPassword())))){
+            return new ResponseEntity<>(new ApiResponse(true, "Incorrect current password"), HttpStatus.BAD_REQUEST);
+        }
+        changePasswordModel.setID(id);
+        getNurse.get().setPassword(toHexString(getSHA(changePasswordModel.getNewPassword())));
+        userService.saveUser(getNurse.get());
+        return new ResponseEntity<>(new ApiResponse(true, "Change password successfully!"), HttpStatus.OK);
     }
 }

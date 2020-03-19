@@ -1,5 +1,6 @@
 package com.edu.fpt.medtest.controller;
 
+import com.edu.fpt.medtest.repository.UserRepository;
 import com.edu.fpt.medtest.utils.ApiResponse;
 import com.edu.fpt.medtest.entity.Appointment;
 import com.edu.fpt.medtest.entity.User;
@@ -11,18 +12,23 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/appointments")
 public class AppoinmentController {
 
     @Autowired
-    AppointmentService appointmentService;
+    private AppointmentService appointmentService;
 
     @Autowired
-    UserService userService;
+    private UserRepository userRepository;
+
+    @Autowired
+    private UserService userService;
 
     //list appointment
     @GetMapping("/list")
@@ -37,8 +43,10 @@ public class AppoinmentController {
     //create new appointment
     @PostMapping("/create")
     public ResponseEntity<?> createNewAppointment(@RequestBody Appointment appointment) {
+        List<User> users = userRepository.findAllByRole("COORDINATOR");
         appointment.setNote("");
         appointment.setStatus("pending");
+        appointment.setCoordinatorID(users.get(0).getId());
         appointmentService.saveAppointment(appointment);
         return new ResponseEntity<>(new ApiResponse(true, "Successfully create appointment"), HttpStatus.OK);
     }
@@ -81,6 +89,34 @@ public class AppoinmentController {
         appointmentService.update(appointment);
         return new ResponseEntity<>(new ApiResponse(true, "Update appointment successfully"), HttpStatus.OK);
     }
+
+    @GetMapping(value = "/list/{status}")
+    public ResponseEntity<?> getListAppointmentByStatus(@PathVariable("status") String status){
+        List<Appointment> lsAppointByStatus = appointmentService.listAppointmentByStatus(status);
+        if(lsAppointByStatus.isEmpty()){
+            return new ResponseEntity<>(new ApiResponse(true,"No appointment with status" + status),HttpStatus.NOT_FOUND);
+        }
+        List<UserAppointment> listUserAppoinment = new ArrayList<>();
+        for (Appointment appointments : lsAppointByStatus) {
+            UserAppointment userAppointment = new UserAppointment();
+            Optional<User> userAppoint = userRepository.findById(appointments.getCustomerID());
+            userAppointment.setAppointment_customerName(userAppoint.get().getName());
+            userAppointment.setAppointment_phoneNumber(userAppoint.get().getPhoneNumber());
+            userAppointment.setAppointment_DOB(userAppoint.get().getDob());
+            userAppointment.setAppointment_status(appointments.getStatus());
+            userAppointment.setAppointment_note(appointments.getNote());
+            userAppointment.setAppointment_meetingTime(appointments.getMeetingTime());
+            userAppointment.setAppointment_createdTime(appointments.getCreatedTime());
+            listUserAppoinment.add(userAppointment);
+        }
+        return new ResponseEntity<>(listUserAppoinment,HttpStatus.OK);
+    }
+
+    /*@GetMapping(value = "/list/listStatus/{listStatus}")
+    public  ResponseEntity<?> getListAppointmentByListStatus(@PathVariable("listStatus") Set<String> listStatus){
+        List<Appointment> lsAppointmentByStatusList = appointmentService.listAppointmentByListStatus(listStatus);
+        return new ResponseEntity<>(lsAppointmentByStatusList,HttpStatus.OK);
+    }*/
 
 
 }

@@ -2,6 +2,7 @@ package com.edu.fpt.medtest.controller.Users;
 
 
 import com.edu.fpt.medtest.entity.User;
+import com.edu.fpt.medtest.model.ChangePasswordModel;
 import com.edu.fpt.medtest.repository.UserRepository;
 import com.edu.fpt.medtest.service.UserService;
 import com.edu.fpt.medtest.utils.ApiResponse;
@@ -49,7 +50,6 @@ public class CoordinatorController {
     @GetMapping("/list")
     public ResponseEntity<?> list() {
         List<User> users = userRepository.findAllByRole("COORDINATOR");
-        System.out.println(users);
         if (users.isEmpty()) {
             return new ResponseEntity<>(new ApiResponse(true, "No user is found"), HttpStatus.NOT_FOUND);
         }
@@ -82,5 +82,24 @@ public class CoordinatorController {
         coordinator.setId(id);
         userService.update(coordinator);
         return new ResponseEntity<>(new ApiResponse(true, "Update coordinator successfully"), HttpStatus.OK);
+    }
+
+    //change Password
+    @PostMapping("/change-password/{id}")
+    public ResponseEntity<?> changePassword(@RequestBody ChangePasswordModel changePasswordModel, @PathVariable("id") int id) throws NoSuchAlgorithmException {
+        Optional<User> getCoordinator = userService.findUserByID(id);
+        if (!getCoordinator.isPresent()) {
+            return new ResponseEntity<>(new ApiResponse(true, "User not found"), HttpStatus.NOT_FOUND);
+        }
+        if (!getCoordinator.get().getRole().equals("COORDINATOR")) {
+            return new ResponseEntity<>(new ApiResponse(true, "User is not allowed"), HttpStatus.NOT_FOUND);
+        }
+        if(!getCoordinator.get().getPassword().equals(toHexString(getSHA(changePasswordModel.getOldPassword())))){
+            return new ResponseEntity<>(new ApiResponse(true, "Incorrect current password"), HttpStatus.BAD_REQUEST);
+        }
+        changePasswordModel.setID(id);
+        getCoordinator.get().setPassword(toHexString(getSHA(changePasswordModel.getNewPassword())));
+        userService.saveUser(getCoordinator.get());
+        return new ResponseEntity<>(new ApiResponse(true, "Change password successfully!"), HttpStatus.OK);
     }
 }

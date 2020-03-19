@@ -44,6 +44,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public void changePassword(User user) {
+        User userChangeByID = userRepository.findById(user.getId()).get();
+        userChangeByID.setPassword(user.getPassword());
+        userRepository.save(userChangeByID);
+    }
+
+    @Override
     public Optional<User> findUserByRoleAndID(int id, String role) {
         Optional<User> getUserByRoleAndID = userRepository.findUserByRoleAndId(id, role);
         return getUserByRoleAndID;
