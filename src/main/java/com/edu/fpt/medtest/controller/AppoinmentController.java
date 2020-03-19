@@ -100,6 +100,7 @@ public class AppoinmentController {
         for (Appointment appointments : lsAppointByStatus) {
             UserAppointment userAppointment = new UserAppointment();
             Optional<User> userAppoint = userRepository.findById(appointments.getCustomerID());
+            userAppointment.setAppointment_id(userAppoint.get().getId());
             userAppointment.setAppointment_customerName(userAppoint.get().getName());
             userAppointment.setAppointment_phoneNumber(userAppoint.get().getPhoneNumber());
             userAppointment.setAppointment_DOB(userAppoint.get().getDob());
