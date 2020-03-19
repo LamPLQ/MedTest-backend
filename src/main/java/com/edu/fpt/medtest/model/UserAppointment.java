@@ -5,6 +5,8 @@ import java.util.Date;
 public class UserAppointment {
     private String appointment_customerName;
 
+    //private String appointment_coordinatorName;
+
     private String appointment_phoneNumber;
 
     private Date appointment_DOB;
@@ -16,6 +18,14 @@ public class UserAppointment {
     private String appointment_note;
 
     private Date appointment_createdTime;
+
+    /*public String getAppointment_coordinatorName() {
+        return appointment_coordinatorName;
+    }
+
+    public void setAppointment_coordinatorName(String appointment_coordinatorName) {
+        this.appointment_coordinatorName = appointment_coordinatorName;
+    }*/
 
     public Date getAppointment_createdTime() {
         return appointment_createdTime;

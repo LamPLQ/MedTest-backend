@@ -21,6 +21,9 @@ public class Article {
     @Column(name = "Content")
     private String content;
 
+    @Column(name = "ShortContent")
+    private String shortContent;
+
     @Column(name = "Image")
     private String image;
 
@@ -30,6 +33,14 @@ public class Article {
     @Column(name = "CreatedTime")
     @CreatedDate
     private Date createdTime;
+
+    public String getShortContent() {
+        return shortContent;
+    }
+
+    public void setShortContent(String shortContent) {
+        this.shortContent = shortContent;
+    }
 
     public int getID() {
         return ID;

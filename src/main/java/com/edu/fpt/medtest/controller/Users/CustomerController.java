@@ -2,6 +2,7 @@ package com.edu.fpt.medtest.controller.Users;
 
 import com.edu.fpt.medtest.entity.Appointment;
 import com.edu.fpt.medtest.entity.User;
+import com.edu.fpt.medtest.model.ChangePasswordModel;
 import com.edu.fpt.medtest.model.UserAppointment;
 import com.edu.fpt.medtest.repository.AppointmentRepository;
 import com.edu.fpt.medtest.repository.UserRepository;
@@ -76,7 +77,7 @@ public class CustomerController {
         if (!getUser.isPresent()) {
             return new ResponseEntity<>(new ApiResponse(true, "User not found"), HttpStatus.NOT_FOUND);
         }
-        if (!getUser.get().getRole().equals("CUSTOMER")){
+        if (!getUser.get().getRole().equals("CUSTOMER")) {
             return new ResponseEntity<>(new ApiResponse(true, "User is not allowed"), HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<>(getUser, HttpStatus.OK);
@@ -89,7 +90,7 @@ public class CustomerController {
         if (!getUser.isPresent()) {
             return new ResponseEntity<>(new ApiResponse(true, "User not found"), HttpStatus.NOT_FOUND);
         }
-        if (!getUser.get().getRole().equals("CUSTOMER")){
+        if (!getUser.get().getRole().equals("CUSTOMER")) {
             return new ResponseEntity<>(new ApiResponse(true, "User is not allowed"), HttpStatus.NOT_FOUND);
         }
         customer.setId(id);
@@ -110,6 +111,7 @@ public class CustomerController {
         List<UserAppointment> listUserAppoinment = new ArrayList<>();
         for (Appointment appointments : lsAppointmentCustomer) {
             UserAppointment userAppointment = new UserAppointment();
+            //userAppointment.setAppointment_coordinatorName("" + appointments.getCoordinatorID());
             userAppointment.setAppointment_customerName(userAppoint.getName());
             userAppointment.setAppointment_phoneNumber(userAppoint.getPhoneNumber());
             userAppointment.setAppointment_DOB(userAppoint.getDob());
@@ -122,4 +124,22 @@ public class CustomerController {
         return new ResponseEntity<>(listUserAppoinment, HttpStatus.OK);
     }
 
+    //change Password
+    @PostMapping("/change-password/{id}")
+    public ResponseEntity<?> changePassword(@RequestBody ChangePasswordModel changePasswordModel, @PathVariable("id") int id) throws NoSuchAlgorithmException {
+        Optional<User> getCustomer = userService.findUserByID(id);
+        if (!getCustomer.isPresent()) {
+            return new ResponseEntity<>(new ApiResponse(true, "User not found"), HttpStatus.NOT_FOUND);
+        }
+        if (!getCustomer.get().getRole().equals("CUSTOMER")) {
+            return new ResponseEntity<>(new ApiResponse(true, "User is not allowed"), HttpStatus.NOT_FOUND);
+        }
+        if(!getCustomer.get().getPassword().equals(toHexString(getSHA(changePasswordModel.getOldPassword())))){
+            return new ResponseEntity<>(new ApiResponse(true, "Incorrect current password"), HttpStatus.BAD_REQUEST);
+        }
+        changePasswordModel.setID(id);
+        getCustomer.get().setPassword(toHexString(getSHA(changePasswordModel.getNewPassword())));
+        userService.saveUser(getCustomer.get());
+        return new ResponseEntity<>(new ApiResponse(true, "Change password successfully!"), HttpStatus.OK);
+    }
 }

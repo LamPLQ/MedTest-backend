@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 public interface AppointmentService {
@@ -16,5 +17,8 @@ public interface AppointmentService {
 
     void update(Appointment appointment);
 
+    List<Appointment> listAppointmentByStatus(String status);
+
+    //List<Appointment> listAppointmentByListStatus(Set<String> status);
 
 }

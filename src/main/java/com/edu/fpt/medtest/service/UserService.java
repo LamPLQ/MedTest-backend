@@ -17,5 +17,7 @@ public interface UserService {
 
     void update(User user);
 
+    void changePassword(User user);
+
     Optional<User> findUserByRoleAndID(int id, String role);
 }

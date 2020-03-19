@@ -23,7 +23,7 @@ public class UserController {
     public ResponseEntity<?> login(@RequestBody User user) throws NoSuchAlgorithmException {
         boolean login = false;
         User userLogin = userRepository.getUserByPhoneNumber(user.getPhoneNumber());
-        User returnUser = new User();
+        //User returnUser = new User();
         if (userLogin.getPassword().equals(toHexString(getSHA(user.getPassword())))) {
             login = true;
 //            returnUser = userRepository.save(user);
