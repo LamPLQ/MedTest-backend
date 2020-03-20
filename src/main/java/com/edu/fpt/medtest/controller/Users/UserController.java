@@ -3,6 +3,7 @@ package com.edu.fpt.medtest.controller.Users;
 import com.edu.fpt.medtest.entity.District;
 import com.edu.fpt.medtest.entity.Town;
 import com.edu.fpt.medtest.entity.User;
+import com.edu.fpt.medtest.model.LoginModel;
 import com.edu.fpt.medtest.repository.DistrictRepository;
 import com.edu.fpt.medtest.repository.TownRepository;
 import com.edu.fpt.medtest.repository.UserRepository;
@@ -39,13 +40,19 @@ public class UserController {
 
     //Login
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody User user) throws NoSuchAlgorithmException {
+    public ResponseEntity<?> login(@RequestBody LoginModel loginUser) throws NoSuchAlgorithmException {
         boolean login = false;
-        User userLogin = userRepository.getUserByPhoneNumber(user.getPhoneNumber());
-        if (userLogin.getPassword().equals(toHexString(getSHA(user.getPassword())))) {
-            login = true;
+        boolean existByPhoneNumber = userRepository.existsByPhoneNumber(loginUser.getPhoneNumber());
+        if (!existByPhoneNumber == true) {
+            return new ResponseEntity<>(new ApiResponse(false, "There is no user with phone number " + loginUser.getPhoneNumber()), HttpStatus.NOT_FOUND);
         }
-        return new ResponseEntity<>(login, HttpStatus.OK);
+        User userLogin = userRepository.getUserByPhoneNumber(loginUser.getPhoneNumber());
+        if(!userLogin.getPassword().equals(toHexString(getSHA(loginUser.getPassword())))){
+            return new ResponseEntity<>(new ApiResponse(false, "Wrong password of user with phone number " + loginUser.getPhoneNumber()), HttpStatus.NOT_FOUND);
+        }
+        User successfulUser = new User();
+        successfulUser = (userRepository.getUserByPhoneNumber(loginUser.getPhoneNumber()));
+        return new ResponseEntity<>(successfulUser, HttpStatus.OK);
     }
 
     // List user with state ACTIVE
