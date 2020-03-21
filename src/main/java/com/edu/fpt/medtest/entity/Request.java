@@ -4,14 +4,18 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "request")
 @EntityListeners(AuditingEntityListener.class)
-public class Request {
+public class Request implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "RequestID")
     private int requestID;
 
     @Column(name = "UserID")
@@ -27,6 +31,44 @@ public class Request {
     @Column(name = "Address")
     private String address;
 
+    @Column(name = "TownCode")
+    private String townCode;
+
+    @Column(name = "DistrictCode")
+    private String districtCode;
+
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @JoinTable(name = "request_test",
+            joinColumns = {@JoinColumn(name = "RequestID", referencedColumnName = "RequestID", nullable = false, updatable = false)},
+            inverseJoinColumns = {@JoinColumn(name = "TestID", referencedColumnName = "ID", nullable = false, updatable = false)})
+    private Set<Test> testsChosen = new HashSet<>();
+
+    public Request() {
+    }
+
+    public Set<Test> getTestsChosen() {
+        return testsChosen;
+    }
+
+    public void setTestsChosen(Set<Test> testsChoosen) {
+        this.testsChosen = testsChoosen;
+    }
+
+    public String getTownCode() {
+        return townCode;
+    }
+
+    public void setTownCode(String townCode) {
+        this.townCode = townCode;
+    }
+
+    public String getDistrictCode() {
+        return districtCode;
+    }
+
+    public void setDistrictCode(String districtCode) {
+        this.districtCode = districtCode;
+    }
 
     public int getRequestID() {
         return requestID;

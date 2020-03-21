@@ -1,10 +1,13 @@
 package com.edu.fpt.medtest.entity;
 
 import javax.persistence.*;
+import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "test")
-public class Test {
+public class Test implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,6 +23,9 @@ public class Test {
     @Column(name = "testTypeID")
     private int testTypeID;
 
+    /*@ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE}, mappedBy = "TestID")
+    private Set<Request> requestsChosen = new HashSet<>();
+*/
     public Test() {
     }
 
