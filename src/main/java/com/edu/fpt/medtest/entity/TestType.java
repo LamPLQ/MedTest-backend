@@ -1,10 +1,11 @@
 package com.edu.fpt.medtest.entity;
 
 import javax.persistence.*;
+import java.io.Serializable;
 
 @Entity
 @Table(name = "testtype")
-public class TestType {
+public class TestType implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
