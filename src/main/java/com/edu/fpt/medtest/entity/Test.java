@@ -1,5 +1,7 @@
 package com.edu.fpt.medtest.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.HashSet;
@@ -23,12 +25,20 @@ public class Test implements Serializable {
     @Column(name = "testTypeID")
     private int testTypeID;
 
-    /*@ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE}, mappedBy = "TestID")
-    private Set<Request> requestsChosen = new HashSet<>();
-*/
     public Test() {
+
     }
 
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST}, mappedBy = "testsChosen")
+    private Set<Request> requestsChosen = new HashSet<>();
+
+    public Set<Request> getRequestsChosen() {
+        return requestsChosen;
+    }
+
+    public void setRequestsChosen(Set<Request> requestsChosen) {
+        this.requestsChosen = requestsChosen;
+    }
     public int getTestID() {
         return testID;
     }

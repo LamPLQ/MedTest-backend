@@ -37,14 +37,14 @@ public class Request implements Serializable {
     @Column(name = "DistrictCode")
     private String districtCode;
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    public Request() {
+    }
+
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST})
     @JoinTable(name = "request_test",
             joinColumns = {@JoinColumn(name = "RequestID", referencedColumnName = "RequestID", nullable = false, updatable = false)},
             inverseJoinColumns = {@JoinColumn(name = "TestID", referencedColumnName = "ID", nullable = false, updatable = false)})
     private Set<Test> testsChosen = new HashSet<>();
-
-    public Request() {
-    }
 
     public Set<Test> getTestsChosen() {
         return testsChosen;
