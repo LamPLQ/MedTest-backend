@@ -26,10 +26,9 @@ public class Test implements Serializable {
     private int testTypeID;
 
     public Test() {
-
     }
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST}, mappedBy = "testsChosen")
+    /*@ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST}, mappedBy = "testsChosen")
     private Set<Request> requestsChosen = new HashSet<>();
 
     public Set<Request> getRequestsChosen() {
@@ -38,11 +37,10 @@ public class Test implements Serializable {
 
     public void setRequestsChosen(Set<Request> requestsChosen) {
         this.requestsChosen = requestsChosen;
-    }
+    }*/
     public int getTestID() {
         return testID;
     }
-
     public void setTestID(int testID) {
         this.testID = testID;
     }

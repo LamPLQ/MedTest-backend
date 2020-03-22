@@ -1,7 +1,5 @@
 package com.edu.fpt.medtest.model;
 
-import com.edu.fpt.medtest.entity.Test;
-
 import java.util.Date;
 import java.util.List;
 
@@ -9,17 +7,43 @@ public class DetailRequestModel {
     private int requestID;
     private int customerID;
     private String customerName;
-    private String phoneNumber;
-    private Date dob;
-    private String address;
-    private Date meetingTime;
-    private String status;
+    private String customerPhoneNumber;
+    private Date customerDOB;
+    private String customerAddress;
+    private Date requestMeetingTime;
+    private String requestStatus;
+    private Date requestCreatedTime;
     private int nurseID;
     private String nurseName;
     private int coordinatorID;
     private String coordinatorName;
-    private List<Test> lsSelectedTest;
-    private long amount;
+    private long requestAmount;
+    private String requestNote;
+    private List<String> lsSelectedTest;
+
+    public String getRequestNote() {
+        return requestNote;
+    }
+
+    public void setRequestNote(String requestNote) {
+        this.requestNote = requestNote;
+    }
+
+    public List<String> getLsSelectedTest() {
+        return lsSelectedTest;
+    }
+
+    public void setLsSelectedTest(List<String> lsSelectedTest) {
+        this.lsSelectedTest = lsSelectedTest;
+    }
+
+    public Date getRequestCreatedTime() {
+        return requestCreatedTime;
+    }
+
+    public void setRequestCreatedTime(Date requestCreatedTime) {
+        this.requestCreatedTime = requestCreatedTime;
+    }
 
     public int getRequestID() {
         return requestID;
@@ -45,44 +69,44 @@ public class DetailRequestModel {
         this.customerName = customerName;
     }
 
-    public String getPhoneNumber() {
-        return phoneNumber;
+    public String getCustomerPhoneNumber() {
+        return customerPhoneNumber;
     }
 
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
+    public void setCustomerPhoneNumber(String customerPhoneNumber) {
+        this.customerPhoneNumber = customerPhoneNumber;
     }
 
-    public Date getDob() {
-        return dob;
+    public Date getCustomerDOB() {
+        return customerDOB;
     }
 
-    public void setDob(Date dob) {
-        this.dob = dob;
+    public void setCustomerDOB(Date customerDOB) {
+        this.customerDOB = customerDOB;
     }
 
-    public String getAddress() {
-        return address;
+    public String getCustomerAddress() {
+        return customerAddress;
     }
 
-    public void setAddress(String address) {
-        this.address = address;
+    public void setCustomerAddress(String customerAddress) {
+        this.customerAddress = customerAddress;
     }
 
-    public Date getMeetingTime() {
-        return meetingTime;
+    public Date getRequestMeetingTime() {
+        return requestMeetingTime;
     }
 
-    public void setMeetingTime(Date meetingTime) {
-        this.meetingTime = meetingTime;
+    public void setRequestMeetingTime(Date requestMeetingTime) {
+        this.requestMeetingTime = requestMeetingTime;
     }
 
-    public String getStatus() {
-        return status;
+    public String getRequestStatus() {
+        return requestStatus;
     }
 
-    public void setStatus(String status) {
-        this.status = status;
+    public void setRequestStatus(String requestStatus) {
+        this.requestStatus = requestStatus;
     }
 
     public int getNurseID() {
@@ -117,19 +141,11 @@ public class DetailRequestModel {
         this.coordinatorName = coordinatorName;
     }
 
-    public List<Test> getLsSelectedTest() {
-        return lsSelectedTest;
+    public long getRequestAmount() {
+        return requestAmount;
     }
 
-    public void setLsSelectedTest(List<Test> lsSelectedTest) {
-        this.lsSelectedTest = lsSelectedTest;
-    }
-
-    public long getAmount() {
-        return amount;
-    }
-
-    public void setAmount(long amount) {
-        this.amount = amount;
+    public void setRequestAmount(long requestAmount) {
+        this.requestAmount = requestAmount;
     }
 }

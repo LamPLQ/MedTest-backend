@@ -40,7 +40,7 @@ public class Request implements Serializable {
     public Request() {
     }
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST})
+    /*@ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST})
     @JoinTable(name = "request_test",
             joinColumns = {@JoinColumn(name = "RequestID", referencedColumnName = "RequestID", nullable = false, updatable = false)},
             inverseJoinColumns = {@JoinColumn(name = "TestID", referencedColumnName = "ID", nullable = false, updatable = false)})
@@ -52,7 +52,7 @@ public class Request implements Serializable {
 
     public void setTestsChosen(Set<Test> testsChoosen) {
         this.testsChosen = testsChoosen;
-    }
+    }*/
 
     public String getTownCode() {
         return townCode;
