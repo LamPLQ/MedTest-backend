@@ -1,4 +1,3 @@
-/*
 package com.edu.fpt.medtest.service.Request;
 
 import com.edu.fpt.medtest.entity.RequestTest;
@@ -26,4 +25,3 @@ public class RequestTestServiceImpl implements RequestTestService {
 
 
 }
-*/

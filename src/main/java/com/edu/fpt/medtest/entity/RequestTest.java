@@ -1,16 +1,15 @@
-/*
 package com.edu.fpt.medtest.entity;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.io.Serializable;
 
-@Data
+@Entity
 @Table(name = "request_test")
 public class RequestTest implements Serializable {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int requestTestID;
+
     @Column(name = "RequestID")
     private int requestID;
 
@@ -18,6 +17,14 @@ public class RequestTest implements Serializable {
     private int testID;
 
     public RequestTest() {
+    }
+
+    public int getRequestTestID() {
+        return requestTestID;
+    }
+
+    public void setRequestTestID(int requestTestID) {
+        this.requestTestID = requestTestID;
     }
 
     public int getRequestID() {
@@ -36,4 +43,3 @@ public class RequestTest implements Serializable {
         this.testID = testID;
     }
 }
-*/

@@ -30,5 +30,11 @@ public class RequestServiceImpl implements RequestService {
         requestRepository.save(request);
     }
 
+    @Override
+    public List<Request> getListByUser(int userID) {
+        List<Request> getListRequestByUserID = requestRepository.getAllByUserIDOrderByCreatedDateDesc(userID);
+        return getListRequestByUserID;
+    }
+
 
 }

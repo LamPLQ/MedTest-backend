@@ -10,6 +10,6 @@ import java.util.Optional;
 @Repository
 public interface RequestHistoryRepository extends JpaRepository<RequestHistory, Integer> {
     List<RequestHistory> findByRequestIDOrderByCreatedTimeDesc(int id);
-   // RequestHistory findByRequestIDAndStatusAnd(int RequestID, String status);
+    List<RequestHistory> findByRequestIDAndStatusOrderByCreatedTimeDesc(int RequestID, String status);
 }
 

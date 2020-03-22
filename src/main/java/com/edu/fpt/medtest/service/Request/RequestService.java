@@ -11,4 +11,5 @@ public interface RequestService {
     List<Request> lsRequest();
     Optional<Request> getRequest(int requestID);
     void saveRequest(Request request);
+    List<Request> getListByUser(int userID);
 }
