@@ -12,4 +12,6 @@ public interface RequestHistoryService {
 
     List<RequestHistory> listRecentStatus(int requestID);
 
+    List<RequestHistory> getAllByUserIDAndStatus(int userID, String status);
+
 }

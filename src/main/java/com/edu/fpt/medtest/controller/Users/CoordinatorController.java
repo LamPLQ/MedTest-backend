@@ -57,7 +57,7 @@ public class CoordinatorController {
     }
 
     //get coordinators - view detail info
-    @GetMapping(value = "/detail/{id}")
+    @GetMapping("/detail/{id}")
     public ResponseEntity<?> getUser(@PathVariable("id") int id) {
         Optional<User> getUser = userService.findUserByID(id);
         if (!getUser.isPresent()) {
@@ -70,7 +70,7 @@ public class CoordinatorController {
     }
 
     //update coordinator info
-    @PutMapping(value = "/detail/update/{id}")
+    @PutMapping("/detail/update/{id}")
     public ResponseEntity<?> updateUser(@RequestBody User coordinator, @PathVariable("id") int id) {
         Optional<User> getUser = userService.findUserByID(id);
         if (!getUser.isPresent()) {

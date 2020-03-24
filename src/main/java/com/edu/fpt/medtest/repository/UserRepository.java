@@ -15,11 +15,11 @@ public interface UserRepository extends CrudRepository<User, Integer> {
 
     List<User> findAllByRole(String role);
 
-    Optional<User> findUserByRoleAndId(int id, String role);
-
     List<User> findAllByActive (int active);
 
     List<User> findAllByDistrictCode(String districtCode);
 
     List<User> findAllByTownCode(String townCode);
+
+    User getUserByEmail(String email);
 }

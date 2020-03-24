@@ -23,5 +23,11 @@ public class RequestHistoryServiceImpl implements RequestHistoryService {
         return lsStatus;
     }
 
+    @Override
+    public List<RequestHistory> getAllByUserIDAndStatus(int userID, String status) {
+        List<RequestHistory> requestByUserIDAndStatus = requestHistoryRepository.findByRequestIDAndStatusOrderByCreatedTimeDesc(userID, status);
+        return requestByUserIDAndStatus;
+    }
+
 
 }

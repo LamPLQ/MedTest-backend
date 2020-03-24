@@ -11,5 +11,7 @@ import java.util.Optional;
 public interface RequestHistoryRepository extends JpaRepository<RequestHistory, Integer> {
     List<RequestHistory> findByRequestIDOrderByCreatedTimeDesc(int id);
     List<RequestHistory> findByRequestIDAndStatusOrderByCreatedTimeDesc(int RequestID, String status);
+    List<RequestHistory> findAllByUserIDAndStatusOrderByCreatedTimeDesc(int userID, String status);
+
 }
 

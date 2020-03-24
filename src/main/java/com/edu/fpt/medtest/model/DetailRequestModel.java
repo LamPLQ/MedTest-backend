@@ -4,20 +4,20 @@ import java.util.Date;
 import java.util.List;
 
 public class DetailRequestModel {
-    private int requestID;
-    private int customerID;
+    private String requestID;
+    private String customerID;
     private String customerName;
     private String customerPhoneNumber;
     private Date customerDOB;
-    private String customerAddress;
+    private String requestAddress;
     private Date requestMeetingTime;
     private String requestStatus;
     private Date requestCreatedTime;
-    private int nurseID;
+    private String nurseID;
     private String nurseName;
-    private int coordinatorID;
+    private String coordinatorID;
     private String coordinatorName;
-    private long requestAmount;
+    private String requestAmount;
     private String requestNote;
     private List<String> lsSelectedTest;
 
@@ -45,21 +45,7 @@ public class DetailRequestModel {
         this.requestCreatedTime = requestCreatedTime;
     }
 
-    public int getRequestID() {
-        return requestID;
-    }
 
-    public void setRequestID(int requestID) {
-        this.requestID = requestID;
-    }
-
-    public int getCustomerID() {
-        return customerID;
-    }
-
-    public void setCustomerID(int customerID) {
-        this.customerID = customerID;
-    }
 
     public String getCustomerName() {
         return customerName;
@@ -85,12 +71,12 @@ public class DetailRequestModel {
         this.customerDOB = customerDOB;
     }
 
-    public String getCustomerAddress() {
-        return customerAddress;
+    public String getRequestAddress() {
+        return requestAddress;
     }
 
-    public void setCustomerAddress(String customerAddress) {
-        this.customerAddress = customerAddress;
+    public void setRequestAddress(String requestAddress) {
+        this.requestAddress = requestAddress;
     }
 
     public Date getRequestMeetingTime() {
@@ -109,43 +95,53 @@ public class DetailRequestModel {
         this.requestStatus = requestStatus;
     }
 
-    public int getNurseID() {
-        return nurseID;
-    }
-
-    public void setNurseID(int nurseID) {
-        this.nurseID = nurseID;
-    }
-
     public String getNurseName() {
         return nurseName;
     }
 
-    public void setNurseName(String nurseName) {
-        this.nurseName = nurseName;
+    public void setNurseName(String nurseName) { this.nurseName = nurseName; }
+
+    public String getCoordinatorName() { return coordinatorName; }
+
+    public void setCoordinatorName(String coordinatorName) { this.coordinatorName = coordinatorName; }
+
+    public String getRequestID() {
+        return requestID;
     }
 
-    public int getCoordinatorID() {
+    public void setRequestID(String requestID) {
+        this.requestID = requestID;
+    }
+
+    public String getCustomerID() {
+        return customerID;
+    }
+
+    public void setCustomerID(String customerID) {
+        this.customerID = customerID;
+    }
+
+    public String getNurseID() {
+        return nurseID;
+    }
+
+    public void setNurseID(String nurseID) {
+        this.nurseID = nurseID;
+    }
+
+    public String getCoordinatorID() {
         return coordinatorID;
     }
 
-    public void setCoordinatorID(int coordinatorID) {
+    public void setCoordinatorID(String coordinatorID) {
         this.coordinatorID = coordinatorID;
     }
 
-    public String getCoordinatorName() {
-        return coordinatorName;
-    }
-
-    public void setCoordinatorName(String coordinatorName) {
-        this.coordinatorName = coordinatorName;
-    }
-
-    public long getRequestAmount() {
+    public String getRequestAmount() {
         return requestAmount;
     }
 
-    public void setRequestAmount(long requestAmount) {
+    public void setRequestAmount(String requestAmount) {
         this.requestAmount = requestAmount;
     }
 }
