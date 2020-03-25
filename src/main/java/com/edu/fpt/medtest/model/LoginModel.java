@@ -1,3 +1,4 @@
+/*
 package com.edu.fpt.medtest.model;
 
 public class LoginModel {
@@ -27,3 +28,4 @@ public class LoginModel {
         this.password = password;
     }
 }
+*/

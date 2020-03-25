@@ -10,5 +10,4 @@ import java.util.List;
 public interface RequestRepository extends JpaRepository<Request, Integer> {
     boolean existsByRequestID(int requestID);
     List<Request> getAllByUserIDOrderByCreatedDateDesc(int userID);
-    List<Request> findAllByOrderByCreatedDateDesc();
 }

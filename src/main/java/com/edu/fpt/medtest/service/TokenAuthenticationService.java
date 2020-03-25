@@ -1,3 +1,4 @@
+/*
 package com.edu.fpt.medtest.service;
 
 import io.jsonwebtoken.Jwts;
@@ -43,4 +44,4 @@ public class TokenAuthenticationService {
         }
         return null;
     }
-}
+}*/

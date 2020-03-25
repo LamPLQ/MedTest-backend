@@ -3,6 +3,7 @@ package com.edu.fpt.medtest.controller.Users;
 
 import com.edu.fpt.medtest.entity.*;
 import com.edu.fpt.medtest.model.ChangePasswordModel;
+import com.edu.fpt.medtest.model.CompletedRequestModel;
 import com.edu.fpt.medtest.model.DetailRequestModel;
 import com.edu.fpt.medtest.repository.*;
 import com.edu.fpt.medtest.service.Request.RequestHistoryService;
@@ -268,26 +269,170 @@ public class NurseController {
                 }
             }
         }
-        if(lsFindingRequest.isEmpty())
-            return new ResponseEntity<>(new ApiResponse(true,"NO RECENTLY REQUEST"), HttpStatus.NOT_FOUND);
+        if (lsFindingRequest.isEmpty())
+            return new ResponseEntity<>(new ApiResponse(true, "NO RECENTLY REQUEST"), HttpStatus.NOT_FOUND);
         return new ResponseEntity<>(lsFindingRequest, HttpStatus.OK);
     }
 
     //Screen "Đơn đang nhận"
     //status = {accepted, lostsample, transporting }
-    @GetMapping("{id}/handling-list")
-    public ResponseEntity<?> lsHandling(@PathVariable("id") int nurseID){
+    @GetMapping("{id}/list/handling")
+    public ResponseEntity<?> lsHandling(@PathVariable("id") int nurseID) {
         //list handling return
-        List<RequestHistory> lsNurseHandling = new ArrayList<>();
+        List<DetailRequestModel> lsNurseHandling = new ArrayList<>();
 
-        //status = accepted
-        //list all request that nurse had accepted
-        List<RequestHistory> lsNurseAccepted = requestHistoryService.getAllByUserIDAndStatus(nurseID,"accepted");
-        //find requestID
+        //List all created request
+        List<Request> lsAllRequest = requestService.lsRequest();
+        //with each request in list request
+        List<RequestHistory> lsLastStatus = new ArrayList<>();
+        for (Request requestPending : lsAllRequest) {
+            boolean existRequestID = requestHistoryRepository.existsByRequestID(requestPending.getRequestID());
+            if (existRequestID == false) {
+                System.out.println("Dont have this requestID");
+            } else {
+                //System.out.println("OK");
+                RequestHistory requestAvailable = requestHistoryRepository.findByRequestIDOrderByCreatedTimeDesc(requestPending.getRequestID()).get(0);
+                //System.out.println(requestAvailable.getNote());
+                lsLastStatus.add(requestAvailable);
+            }
+        }
+        for (RequestHistory request : lsLastStatus) {
+            if ((request.getUserID() == nurseID && (request.getStatus().equals("accepted"))) ||
+                    (request.getUserID() == nurseID && (request.getStatus().equals("lostsample"))) ||
+                    (request.getUserID() == nurseID && (request.getStatus().equals("transporting")))) {
+                DetailRequestModel detail = new DetailRequestModel();
+                //requestID
+                detail.setRequestID(String.valueOf(request.getRequestID()));
+                //nurseID
+                detail.setNurseID(String.valueOf(request.getUserID()));
+                //nurseName
+                detail.setNurseName(userRepository.findById(request.getUserID()).get().getName());
+                //request of request history
+                Request recentRequest = requestRepository.getOne(request.getRequestID());
+                ///////////////////////
+                //customerID
+                detail.setCustomerID(String.valueOf(recentRequest.getUserID()));
+                //customerName
+                detail.setCustomerName(userRepository.findById(recentRequest.getRequestID()).get().getName());
+                //customer phoneNumber
+                detail.setCustomerPhoneNumber(userRepository.findById(recentRequest.getRequestID()).get().getPhoneNumber());
+                //customer DOB
+                detail.setCustomerDOB(userRepository.findById(recentRequest.getRequestID()).get().getDob());
+                //request Address
+                detail.setRequestAddress(recentRequest.getAddress() + " " +
+                        townRepository.findById(recentRequest.getTownCode()).get().getTownName() + " " +
+                        districtRepository.findById(recentRequest.getDistrictCode()).get().getDistrictName());
+                //request meetingTime
+                detail.setRequestMeetingTime(recentRequest.getMeetingTime());
+                //request status
+                detail.setRequestStatus(request.getStatus());
+                //request created time
+                detail.setRequestCreatedTime(recentRequest.getCreatedDate());
+                //coordinator
+                detail.setCoordinatorID("NOT HAVE ANY COORDINATOR YET");
+                detail.setCoordinatorName("NOT HAVE ANY COORDINATOR YET");
+                //requestNote
+                detail.setRequestNote(request.getNote());
+                List<RequestTest> lsRequestTests = requestTestRepository.getAllByRequestID(recentRequest.getRequestID());
+                List<String> lsTestID = new ArrayList<>();
+                long testAmount = 0;
+                for (RequestTest tracking : lsRequestTests) {
+                    String testID = String.valueOf(tracking.getTestID());
+                    testAmount += testRepository.findById(tracking.getTestID()).get().getPrice();
+                    lsTestID.add(testID);
+                }
+                detail.setLsSelectedTest(lsTestID);
+                //set amount of test
+                detail.setRequestAmount(String.valueOf(testAmount));
+                lsNurseHandling.add(detail);
+            }
+        }
+        if (lsNurseHandling.isEmpty()) {
+            return new ResponseEntity<>(new ApiResponse(true, "There is no handling request for nurseID = " + nurseID), HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(lsNurseHandling, HttpStatus.OK);
+    }
 
+    //Screen "Lịch sử nhận đơn"
+    //status = {closed, waitingforresult }
+    @GetMapping("{id}/list/request-completed")
+    public ResponseEntity<?> lsCompleted(@PathVariable("id") int nurseID) {
+        //list completed
+        List<CompletedRequestModel> lsCompletedReqs = new ArrayList<>();
 
+        //List all created request
+        List<Request> lsAllRequest = requestService.lsRequest();
+        //with each request in list request
+        List<RequestHistory> lsLastStatus = new ArrayList<>();
+        for (Request requestPending : lsAllRequest) {
+            boolean existRequestID = requestHistoryRepository.existsByRequestID(requestPending.getRequestID());
+            if (existRequestID == false) {
+                System.out.println("Dont have this requestID");
+            } else {
+                //System.out.println("OK");
+                RequestHistory requestAvailable = requestHistoryRepository.findByRequestIDOrderByCreatedTimeDesc(requestPending.getRequestID()).get(0);
+                //System.out.println(requestAvailable.getNote());
+                lsLastStatus.add(requestAvailable);
+            }
+        }
+        for (RequestHistory request : lsLastStatus) {
+            if (request.getStatus().equals("closed") || request.getStatus().equals("waitingforresult")) {
+                //list of "accepted" status with each request history
+                boolean existByRequestIDAndStatusAccepted = requestHistoryRepository.existsByRequestIDAndStatusAndUserID(request.getRequestID(), "accepted", nurseID);
+                if (existByRequestIDAndStatusAccepted == false) {
+                    System.out.println("No request history with /accepted/ status");
+                } else {
+                    RequestHistory acceptedStatusRequest = requestHistoryRepository.findAllByRequestIDAndStatusAndUserIDOrderByCreatedTimeDesc(request.getRequestID(), "accepted", nurseID).get(0);
+                    //System.out.println(acceptedStatusRequest.getRequestID() + acceptedStatusRequest.getNote());
+                    boolean existByRequestIDAndStatusTransporting = requestHistoryRepository.existsByRequestIDAndStatusAndUserID(request.getRequestID(), "transporting", nurseID);
+                    if (existByRequestIDAndStatusTransporting == false) {
+                        System.out.println("No request history with /transporting/ status");
+                    } else {
+                        RequestHistory transportingStatusRequest = requestHistoryRepository.findAllByRequestIDAndStatusAndUserIDOrderByCreatedTimeDesc(request.getRequestID(), "transporting", nurseID).get(0);
+                        //System.out.println(transportingStatusRequest.getRequestID() + transportingStatusRequest.getNote());
+                        CompletedRequestModel completedRequestModel = new CompletedRequestModel();
+                        completedRequestModel.setRequestID(String.valueOf(request.getRequestID()));
+                        ////////////////////Object Request
+                        Request workingRequest = requestRepository.getOne(request.getRequestID());
+                        ////////////////////
+                        completedRequestModel.setCustomerID(String.valueOf(workingRequest.getUserID()));
+                        completedRequestModel.setCustomerName(userRepository.findById(workingRequest.getUserID()).get().getName());
+                        completedRequestModel.setCustomerPhoneNumber(userRepository.findById(workingRequest.getUserID()).get().getPhoneNumber());
+                        completedRequestModel.setCustomerDOB(userRepository.findById(workingRequest.getUserID()).get().getDob());
+                        completedRequestModel.setRequestAddress(workingRequest.getAddress() + " " +
+                                townRepository.findById(workingRequest.getTownCode()).get().getTownName() + " " +
+                                districtRepository.findById(workingRequest.getDistrictCode()).get().getDistrictName());
+                        completedRequestModel.setRequestMeetingTime(workingRequest.getMeetingTime());
+                        completedRequestModel.setRequestCreatedTime(workingRequest.getCreatedDate());
+                        completedRequestModel.setNurseID(String.valueOf(nurseID));
+                        completedRequestModel.setNurseName(userRepository.findById(nurseID).get().getName());
+                        completedRequestModel.setCoordinatorID(String.valueOf(request.getUserID()));
+                        completedRequestModel.setCoordinatorName(userRepository.findById(request.getUserID()).get().getName());
+                        completedRequestModel.setRequestStatus(request.getStatus());
+                        completedRequestModel.setRequestNote(request.getNote());
+                        completedRequestModel.setRequestAcceptedTime(acceptedStatusRequest.getCreatedTime());
+                        completedRequestModel.setRequestTransportingTime(transportingStatusRequest.getCreatedTime());
+                        List<RequestTest> lsRequestTests = requestTestRepository.getAllByRequestID(workingRequest.getRequestID());
+                        List<String> lsTestID = new ArrayList<>();
+                        long testAmount = 0;
+                        for (RequestTest tracking : lsRequestTests) {
+                            String testID = String.valueOf(tracking.getTestID());
+                            testAmount += testRepository.findById(tracking.getTestID()).get().getPrice();
+                            lsTestID.add(testID);
+                        }
+                        completedRequestModel.setLsSelectedTest(lsTestID);
+                        //set amount of test
+                        completedRequestModel.setRequestAmount(String.valueOf(testAmount));
+                        lsCompletedReqs.add(completedRequestModel);
+                    }
+                }
+            }
+        }
+        if (lsCompletedReqs.isEmpty()) {
+            return new ResponseEntity(new ApiResponse(true, "Have nó request history for nurseID = " + nurseID), HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(lsCompletedReqs, HttpStatus.OK);
 
-        return new ResponseEntity<>(lsNurseAccepted, HttpStatus.OK);
     }
 }
 

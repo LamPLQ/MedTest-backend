@@ -2,7 +2,7 @@ package com.edu.fpt.medtest.model;
 
 import java.util.Date;
 
-public class NurseDetailRequest extends DetailRequestModel {
+public class CompletedRequestModel extends DetailRequestModel {
     private Date requestAcceptedTime;
 
     private  Date requestTransportingTime;

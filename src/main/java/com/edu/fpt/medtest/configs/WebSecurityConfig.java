@@ -1,5 +1,8 @@
+/*
 package com.edu.fpt.medtest.configs;
 
+import com.edu.fpt.medtest.model.LoginModel;
+import com.edu.fpt.medtest.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -18,6 +21,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     private DataSource dataSource;
 
+    @Autowired
+    private UserRepository userRepository;
+
+*/
+/*
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.csrf().disable().authorizeRequests()
@@ -28,13 +36,16 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .addFilterBefore(new JWTLoginFilter("users/login", authenticationManager()), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(new JWTAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
     }
+*//*
+
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+        //LoginModel loginModel = new LoginModel(name, password);
         auth.inMemoryAuthentication().withUser("0123456789").password("VYRye0hE").roles("CUSTOMER");
-       /* auth.jdbcAuthentication().dataSource(dataSource)
-                .usersByUsernameQuery("select username,password, true as enabled from \"user\" where  username=?")
-                .authoritiesByUsernameQuery("select username, role from \"user\" where username=?");*/
-//                .passwordEncoder(new BCryptPasswordEncoder(16));
+//       auth.jdbcAuthentication().dataSource(dataSource)
+//                .usersByUsernameQuery("select username,password, true as enabled from \"user\" where  username=?")
+//                .authoritiesByUsernameQuery("select username, role from \"user\" where username=?");
+//               .passwordEncoder(new BCryptPasswordEncoder(16));
     }
-}
+}*/

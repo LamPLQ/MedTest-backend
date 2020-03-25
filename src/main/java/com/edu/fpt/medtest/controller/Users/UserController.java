@@ -5,7 +5,7 @@ import com.edu.fpt.medtest.entity.Notification;
 import com.edu.fpt.medtest.entity.Town;
 import com.edu.fpt.medtest.entity.User;
 import com.edu.fpt.medtest.model.ForgotPasswordModel;
-import com.edu.fpt.medtest.model.LoginModel;
+//import com.edu.fpt.medtest.model.LoginModel;
 import com.edu.fpt.medtest.model.SentMailModel;
 import com.edu.fpt.medtest.repository.DistrictRepository;
 import com.edu.fpt.medtest.repository.TownRepository;
