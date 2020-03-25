@@ -2,7 +2,7 @@ package com.edu.fpt.medtest.model;
 
 import java.util.Date;
 
-public class UserAppointment {
+public class UserAppointmentModel {
     private int appointment_id;
 
     private String appointment_customerName;

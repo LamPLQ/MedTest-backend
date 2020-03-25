@@ -1,10 +1,10 @@
 package com.edu.fpt.medtest.controller;
 
+import com.edu.fpt.medtest.model.UserAppointmentModel;
 import com.edu.fpt.medtest.repository.UserRepository;
 import com.edu.fpt.medtest.utils.ApiResponse;
 import com.edu.fpt.medtest.entity.Appointment;
 import com.edu.fpt.medtest.entity.User;
-import com.edu.fpt.medtest.model.UserAppointment;
 import com.edu.fpt.medtest.service.AppointmentService;
 import com.edu.fpt.medtest.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 @RestController
 @RequestMapping("/appointments")
@@ -55,7 +54,7 @@ public class AppoinmentController {
     @GetMapping("/detail/{id}")
     public ResponseEntity<?> getAppointment(@PathVariable("id") int id) {
         Optional<Appointment> getAppointment = appointmentService.getAppointmentByID(id);
-        UserAppointment userAppointment = new UserAppointment();
+        UserAppointmentModel userAppointmentModel = new UserAppointmentModel();
         if (!getAppointment.isPresent()) {
             return new ResponseEntity<>(new ApiResponse(true, "Appointment not found"), HttpStatus.NOT_FOUND);
         } else {
@@ -65,18 +64,18 @@ public class AppoinmentController {
             for (User userTracking : user) {
                 if (userTracking.getId() == userAppoint.getId()) {
                     userAppoint = userTracking;
-                    userAppointment.setAppointment_customerName(userAppoint.getName());
-                    userAppointment.setAppointment_phoneNumber(userAppoint.getPhoneNumber());
-                    userAppointment.setAppointment_DOB(userAppoint.getDob());
+                    userAppointmentModel.setAppointment_customerName(userAppoint.getName());
+                    userAppointmentModel.setAppointment_phoneNumber(userAppoint.getPhoneNumber());
+                    userAppointmentModel.setAppointment_DOB(userAppoint.getDob());
                 }
             }
-            userAppointment.setAppointment_id(getAppointment.get().getID());
-            userAppointment.setAppointment_status(getAppointment.get().getStatus());
-            userAppointment.setAppointment_note(getAppointment.get().getNote());
-            userAppointment.setAppointment_meetingTime(getAppointment.get().getMeetingTime());
-            userAppointment.setAppointment_createdTime(getAppointment.get().getCreatedTime());
+            userAppointmentModel.setAppointment_id(getAppointment.get().getID());
+            userAppointmentModel.setAppointment_status(getAppointment.get().getStatus());
+            userAppointmentModel.setAppointment_note(getAppointment.get().getNote());
+            userAppointmentModel.setAppointment_meetingTime(getAppointment.get().getMeetingTime());
+            userAppointmentModel.setAppointment_createdTime(getAppointment.get().getCreatedTime());
         }
-        return new ResponseEntity<>(userAppointment, HttpStatus.OK);
+        return new ResponseEntity<>(userAppointmentModel, HttpStatus.OK);
     }
 
     //update appointment
@@ -97,19 +96,19 @@ public class AppoinmentController {
         if(lsAppointByStatus.isEmpty()){
             return new ResponseEntity<>(new ApiResponse(true,"No appointment with status" + status),HttpStatus.NOT_FOUND);
         }
-        List<UserAppointment> listUserAppoinment = new ArrayList<>();
+        List<UserAppointmentModel> listUserAppoinment = new ArrayList<>();
         for (Appointment appointments : lsAppointByStatus) {
-            UserAppointment userAppointment = new UserAppointment();
+            UserAppointmentModel userAppointmentModel = new UserAppointmentModel();
             Optional<User> userAppoint = userRepository.findById(appointments.getCustomerID());
-            userAppointment.setAppointment_id(userAppoint.get().getId());
-            userAppointment.setAppointment_customerName(userAppoint.get().getName());
-            userAppointment.setAppointment_phoneNumber(userAppoint.get().getPhoneNumber());
-            userAppointment.setAppointment_DOB(userAppoint.get().getDob());
-            userAppointment.setAppointment_status(appointments.getStatus());
-            userAppointment.setAppointment_note(appointments.getNote());
-            userAppointment.setAppointment_meetingTime(appointments.getMeetingTime());
-            userAppointment.setAppointment_createdTime(appointments.getCreatedTime());
-            listUserAppoinment.add(userAppointment);
+            userAppointmentModel.setAppointment_id(userAppoint.get().getId());
+            userAppointmentModel.setAppointment_customerName(userAppoint.get().getName());
+            userAppointmentModel.setAppointment_phoneNumber(userAppoint.get().getPhoneNumber());
+            userAppointmentModel.setAppointment_DOB(userAppoint.get().getDob());
+            userAppointmentModel.setAppointment_status(appointments.getStatus());
+            userAppointmentModel.setAppointment_note(appointments.getNote());
+            userAppointmentModel.setAppointment_meetingTime(appointments.getMeetingTime());
+            userAppointmentModel.setAppointment_createdTime(appointments.getCreatedTime());
+            listUserAppoinment.add(userAppointmentModel);
         }
         return new ResponseEntity<>(listUserAppoinment,HttpStatus.OK);
     }

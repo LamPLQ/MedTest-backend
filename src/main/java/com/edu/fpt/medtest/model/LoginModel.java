@@ -1,19 +1,15 @@
 package com.edu.fpt.medtest.model;
 
 public class LoginModel {
-//    public int getID() {
-//        return ID;
-//    }
-//
-//    public void setID(int ID) {
-//        this.ID = ID;
-//    }
-//
-//    private int ID;
 
     private String phoneNumber;
 
     private String password;
+
+    public LoginModel(String phoneNumber, String password){
+        this.phoneNumber = phoneNumber;
+        this.password = password;
+    }
 
     public String getPhoneNumber() {
         return phoneNumber;

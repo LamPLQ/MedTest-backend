@@ -3,11 +3,10 @@ package com.edu.fpt.medtest.controller.Users;
 import com.edu.fpt.medtest.entity.*;
 import com.edu.fpt.medtest.model.ChangePasswordModel;
 import com.edu.fpt.medtest.model.DetailRequestModel;
-import com.edu.fpt.medtest.model.UserAppointment;
+import com.edu.fpt.medtest.model.UserAppointmentModel;
 import com.edu.fpt.medtest.repository.*;
 import com.edu.fpt.medtest.service.Request.RequestHistoryService;
 import com.edu.fpt.medtest.service.Request.RequestService;
-import com.edu.fpt.medtest.service.Request.RequestTestService;
 import com.edu.fpt.medtest.service.UserService;
 import com.edu.fpt.medtest.utils.ApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -128,25 +127,25 @@ public class CustomerController {
     @GetMapping("/{id}/appointments/list")
     public ResponseEntity<?> getListAppointment(@PathVariable("id") int id) {
         List<Appointment> lsAppointmentCustomer = appointmentRepository.findAllByCustomerID(id);
-//        UserAppointment userAppointment = new UserAppointment();
+//        UserAppointmentModel userAppointment = new UserAppointmentModel();
         User userAppoint = userService.findUserByID(id).get();
         if (lsAppointmentCustomer.isEmpty()) {
             return new ResponseEntity<>(new ApiResponse(true, "Appointment not found"), HttpStatus.NOT_FOUND);
         }
         //list detail of each appoinment which belong to user
-        List<UserAppointment> listUserAppoinment = new ArrayList<>();
+        List<UserAppointmentModel> listUserAppoinment = new ArrayList<>();
         for (Appointment appointments : lsAppointmentCustomer) {
-            UserAppointment userAppointment = new UserAppointment();
-            //userAppointment.setAppointment_coordinatorName("" + appointments.getCoordinatorID());
-            userAppointment.setAppointment_id(userAppoint.getId());
-            userAppointment.setAppointment_customerName(userAppoint.getName());
-            userAppointment.setAppointment_phoneNumber(userAppoint.getPhoneNumber());
-            userAppointment.setAppointment_DOB(userAppoint.getDob());
-            userAppointment.setAppointment_status(appointments.getStatus());
-            userAppointment.setAppointment_note(appointments.getNote());
-            userAppointment.setAppointment_meetingTime(appointments.getMeetingTime());
-            userAppointment.setAppointment_createdTime(appointments.getCreatedTime());
-            listUserAppoinment.add(userAppointment);
+            UserAppointmentModel userAppointmentModel = new UserAppointmentModel();
+            //userAppointmentModel.setAppointment_coordinatorName("" + appointments.getCoordinatorID());
+            userAppointmentModel.setAppointment_id(userAppoint.getId());
+            userAppointmentModel.setAppointment_customerName(userAppoint.getName());
+            userAppointmentModel.setAppointment_phoneNumber(userAppoint.getPhoneNumber());
+            userAppointmentModel.setAppointment_DOB(userAppoint.getDob());
+            userAppointmentModel.setAppointment_status(appointments.getStatus());
+            userAppointmentModel.setAppointment_note(appointments.getNote());
+            userAppointmentModel.setAppointment_meetingTime(appointments.getMeetingTime());
+            userAppointmentModel.setAppointment_createdTime(appointments.getCreatedTime());
+            listUserAppoinment.add(userAppointmentModel);
         }
         return new ResponseEntity<>(listUserAppoinment, HttpStatus.OK);
     }

@@ -4,7 +4,7 @@ import com.edu.fpt.medtest.utils.ApiResponse;
 import com.edu.fpt.medtest.entity.Test;
 import com.edu.fpt.medtest.entity.TestType;
 import com.edu.fpt.medtest.exception.ResourceNotFoundException;
-import com.edu.fpt.medtest.model.TestTypeList;
+import com.edu.fpt.medtest.model.TestTypeListModel;
 import com.edu.fpt.medtest.repository.TestRepository;
 import com.edu.fpt.medtest.service.Tests.TestTypeService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,15 +71,15 @@ public class TestTypeController {
     //get List testType-test by testTypeID
     @GetMapping("/type-test")
     public ResponseEntity<?> listTestTypeTest() {
-        List<TestTypeList> lsResult = new ArrayList<>();
+        List<TestTypeListModel> lsResult = new ArrayList<>();
         List<TestType> list = testTypeService.lsTestType();
         for (TestType testType : list) {
             List<Test> testList = testRepository.getAllByTestTypeID(testType.getTestTypeID());
-            TestTypeList testTypeList = new TestTypeList();
-            testTypeList.setTestTypeID(testType.getTestTypeID());
-            testTypeList.setTestTypeName(testType.getTestTypeName());
-            testTypeList.setListTest(testList);
-            lsResult.add(testTypeList);
+            TestTypeListModel testTypeListModel = new TestTypeListModel();
+            testTypeListModel.setTestTypeID(testType.getTestTypeID());
+            testTypeListModel.setTestTypeName(testType.getTestTypeName());
+            testTypeListModel.setListTest(testList);
+            lsResult.add(testTypeListModel);
         }
         return new ResponseEntity<>(lsResult, HttpStatus.OK);
     }

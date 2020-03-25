@@ -1,6 +1,7 @@
 package com.edu.fpt.medtest.controller.Users;
 
 import com.edu.fpt.medtest.entity.District;
+import com.edu.fpt.medtest.entity.Notification;
 import com.edu.fpt.medtest.entity.Town;
 import com.edu.fpt.medtest.entity.User;
 import com.edu.fpt.medtest.model.ForgotPasswordModel;
@@ -10,6 +11,7 @@ import com.edu.fpt.medtest.repository.DistrictRepository;
 import com.edu.fpt.medtest.repository.TownRepository;
 import com.edu.fpt.medtest.repository.UserRepository;
 import com.edu.fpt.medtest.service.MailService;
+import com.edu.fpt.medtest.service.NotificationService;
 import com.edu.fpt.medtest.service.UserService;
 import com.edu.fpt.medtest.utils.ApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,10 +48,13 @@ public class UserController {
     private SentMailModel sentMailModel;
 
     @Autowired
-    private MailService notificationService;
+    private MailService mailService;
+
+    @Autowired
+    private NotificationService notificationService;
 
     //Login
-    @PostMapping("/login")
+    /*@PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginModel loginUser) throws NoSuchAlgorithmException {
         //boolean login = false;
         boolean existByPhoneNumber = userRepository.existsByPhoneNumber(loginUser.getPhoneNumber());
@@ -63,7 +68,7 @@ public class UserController {
         //User successfulUser = new User();
         User successfulUser = (userRepository.getUserByPhoneNumber(loginUser.getPhoneNumber()));
         return new ResponseEntity<>(successfulUser, HttpStatus.OK);
-    }
+    }*/
 
     // List user with state ACTIVE
     @GetMapping("/list/active")
@@ -129,11 +134,28 @@ public class UserController {
         User forgotPasswordUser = userRepository.getUserByPhoneNumber(forgotPasswordModel.getPhoneNumber());
         sentMailModel.setEmail(forgotPasswordUser.getEmail());
         try {
-            notificationService.sendEmail(sentMailModel);
+            mailService.sendEmail(sentMailModel);
         } catch (MailException | NoSuchAlgorithmException mailException) {
             System.out.println(mailException);
         }
         return new ResponseEntity<>(new ApiResponse(true, "New password is sent to your mail"), HttpStatus.OK);
+    }
+
+    //list notification for user
+    @GetMapping("{id}/notifications/list")
+    public ResponseEntity<?> getLsNotification(@PathVariable("id") int userID) {
+        List<Notification> lsNoti = notificationService.lsNotification(userID);
+        if (lsNoti.isEmpty()) {
+            return new ResponseEntity<>(new ApiResponse(true, "Do not have any notification yet"), HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(lsNoti, HttpStatus.OK);
+    }
+
+    //create a new notification
+    @PostMapping("/notifications/create")
+    public ResponseEntity<?> createNoti(@RequestBody Notification notification) {
+        notificationService.saveNoti(notification);
+        return new ResponseEntity<>(new ApiResponse(true, "Created Notification successdully"), HttpStatus.OK);
     }
 }
 

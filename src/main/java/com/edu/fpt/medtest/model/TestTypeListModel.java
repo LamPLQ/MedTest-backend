@@ -4,7 +4,7 @@ import com.edu.fpt.medtest.entity.Test;
 
 import java.util.List;
 
-public class TestTypeList {
+public class TestTypeListModel {
     private int testTypeID;
     private String testTypeName;
     private List<Test> listTest;
