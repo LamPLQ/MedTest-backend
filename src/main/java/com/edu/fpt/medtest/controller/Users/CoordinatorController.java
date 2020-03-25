@@ -9,14 +9,13 @@ import com.edu.fpt.medtest.utils.ApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCrypt;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Optional;
-
-import static com.edu.fpt.medtest.utils.EncodePassword.getSHA;
-import static com.edu.fpt.medtest.utils.EncodePassword.toHexString;
 
 @RestController
 @RequestMapping("/users/coordinators")
@@ -27,6 +26,9 @@ public class CoordinatorController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private BCryptPasswordEncoder bCryptPasswordEncoder;
 
     //coordinator register
     @PostMapping("/register")
@@ -41,7 +43,7 @@ public class CoordinatorController {
         coordinator.setImage(coordinator.getImage());
         coordinator.setTownCode(null);
         coordinator.setDistrictCode(null);
-        coordinator.setPassword(toHexString(getSHA(coordinator.getPassword())));
+        coordinator.setPassword(bCryptPasswordEncoder.encode(coordinator.getPassword()));
         userService.saveUser(coordinator);
         return new ResponseEntity<>(new ApiResponse(true, "Successfully registered"), HttpStatus.OK);
     }
@@ -63,7 +65,7 @@ public class CoordinatorController {
         if (!getUser.isPresent()) {
             return new ResponseEntity<>(new ApiResponse(true, "Coordinator not found"), HttpStatus.NOT_FOUND);
         }
-        if (!getUser.get().getRole().equals("COORDINATOR")){
+        if (!getUser.get().getRole().equals("COORDINATOR")) {
             return new ResponseEntity<>(new ApiResponse(true, "User is not allowed"), HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<>(getUser, HttpStatus.OK);
@@ -76,7 +78,7 @@ public class CoordinatorController {
         if (!getUser.isPresent()) {
             return new ResponseEntity<>(new ApiResponse(true, "Coordinator not found"), HttpStatus.NOT_FOUND);
         }
-        if (!getUser.get().getRole().equals("COORDINATOR")){
+        if (!getUser.get().getRole().equals("COORDINATOR")) {
             return new ResponseEntity<>(new ApiResponse(true, "User is not allowed"), HttpStatus.NOT_FOUND);
         }
         coordinator.setId(id);
@@ -94,11 +96,11 @@ public class CoordinatorController {
         if (!getCoordinator.get().getRole().equals("COORDINATOR")) {
             return new ResponseEntity<>(new ApiResponse(true, "User is not allowed"), HttpStatus.NOT_FOUND);
         }
-        if(!getCoordinator.get().getPassword().equals(toHexString(getSHA(changePasswordModel.getOldPassword())))){
+        if (!BCrypt.checkpw(changePasswordModel.getOldPassword(), getCoordinator.get().getPassword())) {
             return new ResponseEntity<>(new ApiResponse(true, "Incorrect current password"), HttpStatus.BAD_REQUEST);
         }
         changePasswordModel.setID(id);
-        getCoordinator.get().setPassword(toHexString(getSHA(changePasswordModel.getNewPassword())));
+        getCoordinator.get().setPassword(bCryptPasswordEncoder.encode(changePasswordModel.getNewPassword()));
         userService.saveUser(getCoordinator.get());
         return new ResponseEntity<>(new ApiResponse(true, "Change password successfully!"), HttpStatus.OK);
     }

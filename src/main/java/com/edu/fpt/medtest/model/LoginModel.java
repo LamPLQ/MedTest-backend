@@ -1,4 +1,3 @@
-/*
 package com.edu.fpt.medtest.model;
 
 public class LoginModel {
@@ -7,10 +6,15 @@ public class LoginModel {
 
     private String password;
 
+
+    public LoginModel() {
+    }
+
     public LoginModel(String phoneNumber, String password){
         this.phoneNumber = phoneNumber;
         this.password = password;
     }
+
 
     public String getPhoneNumber() {
         return phoneNumber;
@@ -28,4 +32,3 @@ public class LoginModel {
         this.password = password;
     }
 }
-*/

@@ -4,10 +4,8 @@ import com.edu.fpt.medtest.entity.User;
 import com.edu.fpt.medtest.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import com.edu.fpt.medtest.utils.EncodePassword;
 
 
-import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Optional;
 

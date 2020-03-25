@@ -7,12 +7,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.security.NoSuchAlgorithmException;
-
-import static com.edu.fpt.medtest.utils.EncodePassword.getSHA;
-import static com.edu.fpt.medtest.utils.EncodePassword.toHexString;
 
 @Service
 public class MailService {
@@ -50,6 +48,9 @@ public class MailService {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private BCryptPasswordEncoder bCryptPasswordEncoder;
+
     /*
      * The Spring Framework provides an easy abstraction for sending email by using
      * the JavaMailSender interface, and Spring Boot provides auto-configuration for
@@ -86,7 +87,7 @@ public class MailService {
         mail.setSubject("Thay đổi mật khẩu cho ứng dụng MedTest");
         mail.setText("Mật khẩu mới của bạn là: " + "'" + newPassword + "'" + " " + ". Hãy thay đổi mật khẩu ngay sau khi đăng nhập vào hệ thống!");
         User resetPasswordUser = userRepository.getUserByEmail(user.getEmail());
-        resetPasswordUser.setPassword(toHexString(getSHA(newPassword)));
+        resetPasswordUser.setPassword(bCryptPasswordEncoder.encode(newPassword));
         userService.resetPassword(resetPasswordUser);
         /*
          * This send() contains an Object of SimpleMailMessage as an Parameter

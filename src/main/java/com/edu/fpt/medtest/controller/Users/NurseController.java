@@ -13,15 +13,14 @@ import com.edu.fpt.medtest.utils.ApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCrypt;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
-import static com.edu.fpt.medtest.utils.EncodePassword.getSHA;
-import static com.edu.fpt.medtest.utils.EncodePassword.toHexString;
 
 @RestController
 @RequestMapping("/users/nurses")
@@ -57,6 +56,9 @@ public class NurseController {
     @Autowired
     private RequestHistoryRepository requestHistoryRepository;
 
+    @Autowired
+    private BCryptPasswordEncoder bCryptPasswordEncoder;
+
     //nurse register
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody User nurse) throws NoSuchAlgorithmException {
@@ -70,7 +72,7 @@ public class NurseController {
         nurse.setImage(nurse.getImage());
         nurse.setTownCode(null);
         nurse.setDistrictCode(null);
-        nurse.setPassword(toHexString(getSHA(nurse.getPassword())));
+        nurse.setPassword(bCryptPasswordEncoder.encode(nurse.getPassword()));
         userService.saveUser(nurse);
         return new ResponseEntity<>(new ApiResponse(true, "Successfully registered"), HttpStatus.OK);
     }
@@ -123,11 +125,11 @@ public class NurseController {
         if (!getNurse.get().getRole().equals("NURSE")) {
             return new ResponseEntity<>(new ApiResponse(true, "User is not allowed"), HttpStatus.NOT_FOUND);
         }
-        if (!getNurse.get().getPassword().equals(toHexString(getSHA(changePasswordModel.getOldPassword())))) {
+        if (!BCrypt.checkpw(changePasswordModel.getOldPassword(), getNurse.get().getPassword())) {
             return new ResponseEntity<>(new ApiResponse(true, "Incorrect current password"), HttpStatus.BAD_REQUEST);
         }
         changePasswordModel.setID(id);
-        getNurse.get().setPassword(toHexString(getSHA(changePasswordModel.getNewPassword())));
+        getNurse.get().setPassword(bCryptPasswordEncoder.encode(changePasswordModel.getNewPassword()));
         userService.saveUser(getNurse.get());
         return new ResponseEntity<>(new ApiResponse(true, "Change password successfully!"), HttpStatus.OK);
     }

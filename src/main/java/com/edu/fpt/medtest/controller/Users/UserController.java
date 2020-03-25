@@ -5,28 +5,33 @@ import com.edu.fpt.medtest.entity.Notification;
 import com.edu.fpt.medtest.entity.Town;
 import com.edu.fpt.medtest.entity.User;
 import com.edu.fpt.medtest.model.ForgotPasswordModel;
-//import com.edu.fpt.medtest.model.LoginModel;
+import com.edu.fpt.medtest.model.LoginAccountModel;
+import com.edu.fpt.medtest.model.LoginModel;
 import com.edu.fpt.medtest.model.SentMailModel;
 import com.edu.fpt.medtest.repository.DistrictRepository;
 import com.edu.fpt.medtest.repository.TownRepository;
 import com.edu.fpt.medtest.repository.UserRepository;
+import com.edu.fpt.medtest.security.SecurityUtils;
 import com.edu.fpt.medtest.service.MailService;
 import com.edu.fpt.medtest.service.NotificationService;
 import com.edu.fpt.medtest.service.UserService;
 import com.edu.fpt.medtest.utils.ApiResponse;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.MailException;
+import org.springframework.security.crypto.bcrypt.BCrypt;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.NoSuchAlgorithmException;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
-import static com.edu.fpt.medtest.utils.EncodePassword.getSHA;
-import static com.edu.fpt.medtest.utils.EncodePassword.toHexString;
 
 @Service
 @RequestMapping("/users")
@@ -53,22 +58,49 @@ public class UserController {
     @Autowired
     private NotificationService notificationService;
 
+    @Autowired
+    private BCryptPasswordEncoder bCryptPasswordEncoder;
+
     //Login
-    /*@PostMapping("/login")
+    @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginModel loginUser) throws NoSuchAlgorithmException {
-        //boolean login = false;
         boolean existByPhoneNumber = userRepository.existsByPhoneNumber(loginUser.getPhoneNumber());
         if (!existByPhoneNumber == true) {
             return new ResponseEntity<>(new ApiResponse(false, "There is no user with phone number " + loginUser.getPhoneNumber()), HttpStatus.NOT_FOUND);
         }
         User userLogin = userRepository.getUserByPhoneNumber(loginUser.getPhoneNumber());
-        if (!userLogin.getPassword().equals(toHexString(getSHA(loginUser.getPassword())))) {
+        //check password
+        if (!BCrypt.checkpw(loginUser.getPassword(), userLogin.getPassword())) {
             return new ResponseEntity<>(new ApiResponse(false, "Wrong password of user with phone number " + loginUser.getPhoneNumber()), HttpStatus.NOT_FOUND);
         }
-        //User successfulUser = new User();
+        //create BEARER token
+        String token = Jwts.builder()
+                .setSubject(loginUser.getPhoneNumber())
+                .setExpiration(new Date(System.currentTimeMillis() + SecurityUtils.EXPIRATION_TIME))
+                .signWith(SignatureAlgorithm.HS512, SecurityUtils.SECRET.getBytes())
+                .compact();
+
+        //return current user
         User successfulUser = (userRepository.getUserByPhoneNumber(loginUser.getPhoneNumber()));
-        return new ResponseEntity<>(successfulUser, HttpStatus.OK);
-    }*/
+        System.out.println(bCryptPasswordEncoder.encode("4pRxH83y"));
+        LoginAccountModel loginAccountModel = new LoginAccountModel();
+        loginAccountModel.setId(String.valueOf(successfulUser.getId()));
+        loginAccountModel.setName(successfulUser.getName());
+        loginAccountModel.setPhoneNumber(successfulUser.getPhoneNumber());
+        loginAccountModel.setDob(successfulUser.getDob());
+        loginAccountModel.setAddress(successfulUser.getAddress());
+        loginAccountModel.setPassword(successfulUser.getPassword());
+        loginAccountModel.setActive(String.valueOf(successfulUser.getActive()));
+        loginAccountModel.setEmail(successfulUser.getEmail());
+        loginAccountModel.setRole(successfulUser.getRole());
+        loginAccountModel.setGender(String.valueOf(successfulUser.getGender()));
+        loginAccountModel.setImage(successfulUser.getImage());
+        loginAccountModel.setTownCode(successfulUser.getTownCode());
+        loginAccountModel.setDistrictCode(successfulUser.getDistrictCode());
+        loginAccountModel.setToken(token);
+
+        return new ResponseEntity<>(loginAccountModel, HttpStatus.OK);
+    }
 
     // List user with state ACTIVE
     @GetMapping("/list/active")
@@ -118,7 +150,7 @@ public class UserController {
             return new ResponseEntity<>(new ApiResponse(true, "There is no user with id"), HttpStatus.NOT_FOUND);
         }
         getUserById.get().setId(id);
-        getUserById.get().setPassword(toHexString(getSHA("medtest2020")));
+        getUserById.get().setPassword(bCryptPasswordEncoder.encode("medtest2020"));
         userService.resetPassword(getUserById.get());
         return new ResponseEntity<>(
                 new ApiResponse(true, "Reset password for user " + getUserById.get().getName() + "with password: medtest2020"), HttpStatus.OK);
@@ -138,6 +170,7 @@ public class UserController {
         } catch (MailException | NoSuchAlgorithmException mailException) {
             System.out.println(mailException);
         }
+        System.out.println();
         return new ResponseEntity<>(new ApiResponse(true, "New password is sent to your mail"), HttpStatus.OK);
     }
 

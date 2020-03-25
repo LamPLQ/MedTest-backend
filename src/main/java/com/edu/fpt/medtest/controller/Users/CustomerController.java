@@ -12,15 +12,14 @@ import com.edu.fpt.medtest.utils.ApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCrypt;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
-import static com.edu.fpt.medtest.utils.EncodePassword.getSHA;
-import static com.edu.fpt.medtest.utils.EncodePassword.toHexString;
 
 @RestController
 @RequestMapping("/users/customers")
@@ -60,26 +59,24 @@ public class CustomerController {
     @Autowired
     private TestRepository testRepository;
 
+    @Autowired
+    private BCryptPasswordEncoder bCryptPasswordEncoder;
+
     //customer register
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody User customer) throws NoSuchAlgorithmException {
-      /*List<User> users = userService.getListUser();
-        for (User userTrack : users) {
-            if (userTrack.getPhoneNumber().equals(customer.getPhoneNumber())) {
-                return new ResponseEntity<>(new ApiResponse(false, "Phone number is already taken"), HttpStatus.NOT_FOUND);
-            }
-        }*/
         boolean existByPhoneNumber = userRepository.existsByPhoneNumber(customer.getPhoneNumber());
         if (existByPhoneNumber == true) {
             return new ResponseEntity<>(new ApiResponse(false, "Phone number is already taken"), HttpStatus.NOT_FOUND);
         }
+        String enCryptPassword = bCryptPasswordEncoder.encode(customer.getPassword());
         customer.setActive(0);
         customer.setAddress(null);
         customer.setRole("CUSTOMER");
         customer.setImage(customer.getImage());
         customer.setTownCode(null);
         customer.setDistrictCode(null);
-        customer.setPassword(toHexString(getSHA(customer.getPassword())));
+        customer.setPassword(enCryptPassword);
         userService.saveUser(customer);
         return new ResponseEntity<>(new ApiResponse(true, "Successfully registered"), HttpStatus.OK);
     }
@@ -160,11 +157,11 @@ public class CustomerController {
         if (!getCustomer.get().getRole().equals("CUSTOMER")) {
             return new ResponseEntity<>(new ApiResponse(true, "User is not allowed"), HttpStatus.NOT_FOUND);
         }
-        if (!getCustomer.get().getPassword().equals(toHexString(getSHA(changePasswordModel.getOldPassword())))) {
+        if (!BCrypt.checkpw(changePasswordModel.getOldPassword(), getCustomer.get().getPassword())) {
             return new ResponseEntity<>(new ApiResponse(true, "Incorrect current password"), HttpStatus.BAD_REQUEST);
         }
         changePasswordModel.setID(id);
-        getCustomer.get().setPassword(toHexString(getSHA(changePasswordModel.getNewPassword())));
+        getCustomer.get().setPassword(bCryptPasswordEncoder.encode(changePasswordModel.getNewPassword()));
         userService.saveUser(getCustomer.get());
         return new ResponseEntity<>(new ApiResponse(true, "Change password successfully!"), HttpStatus.OK);
     }
