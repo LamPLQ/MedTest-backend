@@ -27,7 +27,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -63,7 +62,7 @@ public class UserController {
 
     //Login
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginModel loginUser) throws NoSuchAlgorithmException {
+    public ResponseEntity<?> login(@RequestBody LoginModel loginUser) {
         boolean existByPhoneNumber = userRepository.existsByPhoneNumber(loginUser.getPhoneNumber());
         if (!existByPhoneNumber == true) {
             return new ResponseEntity<>(new ApiResponse(false, "There is no user with phone number " + loginUser.getPhoneNumber()), HttpStatus.NOT_FOUND);
@@ -144,7 +143,7 @@ public class UserController {
 
     //Reset password for user
     @PostMapping("/reset-password/{id}")
-    public ResponseEntity<?> resetPassword(@PathVariable("id") int id) throws NoSuchAlgorithmException {
+    public ResponseEntity<?> resetPassword(@PathVariable("id") int id) {
         Optional<User> getUserById = userRepository.findById(id);
         if (!getUserById.isPresent()) {
             return new ResponseEntity<>(new ApiResponse(true, "There is no user with id"), HttpStatus.NOT_FOUND);
@@ -167,7 +166,7 @@ public class UserController {
         sentMailModel.setEmail(forgotPasswordUser.getEmail());
         try {
             mailService.sendEmail(sentMailModel);
-        } catch (MailException | NoSuchAlgorithmException mailException) {
+        } catch (MailException mailException) {
             System.out.println(mailException);
         }
         System.out.println();

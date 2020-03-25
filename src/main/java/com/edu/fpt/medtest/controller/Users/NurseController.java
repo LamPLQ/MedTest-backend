@@ -17,7 +17,6 @@ import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -61,7 +60,7 @@ public class NurseController {
 
     //nurse register
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody User nurse) throws NoSuchAlgorithmException {
+    public ResponseEntity<?> register(@RequestBody User nurse) {
         boolean existByPhoneNumber = userRepository.existsByPhoneNumber(nurse.getPhoneNumber());
         if (existByPhoneNumber == true) {
             return new ResponseEntity<>(new ApiResponse(false, "Phone number is already taken"), HttpStatus.NOT_FOUND);
@@ -117,7 +116,7 @@ public class NurseController {
 
     //change Password
     @PostMapping("/change-password/{id}")
-    public ResponseEntity<?> changePassword(@RequestBody ChangePasswordModel changePasswordModel, @PathVariable("id") int id) throws NoSuchAlgorithmException {
+    public ResponseEntity<?> changePassword(@RequestBody ChangePasswordModel changePasswordModel, @PathVariable("id") int id) {
         Optional<User> getNurse = userService.findUserByID(id);
         if (!getNurse.isPresent()) {
             return new ResponseEntity<>(new ApiResponse(true, "User not found"), HttpStatus.NOT_FOUND);

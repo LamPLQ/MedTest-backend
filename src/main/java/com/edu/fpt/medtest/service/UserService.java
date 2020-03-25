@@ -26,5 +26,5 @@ public interface UserService {
 
     List<User> lsUserByTown(String townCode);
 
-    void resetPassword(User user) throws NoSuchAlgorithmException;
+    void resetPassword(User user);
 }

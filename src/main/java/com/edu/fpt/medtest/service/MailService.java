@@ -10,8 +10,6 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.security.NoSuchAlgorithmException;
-
 @Service
 public class MailService {
 
@@ -73,7 +71,7 @@ public class MailService {
      * @throws MailException
      */
 
-    public void sendEmail(SentMailModel user) throws MailException, NoSuchAlgorithmException {
+    public void sendEmail(SentMailModel user) throws MailException {
 
         /*
          * This JavaMailSender Interface is used to send Mail in Spring Boot. This

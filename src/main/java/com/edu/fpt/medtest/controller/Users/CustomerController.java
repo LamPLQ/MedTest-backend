@@ -16,7 +16,6 @@ import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -55,7 +54,6 @@ public class CustomerController {
     @Autowired
     private RequestTestRepository requestTestRepository;
 
-
     @Autowired
     private TestRepository testRepository;
 
@@ -64,7 +62,7 @@ public class CustomerController {
 
     //customer register
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody User customer) throws NoSuchAlgorithmException {
+    public ResponseEntity<?> register(@RequestBody User customer) {
         boolean existByPhoneNumber = userRepository.existsByPhoneNumber(customer.getPhoneNumber());
         if (existByPhoneNumber == true) {
             return new ResponseEntity<>(new ApiResponse(false, "Phone number is already taken"), HttpStatus.NOT_FOUND);
@@ -149,7 +147,7 @@ public class CustomerController {
 
     //change Password
     @PostMapping("/change-password/{id}")
-    public ResponseEntity<?> changePassword(@RequestBody ChangePasswordModel changePasswordModel, @PathVariable("id") int id) throws NoSuchAlgorithmException {
+    public ResponseEntity<?> changePassword(@RequestBody ChangePasswordModel changePasswordModel, @PathVariable("id") int id) {
         Optional<User> getCustomer = userService.findUserByID(id);
         if (!getCustomer.isPresent()) {
             return new ResponseEntity<>(new ApiResponse(true, "User not found"), HttpStatus.NOT_FOUND);

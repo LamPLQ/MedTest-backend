@@ -13,7 +13,6 @@ import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,7 +31,7 @@ public class CoordinatorController {
 
     //coordinator register
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody User coordinator) throws NoSuchAlgorithmException {
+    public ResponseEntity<?> register(@RequestBody User coordinator) {
         boolean existByPhoneNumber = userRepository.existsByPhoneNumber(coordinator.getPhoneNumber());
         if (existByPhoneNumber == true) {
             return new ResponseEntity<>(new ApiResponse(false, "Phone number is already taken"), HttpStatus.NOT_FOUND);
@@ -88,7 +87,7 @@ public class CoordinatorController {
 
     //change Password
     @PostMapping("/change-password/{id}")
-    public ResponseEntity<?> changePassword(@RequestBody ChangePasswordModel changePasswordModel, @PathVariable("id") int id) throws NoSuchAlgorithmException {
+    public ResponseEntity<?> changePassword(@RequestBody ChangePasswordModel changePasswordModel, @PathVariable("id") int id) {
         Optional<User> getCoordinator = userService.findUserByID(id);
         if (!getCoordinator.isPresent()) {
             return new ResponseEntity<>(new ApiResponse(true, "User not found"), HttpStatus.NOT_FOUND);
