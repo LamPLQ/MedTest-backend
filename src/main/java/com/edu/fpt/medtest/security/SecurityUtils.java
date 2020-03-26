@@ -14,9 +14,16 @@ public class SecurityUtils {
     public static final String USER_LOGIN = "/users/login";
     public static final String FORGOT_PASSWORD = "/users/forgot-password";
     public static final String LIST_ARTICLE = "/articles/list";
-    public static final String LIST_TEST = "/test-types/type-test";
+    public static final String LIST_TESTTYPE_TEST = "/test-types/type-test";
+    public static final String LIST_DISTRICT = "/management/districts/list";
+    public static final String DETAIL_DISTRICT= "/management/districts/detail/{id}";
+    public static final String LIST_DISTRICT_TOWN = "/management/districts/district-town-list";
+    public static final String LIST_TOWN = "/management/districts/towns/list";
+    public static final String DETAIL_TOWN = "/management/districts/towns/detail/{id}";
+    public static final String DETAIL_TEST = "/test-types/tests/detail/{id}";
+    public static final String LIST_TEST = "/test-types/tests/list";
+    public static final String DETAIL_ARTICLE = "/articles/detail/{id}";
 
-    //public static final String GET_ALL = "/users/get-all";
 
     public static String generateToken(String username) {
         return Jwts.builder()
