@@ -13,6 +13,8 @@ public class SecurityUtils {
     public static final String SIGN_UP_URL = "/users/customers/register";
     public static final String USER_LOGIN = "/users/login";
     public static final String FORGOT_PASSWORD = "/users/forgot-password";
+    public static final String LIST_ARTICLE = "/articles/list";
+    public static final String LIST_TEST = "/test-types/type-test";
 
     //public static final String GET_ALL = "/users/get-all";
 
