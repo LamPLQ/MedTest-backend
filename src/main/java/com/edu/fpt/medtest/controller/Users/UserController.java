@@ -27,6 +27,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -81,8 +82,7 @@ public class UserController {
 
         //return current user
         User successfulUser = (userRepository.getUserByPhoneNumber(loginUser.getPhoneNumber()));
-        //System.out.println(bCryptPasswordEncoder.encode("4pRxH83y"));
-        LoginAccountModel loginAccountModel = new LoginAccountModel();
+        /*LoginAccountModel loginAccountModel = new LoginAccountModel();
         loginAccountModel.setId(String.valueOf(successfulUser.getId()));
         loginAccountModel.setName(successfulUser.getName());
         loginAccountModel.setPhoneNumber(successfulUser.getPhoneNumber());
@@ -96,9 +96,13 @@ public class UserController {
         loginAccountModel.setImage(successfulUser.getImage());
         loginAccountModel.setTownCode(successfulUser.getTownCode());
         loginAccountModel.setDistrictCode(successfulUser.getDistrictCode());
-        loginAccountModel.setToken(token);
+        loginAccountModel.setToken(token);*/
 
-        return new ResponseEntity<>(loginAccountModel, HttpStatus.OK);
+        ArrayList returnLoginUser = new ArrayList();
+        returnLoginUser.add(successfulUser);
+        returnLoginUser.add(token);
+
+        return new ResponseEntity<>(returnLoginUser, HttpStatus.OK);
     }
 
     // List user with state ACTIVE
