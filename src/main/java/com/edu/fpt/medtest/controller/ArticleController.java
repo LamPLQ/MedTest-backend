@@ -60,12 +60,12 @@ public class ArticleController {
 
     //delete 1 article
     @DeleteMapping(value = "/delete/{id}")
-    public  ResponseEntity deleteArticle(@PathVariable("id") int id){
+    public ResponseEntity deleteArticle(@PathVariable("id") int id) {
         Optional<Article> getArticle = articleService.getArticle(id);
         if (!getArticle.isPresent()) {
             return new ResponseEntity<>(new ApiResponse(true, "Article not found"), HttpStatus.NOT_FOUND);
         }
         articleService.deleteArticle(id);
-        return new ResponseEntity<>(new ApiResponse(true,"Delete article successfully"), HttpStatus.OK);
+        return new ResponseEntity<>(new ApiResponse(true, "Delete article successfully"), HttpStatus.OK);
     }
 }

@@ -5,7 +5,7 @@ import java.util.Date;
 public class CompletedRequestModel extends DetailRequestModel {
     private Date requestAcceptedTime;
 
-    private  Date requestTransportingTime;
+    private Date requestTransportingTime;
 
     public Date getRequestAcceptedTime() {
         return requestAcceptedTime;

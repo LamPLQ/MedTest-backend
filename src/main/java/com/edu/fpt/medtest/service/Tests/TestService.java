@@ -9,6 +9,8 @@ import java.util.Optional;
 @Service
 public interface TestService {
     List<Test> lsTest();
+
     Optional<Test> findTestByID(int testID);
+
     void saveTest(Test test);
 }

@@ -91,10 +91,10 @@ public class AppoinmentController {
     }
 
     @GetMapping(value = "/list/{status}")
-    public ResponseEntity<?> getListAppointmentByStatus(@PathVariable("status") String status){
+    public ResponseEntity<?> getListAppointmentByStatus(@PathVariable("status") String status) {
         List<Appointment> lsAppointByStatus = appointmentService.listAppointmentByStatus(status);
-        if(lsAppointByStatus.isEmpty()){
-            return new ResponseEntity<>(new ApiResponse(true,"No appointment with status" + status),HttpStatus.NOT_FOUND);
+        if (lsAppointByStatus.isEmpty()) {
+            return new ResponseEntity<>(new ApiResponse(true, "No appointment with status" + status), HttpStatus.NOT_FOUND);
         }
         List<UserAppointmentModel> listUserAppoinment = new ArrayList<>();
         for (Appointment appointments : lsAppointByStatus) {
@@ -110,7 +110,7 @@ public class AppoinmentController {
             userAppointmentModel.setAppointment_createdTime(appointments.getCreatedTime());
             listUserAppoinment.add(userAppointmentModel);
         }
-        return new ResponseEntity<>(listUserAppoinment,HttpStatus.OK);
+        return new ResponseEntity<>(listUserAppoinment, HttpStatus.OK);
     }
 
     /*@GetMapping(value = "/list/listStatus/{listStatus}")

@@ -285,20 +285,20 @@ public class RequestController {
 
     //get list result of a request
     @GetMapping("/detail/{id}/result")
-    public ResponseEntity<?> getListResult(@PathVariable("id") int requestID){
+    public ResponseEntity<?> getListResult(@PathVariable("id") int requestID) {
         Optional<Request> request = requestRepository.findById(requestID);
-        if(!request.isPresent()){
-            return new ResponseEntity<>(new ApiResponse(true,"There is no request with ID = " + requestID), HttpStatus.NOT_FOUND);
+        if (!request.isPresent()) {
+            return new ResponseEntity<>(new ApiResponse(true, "There is no request with ID = " + requestID), HttpStatus.NOT_FOUND);
         }
         List<Result> lsResult = resultService.lsResultByRequestID(requestID);
-        if(lsResult.isEmpty()){
+        if (lsResult.isEmpty()) {
             return new ResponseEntity<>(new ApiResponse(true, "No result for this request"), HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<>(lsResult, HttpStatus.OK);
     }
 
     @PostMapping("/detail/{id}/save-result")
-    public ResponseEntity<?> saveResult(@RequestBody Result result, @PathVariable("id") int requestID){
+    public ResponseEntity<?> saveResult(@RequestBody Result result, @PathVariable("id") int requestID) {
         result.setRequestID(requestID);
         resultService.saveResult(result);
         return new ResponseEntity<>(result, HttpStatus.OK);

@@ -8,5 +8,5 @@ import java.util.List;
 
 @Repository
 public interface TownRepository extends JpaRepository<Town, String> {
-     List<Town> getAllByDistrictCode(String districtCode);
+    List<Town> getAllByDistrictCode(String districtCode);
 }

@@ -16,7 +16,7 @@ public class TestTypeServiceImpl implements TestTypeService {
 
     @Override
     public List<TestType> lsTestType() {
-        List<TestType> lsTesttype =  testTypeRepository.findAll();
+        List<TestType> lsTesttype = testTypeRepository.findAll();
         return lsTesttype;
     }
 

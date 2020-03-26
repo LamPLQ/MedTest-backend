@@ -9,5 +9,6 @@ import java.util.List;
 @Repository
 public interface RequestRepository extends JpaRepository<Request, Integer> {
     boolean existsByRequestID(int requestID);
+
     List<Request> getAllByUserIDOrderByCreatedDateDesc(int userID);
 }

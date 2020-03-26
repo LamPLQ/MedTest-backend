@@ -8,5 +8,6 @@ import java.util.List;
 @Service
 public interface RequestTestService {
     void saveRequestTest(RequestTest requestTest);
+
     void saveListRequestTest(List<RequestTest> requestTests);
 }

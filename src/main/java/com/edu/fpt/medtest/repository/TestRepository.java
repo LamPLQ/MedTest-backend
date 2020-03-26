@@ -10,5 +10,6 @@ import java.util.List;
 @Repository
 public interface TestRepository extends JpaRepository<Test, Integer> {
     List<Test> getAllByTestTypeID(int testTypeID);
+
     boolean existsByTestID(int testID);
 }

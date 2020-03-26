@@ -1,11 +1,7 @@
 package com.edu.fpt.medtest.entity;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-
 import javax.persistence.*;
 import java.io.Serializable;
-import java.util.HashSet;
-import java.util.Set;
 
 @Entity
 @Table(name = "test")
@@ -41,6 +37,7 @@ public class Test implements Serializable {
     public int getTestID() {
         return testID;
     }
+
     public void setTestID(int testID) {
         this.testID = testID;
     }

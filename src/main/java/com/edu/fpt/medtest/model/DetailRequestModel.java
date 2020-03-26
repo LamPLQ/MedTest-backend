@@ -46,7 +46,6 @@ public class DetailRequestModel {
     }
 
 
-
     public String getCustomerName() {
         return customerName;
     }
@@ -99,11 +98,17 @@ public class DetailRequestModel {
         return nurseName;
     }
 
-    public void setNurseName(String nurseName) { this.nurseName = nurseName; }
+    public void setNurseName(String nurseName) {
+        this.nurseName = nurseName;
+    }
 
-    public String getCoordinatorName() { return coordinatorName; }
+    public String getCoordinatorName() {
+        return coordinatorName;
+    }
 
-    public void setCoordinatorName(String coordinatorName) { this.coordinatorName = coordinatorName; }
+    public void setCoordinatorName(String coordinatorName) {
+        this.coordinatorName = coordinatorName;
+    }
 
     public String getRequestID() {
         return requestID;

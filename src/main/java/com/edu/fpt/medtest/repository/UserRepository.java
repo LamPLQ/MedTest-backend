@@ -15,7 +15,7 @@ public interface UserRepository extends CrudRepository<User, Integer> {
 
     List<User> findAllByRole(String role);
 
-    List<User> findAllByActive (int active);
+    List<User> findAllByActive(int active);
 
     List<User> findAllByDistrictCode(String districtCode);
 

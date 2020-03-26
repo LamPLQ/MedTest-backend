@@ -7,8 +7,10 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public interface TestTypeService  {
+public interface TestTypeService {
     List<TestType> lsTestType();
+
     Optional<TestType> findTestTypeByID(int testTypeID);
+
     void saveTestType(TestType testType);
 }
