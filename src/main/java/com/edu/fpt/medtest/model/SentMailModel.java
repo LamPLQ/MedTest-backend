@@ -4,7 +4,18 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class SentMailModel {
+    private String phoneNumber;
+
     private String email;
+
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
 
     public String getEmail() {
         return email;

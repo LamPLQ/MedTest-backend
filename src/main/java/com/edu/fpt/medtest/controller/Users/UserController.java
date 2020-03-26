@@ -81,7 +81,7 @@ public class UserController {
 
         //return current user
         User successfulUser = (userRepository.getUserByPhoneNumber(loginUser.getPhoneNumber()));
-        System.out.println(bCryptPasswordEncoder.encode("4pRxH83y"));
+        //System.out.println(bCryptPasswordEncoder.encode("4pRxH83y"));
         LoginAccountModel loginAccountModel = new LoginAccountModel();
         loginAccountModel.setId(String.valueOf(successfulUser.getId()));
         loginAccountModel.setName(successfulUser.getName());
@@ -158,12 +158,16 @@ public class UserController {
     //forgotPassword
     @PostMapping("/forgot-password")
     public ResponseEntity<?> forgotPassword(@RequestBody ForgotPasswordModel forgotPasswordModel) {
-        boolean existPhoneNumber = userRepository.existsByPhoneNumber(forgotPasswordModel.getPhoneNumber());
+        //boolean existPhoneNumber = userRepository.existsByPhoneNumber(forgotPasswordModel.getPhoneNumber());
+        boolean existPhoneNumber = userRepository.existsByPhoneNumberAndRole(forgotPasswordModel.getPhoneNumber(), "CUSTOMER");
         if (!existPhoneNumber == true) {
             return new ResponseEntity<>(new ApiResponse(false, "There is no user with phone number " + forgotPasswordModel.getPhoneNumber()), HttpStatus.NOT_FOUND);
         }
-        User forgotPasswordUser = userRepository.getUserByPhoneNumber(forgotPasswordModel.getPhoneNumber());
+
+        //User forgotPasswordUser = userRepository.getUserByPhoneNumber(forgotPasswordModel.getPhoneNumber());
+        User forgotPasswordUser = userRepository.getUserByPhoneNumberAndRole(forgotPasswordModel.getPhoneNumber(), "CUSTOMER");
         sentMailModel.setEmail(forgotPasswordUser.getEmail());
+        sentMailModel.setPhoneNumber(forgotPasswordUser.getPhoneNumber());
         try {
             mailService.sendEmail(sentMailModel);
         } catch (MailException mailException) {
