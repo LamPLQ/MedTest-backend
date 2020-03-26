@@ -27,7 +27,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -98,11 +97,14 @@ public class UserController {
         loginAccountModel.setDistrictCode(successfulUser.getDistrictCode());
         loginAccountModel.setToken(token);*/
 
-        ArrayList returnLoginUser = new ArrayList();
+        /*ArrayList returnLoginUser = new ArrayList();
         returnLoginUser.add(successfulUser);
-        returnLoginUser.add(token);
+        returnLoginUser.add(token);*/
 
-        return new ResponseEntity<>(returnLoginUser, HttpStatus.OK);
+        LoginAccountModel loginAccountModel = new LoginAccountModel();
+        loginAccountModel.setCustomerInfo(successfulUser);
+        loginAccountModel.setToken(token);
+        return new ResponseEntity<>(loginAccountModel, HttpStatus.OK);
     }
 
     // List user with state ACTIVE

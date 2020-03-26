@@ -1,9 +1,33 @@
 package com.edu.fpt.medtest.model;
 
-import java.util.Date;
+import com.edu.fpt.medtest.entity.User;
 
 public class LoginAccountModel {
-    private String id;
+
+    private User customerInfo;
+
+    private String token;
+
+    public User getCustomerInfo() {
+        return customerInfo;
+    }
+
+    public void setCustomerInfo(User customerInfo) {
+        this.customerInfo = customerInfo;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
+    public LoginAccountModel() {
+    }
+
+    /* private String id;
 
     private String phoneNumber;
 
@@ -146,5 +170,5 @@ public class LoginAccountModel {
 
     public void setDistrictCode(String districtCode) {
         this.districtCode = districtCode;
-    }
+    }*/
 }
