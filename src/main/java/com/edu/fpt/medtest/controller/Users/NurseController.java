@@ -312,13 +312,13 @@ public class NurseController {
                 Request recentRequest = requestRepository.getOne(request.getRequestID());
                 ///////////////////////
                 //customerID
-                detail.setCustomerID(String.valueOf(recentRequest.getUserID()));
+                detail.setCustomerID(String.valueOf(recentRequest.getUserID()));//
                 //customerName
-                detail.setCustomerName(userRepository.findById(recentRequest.getRequestID()).get().getName());
+                detail.setCustomerName(userRepository.findById(recentRequest.getUserID()).get().getName());//
                 //customer phoneNumber
-                detail.setCustomerPhoneNumber(userRepository.findById(recentRequest.getRequestID()).get().getPhoneNumber());
+                detail.setCustomerPhoneNumber(userRepository.findById(recentRequest.getUserID()).get().getPhoneNumber());//
                 //customer DOB
-                detail.setCustomerDOB(userRepository.findById(recentRequest.getRequestID()).get().getDob());
+                detail.setCustomerDOB(userRepository.findById(recentRequest.getUserID()).get().getDob());//
                 //request Address
                 detail.setRequestAddress(recentRequest.getAddress() + " " +
                         townRepository.findById(recentRequest.getTownCode()).get().getTownName() + " " +

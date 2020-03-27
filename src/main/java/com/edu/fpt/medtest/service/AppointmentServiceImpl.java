@@ -38,6 +38,15 @@ public class AppointmentServiceImpl implements AppointmentService {
         appointmentRepository.save(appointmentByID);
     }
 
+    //coordinator accept appointment
+    @Override
+    public void acceptAppointment(Appointment appointment) {
+        Appointment appointmentByID = appointmentRepository.findById(appointment.getID()).get();
+        appointmentByID.setCoordinatorID(appointment.getCoordinatorID());
+        appointmentByID.setStatus(appointment.getStatus());
+        appointmentRepository.save(appointmentByID);
+    }
+
     @Override
     public List<Appointment> listAppointmentByStatus(String status) {
         List<Appointment> lsAppointmentByStatus = appointmentRepository.findAllByStatus(status);

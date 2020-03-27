@@ -1,12 +1,14 @@
 package com.edu.fpt.medtest.controller;
 
+import com.edu.fpt.medtest.entity.Appointment;
+import com.edu.fpt.medtest.entity.Notification;
+import com.edu.fpt.medtest.entity.User;
 import com.edu.fpt.medtest.model.UserAppointmentModel;
 import com.edu.fpt.medtest.repository.UserRepository;
-import com.edu.fpt.medtest.utils.ApiResponse;
-import com.edu.fpt.medtest.entity.Appointment;
-import com.edu.fpt.medtest.entity.User;
 import com.edu.fpt.medtest.service.AppointmentService;
+import com.edu.fpt.medtest.service.NotificationService;
 import com.edu.fpt.medtest.service.UserService;
+import com.edu.fpt.medtest.utils.ApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,6 +31,9 @@ public class AppoinmentController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private NotificationService notificationService;
+
     //list appointment
     @GetMapping("/list")
     public ResponseEntity<?> listAppoinment() {
@@ -42,10 +47,9 @@ public class AppoinmentController {
     //create new appointment
     @PostMapping("/create")
     public ResponseEntity<?> createNewAppointment(@RequestBody Appointment appointment) {
-        List<User> users = userRepository.findAllByRole("COORDINATOR");
         appointment.setNote("");
         appointment.setStatus("pending");
-        appointment.setCoordinatorID(users.get(0).getId());
+        appointment.setCoordinatorID(1);
         appointmentService.saveAppointment(appointment);
         return new ResponseEntity<>(new ApiResponse(true, "Successfully create appointment"), HttpStatus.OK);
     }
@@ -78,7 +82,7 @@ public class AppoinmentController {
         return new ResponseEntity<>(userAppointmentModel, HttpStatus.OK);
     }
 
-    //update appointment
+    //customer update appointment (canceled)
     @PutMapping(value = "/update/{id}")
     public ResponseEntity<?> updateAppointment(@RequestBody Appointment appointment, @PathVariable("id") int id) {
         Optional<Appointment> getAppointment = appointmentService.getAppointmentByID(id);
@@ -87,8 +91,44 @@ public class AppoinmentController {
         }
         appointment.setID(id);
         appointmentService.update(appointment);
+        //Notification
+        Appointment notiAppointment = appointmentService.getAppointmentByID(id).get();
+        Notification notification = new Notification();
+        notification.setAppointmentID(notiAppointment.getID());
+        notification.setType("APPOINTMENT");
+        notification.setIsRead(0);
+        notification.setRequestID(1);
+        notification.setUserID(notiAppointment.getCustomerID());
+        notification.setMessage("Change appointmentID = " + notiAppointment.getID() + "to status = "
+                + notiAppointment.getStatus() + "by UserID = " + notiAppointment.getCustomerID());
+        notificationService.saveNoti(notification);
         return new ResponseEntity<>(new ApiResponse(true, "Update appointment successfully"), HttpStatus.OK);
     }
+
+    //coordinator update appointment (accepted)
+    @PutMapping(value = "/accept/{id}")
+    public ResponseEntity<?> updateAppointmentByCoordinator(@RequestBody Appointment appointment, @PathVariable("id") int id) {
+        Optional<Appointment> getAppointment = appointmentService.getAppointmentByID(id);
+        if (!getAppointment.isPresent()) {
+            return new ResponseEntity<>(new ApiResponse(true, "Appointment not found"), HttpStatus.NOT_FOUND);
+        }
+        appointment.setID(id);
+        appointmentService.acceptAppointment(appointment);
+
+        //Notification
+        Appointment notiAppointment = appointmentService.getAppointmentByID(id).get();
+        Notification notification = new Notification();
+        notification.setAppointmentID(notiAppointment.getID());
+        notification.setType("APPOINTMENT");
+        notification.setIsRead(0);
+        notification.setRequestID(1);
+        notification.setUserID(notiAppointment.getCoordinatorID());
+        notification.setMessage("Change appointmentID = " + notiAppointment.getID() + "to status = "
+                + notiAppointment.getStatus() + "by UserID = " + notiAppointment.getCoordinatorID());
+        notificationService.saveNoti(notification);
+        return new ResponseEntity<>(new ApiResponse(true, "Coordinator accepted request!"), HttpStatus.OK);
+    }
+
 
     @GetMapping(value = "/list/{status}")
     public ResponseEntity<?> getListAppointmentByStatus(@PathVariable("status") String status) {

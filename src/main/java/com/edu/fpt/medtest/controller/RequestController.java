@@ -4,6 +4,7 @@ import com.edu.fpt.medtest.entity.*;
 import com.edu.fpt.medtest.model.DetailRequestModel;
 import com.edu.fpt.medtest.model.RequestModel;
 import com.edu.fpt.medtest.repository.*;
+import com.edu.fpt.medtest.service.NotificationService;
 import com.edu.fpt.medtest.service.Request.RequestHistoryService;
 import com.edu.fpt.medtest.service.Request.RequestService;
 import com.edu.fpt.medtest.service.Request.RequestTestService;
@@ -54,6 +55,9 @@ public class RequestController {
 
     @Autowired
     private ResultService resultService;
+
+    @Autowired
+    private NotificationService notificationService;
 
     @PostMapping("/create")
     public ResponseEntity<?> createNewRequest(@RequestBody RequestModel requestModel) {
@@ -172,6 +176,17 @@ public class RequestController {
         }
         requestHistory.setRequestID(getRequest.get().getRequestID());
         requestHistoryService.save(requestHistory);
+        Notification notification = new Notification();
+        notification.setUserID(requestHistoryRepository.getOne(requestHistory.getRequestHistoryID()).getUserID());
+        notification.setRequestID(ID);
+        notification.setAppointmentID(1);
+        notification.setIsRead(0);
+        notification.setType("REQUEST");
+        notification.setMessage("RequestID = " + ID +
+                + requestHistoryRepository.getOne(requestHistory.getRequestHistoryID()).getRequestHistoryID()
+                + " have changed status into: "
+                + requestHistoryRepository.getOne(requestHistory.getRequestHistoryID()).getStatus() );
+        notificationService.saveNoti(notification);
         return new ResponseEntity<>(requestHistory, HttpStatus.OK);
     }
 
@@ -281,7 +296,6 @@ public class RequestController {
         }
         return new ResponseEntity<>(detailRequestModel, HttpStatus.OK);
     }
-
 
     //get list result of a request
     @GetMapping("/detail/{id}/result")
