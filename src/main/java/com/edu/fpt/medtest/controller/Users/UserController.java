@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.MailException;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -30,6 +31,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -59,53 +61,6 @@ public class UserController {
 
     @Autowired
     private BCryptPasswordEncoder bCryptPasswordEncoder;
-
-    //Login
-    @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginModel loginUser) {
-        boolean existByPhoneNumber = userRepository.existsByPhoneNumber(loginUser.getPhoneNumber());
-        if (!existByPhoneNumber == true) {
-            return new ResponseEntity<>(new ApiResponse(false, "There is no user with phone number " + loginUser.getPhoneNumber()), HttpStatus.NOT_FOUND);
-        }
-        User userLogin = userRepository.getUserByPhoneNumber(loginUser.getPhoneNumber());
-        //check password
-        if (!BCrypt.checkpw(loginUser.getPassword(), userLogin.getPassword())) {
-            return new ResponseEntity<>(new ApiResponse(false, "Wrong password of user with phone number " + loginUser.getPhoneNumber()), HttpStatus.NOT_FOUND);
-        }
-        //create BEARER token
-        String token = Jwts.builder()
-                .setSubject(loginUser.getPhoneNumber())
-                .setExpiration(new Date(System.currentTimeMillis() + SecurityUtils.EXPIRATION_TIME))
-                .signWith(SignatureAlgorithm.HS512, SecurityUtils.SECRET.getBytes())
-                .compact();
-
-        //return current user
-        User successfulUser = (userRepository.getUserByPhoneNumber(loginUser.getPhoneNumber()));
-        /*LoginAccountModel loginAccountModel = new LoginAccountModel();
-        loginAccountModel.setId(String.valueOf(successfulUser.getId()));
-        loginAccountModel.setName(successfulUser.getName());
-        loginAccountModel.setPhoneNumber(successfulUser.getPhoneNumber());
-        loginAccountModel.setDob(successfulUser.getDob());
-        loginAccountModel.setAddress(successfulUser.getAddress());
-        loginAccountModel.setPassword(successfulUser.getPassword());
-        loginAccountModel.setActive(String.valueOf(successfulUser.getActive()));
-        loginAccountModel.setEmail(successfulUser.getEmail());
-        loginAccountModel.setRole(successfulUser.getRole());
-        loginAccountModel.setGender(String.valueOf(successfulUser.getGender()));
-        loginAccountModel.setImage(successfulUser.getImage());
-        loginAccountModel.setTownCode(successfulUser.getTownCode());
-        loginAccountModel.setDistrictCode(successfulUser.getDistrictCode());
-        loginAccountModel.setToken(token);*/
-
-        /*ArrayList returnLoginUser = new ArrayList();
-        returnLoginUser.add(successfulUser);
-        returnLoginUser.add(token);*/
-
-        LoginAccountModel loginAccountModel = new LoginAccountModel();
-        loginAccountModel.setCustomerInfo(successfulUser);
-        loginAccountModel.setToken(token);
-        return new ResponseEntity<>(loginAccountModel, HttpStatus.OK);
-    }
 
     // List user with state ACTIVE
     @GetMapping("/list/active")
@@ -197,7 +152,7 @@ public class UserController {
     @PostMapping("/notifications/create")
     public ResponseEntity<?> createNoti(@RequestBody Notification notification) {
         notificationService.saveNoti(notification);
-        return new ResponseEntity<>(new ApiResponse(true, "Created Notification successdully"), HttpStatus.OK);
+        return new ResponseEntity<>(new ApiResponse(true, "Created Notification successfully"), HttpStatus.OK);
     }
 }
 

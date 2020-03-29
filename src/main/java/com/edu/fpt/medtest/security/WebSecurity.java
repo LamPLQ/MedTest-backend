@@ -38,8 +38,13 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
         log.info("configure request");
         http.cors().and().csrf().disable().authorizeRequests()
                 .antMatchers("/").permitAll()
-                .antMatchers(HttpMethod.POST, SecurityUtils.SIGN_UP_URL).permitAll()
-                .antMatchers(HttpMethod.POST, SecurityUtils.USER_LOGIN).permitAll()
+                //any one can access
+                .antMatchers(HttpMethod.POST, SecurityUtils.CUSTOMER_REGISTER).permitAll()
+                .antMatchers(HttpMethod.POST, SecurityUtils.NURSE_REGISTER).permitAll()
+                .antMatchers(HttpMethod.POST, SecurityUtils.COORDINATOR_REGISTER).permitAll()
+                .antMatchers(HttpMethod.POST, SecurityUtils.CUSTOMER_LOGIN).permitAll()
+                .antMatchers(HttpMethod.POST, SecurityUtils.NURSE_LOGIN).permitAll()
+                .antMatchers(HttpMethod.POST, SecurityUtils.COORDINATOR_LOGIN).permitAll()
                 .antMatchers(HttpMethod.POST, SecurityUtils.FORGOT_PASSWORD).permitAll()
                 .antMatchers(HttpMethod.GET, SecurityUtils.LIST_ARTICLE).permitAll()
                 .antMatchers(HttpMethod.GET, SecurityUtils.LIST_TESTTYPE_TEST).permitAll()
@@ -51,6 +56,10 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.GET, SecurityUtils.DETAIL_TEST).permitAll()
                 .antMatchers(HttpMethod.GET, SecurityUtils.LIST_TEST).permitAll()
                 .antMatchers(HttpMethod.GET, SecurityUtils.DETAIL_ARTICLE).permitAll()
+
+                //////////////for test
+                .antMatchers(HttpMethod.POST, SecurityUtils.UPLOAD_FILE).permitAll()
+                .antMatchers(HttpMethod.GET, SecurityUtils.SAVE_FILE).permitAll()
 
                 .anyRequest().authenticated()
                 .and()

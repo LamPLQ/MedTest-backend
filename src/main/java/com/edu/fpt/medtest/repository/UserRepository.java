@@ -26,4 +26,5 @@ public interface UserRepository extends CrudRepository<User, Integer> {
 
     User getUserByPhoneNumberAndEmailAndRole(String phoneNumber, String email, String role);
 
+
 }

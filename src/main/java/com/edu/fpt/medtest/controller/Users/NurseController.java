@@ -2,14 +2,15 @@ package com.edu.fpt.medtest.controller.Users;
 
 
 import com.edu.fpt.medtest.entity.*;
-import com.edu.fpt.medtest.model.ChangePasswordModel;
-import com.edu.fpt.medtest.model.CompletedRequestModel;
-import com.edu.fpt.medtest.model.DetailRequestModel;
+import com.edu.fpt.medtest.model.*;
 import com.edu.fpt.medtest.repository.*;
+import com.edu.fpt.medtest.security.SecurityUtils;
 import com.edu.fpt.medtest.service.Request.RequestHistoryService;
 import com.edu.fpt.medtest.service.Request.RequestService;
 import com.edu.fpt.medtest.service.UserService;
 import com.edu.fpt.medtest.utils.ApiResponse;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -58,11 +60,39 @@ public class NurseController {
     @Autowired
     private BCryptPasswordEncoder bCryptPasswordEncoder;
 
+    //Login
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody LoginModel loginUser) {
+        boolean existByPhoneNumberAndRole = userRepository.existsByPhoneNumberAndRole(loginUser.getPhoneNumber(),"NURSE");
+        if (!existByPhoneNumberAndRole == true) {
+            return new ResponseEntity<>(new ApiResponse(false, "This user is not available " ), HttpStatus.BAD_REQUEST);
+        }
+        User userLogin = userRepository.getUserByPhoneNumberAndRole(loginUser.getPhoneNumber(),"NURSE");
+        //check password
+        if (!BCrypt.checkpw(loginUser.getPassword(), userLogin.getPassword())) {
+            return new ResponseEntity<>(new ApiResponse(false, "Wrong password of user with phone number " + loginUser.getPhoneNumber()), HttpStatus.BAD_REQUEST);
+        }
+        //create BEARER token
+        String token = Jwts.builder()
+                .setSubject(loginUser.getPhoneNumber())
+                .setExpiration(new Date(System.currentTimeMillis() + SecurityUtils.EXPIRATION_TIME))
+                .signWith(SignatureAlgorithm.HS512, SecurityUtils.SECRET.getBytes())
+                .compact();
+
+        //return current user
+        User successfulUser = (userRepository.getUserByPhoneNumberAndRole(loginUser.getPhoneNumber(),"NURSE"));
+
+        LoginAccountModel loginAccountModel = new LoginAccountModel();
+        loginAccountModel.setCustomerInfo(successfulUser);
+        loginAccountModel.setToken(token);
+        return new ResponseEntity<>(loginAccountModel, HttpStatus.OK);
+    }
+
     //nurse register
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody User nurse) {
-        boolean existByPhoneNumber = userRepository.existsByPhoneNumber(nurse.getPhoneNumber());
-        if (existByPhoneNumber == true) {
+        boolean existByPhoneAndRole = userRepository.existsByPhoneNumberAndRole(nurse.getPhoneNumber(), "NURSE");
+        if (existByPhoneAndRole == true) {
             return new ResponseEntity<>(new ApiResponse(false, "Phone number is already taken"), HttpStatus.NOT_FOUND);
         }
         nurse.setActive(1);

@@ -4,6 +4,7 @@ import com.edu.fpt.medtest.entity.*;
 import com.edu.fpt.medtest.model.DetailRequestModel;
 import com.edu.fpt.medtest.model.RequestModel;
 import com.edu.fpt.medtest.repository.*;
+import com.edu.fpt.medtest.service.FileStorageService;
 import com.edu.fpt.medtest.service.NotificationService;
 import com.edu.fpt.medtest.service.Request.RequestHistoryService;
 import com.edu.fpt.medtest.service.Request.RequestService;
@@ -14,6 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,6 +61,9 @@ public class RequestController {
 
     @Autowired
     private NotificationService notificationService;
+
+    @Autowired
+    private FileStorageService fileStorageService;
 
     @PostMapping("/create")
     public ResponseEntity<?> createNewRequest(@RequestBody RequestModel requestModel) {
@@ -177,7 +183,7 @@ public class RequestController {
         requestHistory.setRequestID(getRequest.get().getRequestID());
         requestHistoryService.save(requestHistory);
         Notification notification = new Notification();
-        notification.setUserID(requestHistoryRepository.getOne(requestHistory.getRequestHistoryID()).getUserID());
+        notification.setUserID(requestRepository.findById(ID).get().getUserID());
         notification.setRequestID(ID);
         notification.setAppointmentID(1);
         notification.setIsRead(0);
@@ -219,6 +225,10 @@ public class RequestController {
             detailRequestModel.setRequestAddress(newCreatedRequest.getAddress() + " " + newCreatedRequestTown.getTownName() + " " + newCreatedRequestDistrict.getDistrictName()); //customer full address
             detailRequestModel.setRequestMeetingTime(newCreatedRequest.getMeetingTime()); //meeting time
             detailRequestModel.setRequestCreatedTime(newCreatedRequest.getCreatedDate()); //created time
+            detailRequestModel.setNurseID("NOT HAVE ANY NURSE YET!");
+            detailRequestModel.setNurseName("NOT HAVE ANY NURSE YET!");
+            detailRequestModel.setCoordinatorID("NOT HAVE ANY COORDINATOR YET!");
+            detailRequestModel.setCoordinatorName("NOT HAVE ANY COORDINATOR YET!");
             detailRequestModel.setRequestStatus("pending"); //status
             //set list selected test
             List<RequestTest> lsRequestTests = requestTestRepository.getAllByRequestID(requestId);
@@ -242,7 +252,8 @@ public class RequestController {
             //get the latest status which status = accepted -> find nurse
             List<RequestHistory> getListRequestAcceptedNurse =
                     requestHistoryRepository.findByRequestIDAndStatusOrderByCreatedTimeDesc(requestHistory.getRequestID(), "accepted");
-            if (getListRequestAcceptedNurse.isEmpty() || requestHistory.getStatus().equals("pending") || requestHistory.getStatus().equals("closed")) {
+            if (getListRequestAcceptedNurse.isEmpty() || requestHistory.getStatus().equals("pending")) {
+                detailRequestModel.setNurseID("NOT HAVE ANY NURSE YET!");
                 detailRequestModel.setNurseName("NOT HAVE ANY NURSE YET!");
             } else {
                 //get nurse ID
@@ -254,8 +265,8 @@ public class RequestController {
             //get the latest status which status = waitingforresult -> find coordinator
             List<RequestHistory> getListRequestAcceptedCoordinator =
                     requestHistoryRepository.findByRequestIDAndStatusOrderByCreatedTimeDesc(requestHistory.getRequestID(), "waitingforresult");
-            if (getListRequestAcceptedCoordinator.isEmpty() || requestHistory.getStatus().equals("pending") || requestHistory.getStatus().equals("closed")) {
-                detailRequestModel.setCoordinatorID("0");
+            if (getListRequestAcceptedCoordinator.isEmpty() || requestHistory.getStatus().equals("pending")) {
+                detailRequestModel.setCoordinatorID("NOT HAVE ANY COORDINATOR YET!");
                 detailRequestModel.setCoordinatorName("NOT HAVE ANY COORDINATOR YET!");
             } else {
                 //get coordinator ID
@@ -311,9 +322,17 @@ public class RequestController {
         return new ResponseEntity<>(lsResult, HttpStatus.OK);
     }
 
+    //save result 1 request
+    //////////////////// get file?
     @PostMapping("/detail/{id}/save-result")
-    public ResponseEntity<?> saveResult(@RequestBody Result result, @PathVariable("id") int requestID) {
+    public ResponseEntity<?> saveResult(@RequestBody Result result, @PathVariable("id") int requestID,@RequestParam("file") MultipartFile file) {
         result.setRequestID(requestID);
+        String fileName = fileStorageService.storeFile(file);
+        String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
+                .path("/saveFile/")
+                .path(fileName)
+                .toUriString();
+        result.setImage(fileDownloadUri);
         resultService.saveResult(result);
         return new ResponseEntity<>(result, HttpStatus.OK);
     }

@@ -3,9 +3,14 @@ package com.edu.fpt.medtest.controller.Users;
 
 import com.edu.fpt.medtest.entity.User;
 import com.edu.fpt.medtest.model.ChangePasswordModel;
+import com.edu.fpt.medtest.model.LoginAccountModel;
+import com.edu.fpt.medtest.model.LoginModel;
 import com.edu.fpt.medtest.repository.UserRepository;
+import com.edu.fpt.medtest.security.SecurityUtils;
 import com.edu.fpt.medtest.service.UserService;
 import com.edu.fpt.medtest.utils.ApiResponse;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +18,7 @@ import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,11 +35,39 @@ public class CoordinatorController {
     @Autowired
     private BCryptPasswordEncoder bCryptPasswordEncoder;
 
+    //Login
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody LoginModel loginUser) {
+        boolean existByPhoneNumberAndRole = userRepository.existsByPhoneNumberAndRole(loginUser.getPhoneNumber(),"COORDINATOR");
+        if (!existByPhoneNumberAndRole == true) {
+            return new ResponseEntity<>(new ApiResponse(false, "This user is not available " ), HttpStatus.BAD_REQUEST);
+        }
+        User userLogin = userRepository.getUserByPhoneNumberAndRole(loginUser.getPhoneNumber(),"COORDINATOR");
+        //check password
+        if (!BCrypt.checkpw(loginUser.getPassword(), userLogin.getPassword())) {
+            return new ResponseEntity<>(new ApiResponse(false, "Wrong password of user with phone number " + loginUser.getPhoneNumber()), HttpStatus.BAD_REQUEST);
+        }
+        //create BEARER token
+        String token = Jwts.builder()
+                .setSubject(loginUser.getPhoneNumber())
+                .setExpiration(new Date(System.currentTimeMillis() + SecurityUtils.EXPIRATION_TIME))
+                .signWith(SignatureAlgorithm.HS512, SecurityUtils.SECRET.getBytes())
+                .compact();
+
+        //return current user
+        User successfulUser = (userRepository.getUserByPhoneNumberAndRole(loginUser.getPhoneNumber(),"COORDINATOR"));
+
+        LoginAccountModel loginAccountModel = new LoginAccountModel();
+        loginAccountModel.setCustomerInfo(successfulUser);
+        loginAccountModel.setToken(token);
+        return new ResponseEntity<>(loginAccountModel, HttpStatus.OK);
+    }
+
     //coordinator register
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody User coordinator) {
-        boolean existByPhoneNumber = userRepository.existsByPhoneNumber(coordinator.getPhoneNumber());
-        if (existByPhoneNumber == true) {
+        boolean existByPhoneAndRole = userRepository.existsByPhoneNumberAndRole(coordinator.getPhoneNumber(), "COORDINATOR");
+        if (existByPhoneAndRole == true) {
             return new ResponseEntity<>(new ApiResponse(false, "Phone number is already taken"), HttpStatus.NOT_FOUND);
         }
         coordinator.setActive(1);
