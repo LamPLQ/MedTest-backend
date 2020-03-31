@@ -65,14 +65,14 @@ public class CustomerController {
     //Login
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginModel loginUser) {
-        boolean existByPhoneNumberAndRole = userRepository.existsByPhoneNumberAndRole(loginUser.getPhoneNumber(),"CUSTOMER");
+        boolean existByPhoneNumberAndRole = userRepository.existsByPhoneNumberAndRole(loginUser.getPhoneNumber(),loginUser.getRole());
         if (!existByPhoneNumberAndRole == true) {
-            return new ResponseEntity<>(new ApiResponse(false, "This user is not available " ), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(new ApiResponse(true, "Người dùng không tồn tại!" ), HttpStatus.OK);
         }
-        User userLogin = userRepository.getUserByPhoneNumberAndRole(loginUser.getPhoneNumber(),"CUSTOMER");
+        User userLogin = userRepository.getUserByPhoneNumberAndRole(loginUser.getPhoneNumber(),loginUser.getRole());
         //check password
         if (!BCrypt.checkpw(loginUser.getPassword(), userLogin.getPassword())) {
-            return new ResponseEntity<>(new ApiResponse(false, "Wrong password of user with phone number " + loginUser.getPhoneNumber()), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(new ApiResponse(true, "Sai mật khẩu!"), HttpStatus.OK);
         }
         //create BEARER token
         String token = Jwts.builder()
@@ -82,8 +82,7 @@ public class CustomerController {
                 .compact();
 
         //return current user
-        User successfulUser = (userRepository.getUserByPhoneNumberAndRole(loginUser.getPhoneNumber(),"CUSTOMER"));
-
+        User successfulUser = (userRepository.getUserByPhoneNumberAndRole(loginUser.getPhoneNumber(),loginUser.getRole()));
         LoginAccountModel loginAccountModel = new LoginAccountModel();
         loginAccountModel.setCustomerInfo(successfulUser);
         loginAccountModel.setToken(token);

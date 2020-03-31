@@ -12,7 +12,9 @@ public interface TownService {
 
     List<Town> listTown();
 
-    void deleteTown(String TownCode);
+    //void deleteTown(String TownCode);
 
     Optional<Town> getTownByCode(String townCode);
+
+    List<Town> getAllByDistrictCode(String districtCode);
 }

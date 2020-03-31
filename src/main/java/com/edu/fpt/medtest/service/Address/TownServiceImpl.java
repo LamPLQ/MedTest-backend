@@ -25,15 +25,21 @@ public class TownServiceImpl implements TownService {
         return townRepository.findAll();
     }
 
-    @Override
+    /*@Override
     public void deleteTown(String TownCode) {
         townRepository.deleteById(TownCode);
-    }
+    }*/
 
     @Override
     public Optional<Town> getTownByCode(String townCode) {
         Optional<Town> getTownByCode = townRepository.findById(townCode);
         return getTownByCode;
+    }
+
+    @Override
+    public List<Town> getAllByDistrictCode(String districtCode) {
+        List<Town> lsAllByDistrictCode = townRepository.getAllByDistrictCode(districtCode);
+        return lsAllByDistrictCode;
     }
 
 

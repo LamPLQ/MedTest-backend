@@ -6,13 +6,19 @@ public class LoginModel {
 
     private String password;
 
+    private String role;
+
 
     public LoginModel() {
     }
 
-    public LoginModel(String phoneNumber, String password) {
-        this.phoneNumber = phoneNumber;
-        this.password = password;
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
     }
 
 
