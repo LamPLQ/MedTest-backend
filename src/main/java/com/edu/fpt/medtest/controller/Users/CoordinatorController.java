@@ -67,7 +67,7 @@ public class CoordinatorController {
     public ResponseEntity<?> register(@RequestBody User coordinator) {
         boolean existByPhoneAndRole = userRepository.existsByPhoneNumberAndRole(coordinator.getPhoneNumber(), "COORDINATOR");
         if (existByPhoneAndRole == true) {
-            return new ResponseEntity<>(new ApiResponse(false, "Phone number is already taken"), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(new ApiResponse(true, "Số điện thoại đã tồn tại"), HttpStatus.OK);
         }
         coordinator.setActive(1);
         coordinator.setAddress(null);
@@ -77,7 +77,7 @@ public class CoordinatorController {
         coordinator.setDistrictCode(null);
         coordinator.setPassword(bCryptPasswordEncoder.encode(coordinator.getPassword()));
         userService.saveUser(coordinator);
-        return new ResponseEntity<>(new ApiResponse(true, "Successfully registered"), HttpStatus.OK);
+        return new ResponseEntity<>(new ApiResponse(true, "Đã đăng kí thành công"), HttpStatus.OK);
     }
 
     //list all coordinators
@@ -93,47 +93,39 @@ public class CoordinatorController {
     //get coordinators - view detail info
     @GetMapping("/detail/{id}")
     public ResponseEntity<?> getUser(@PathVariable("id") int id) {
-        Optional<User> getUser = userService.findUserByID(id);
-        if (!getUser.isPresent()) {
-            return new ResponseEntity<>(new ApiResponse(true, "Coordinator not found"), HttpStatus.NOT_FOUND);
+        Optional<User> getCoordinator = userRepository.getUserByIdAndRole(id, "COORDINATOR");
+        if (!getCoordinator.isPresent()) {
+            return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy người dùng!"), HttpStatus.OK);
         }
-        if (!getUser.get().getRole().equals("COORDINATOR")) {
-            return new ResponseEntity<>(new ApiResponse(true, "User is not allowed"), HttpStatus.NOT_FOUND);
-        }
-        return new ResponseEntity<>(getUser, HttpStatus.OK);
+        return new ResponseEntity<>(getCoordinator, HttpStatus.OK);
     }
 
     //update coordinator info
     @PutMapping("/detail/update/{id}")
     public ResponseEntity<?> updateUser(@RequestBody User coordinator, @PathVariable("id") int id) {
-        Optional<User> getUser = userService.findUserByID(id);
-        if (!getUser.isPresent()) {
-            return new ResponseEntity<>(new ApiResponse(true, "Coordinator not found"), HttpStatus.NOT_FOUND);
-        }
-        if (!getUser.get().getRole().equals("COORDINATOR")) {
-            return new ResponseEntity<>(new ApiResponse(true, "User is not allowed"), HttpStatus.NOT_FOUND);
+        Optional<User> getCoordinator = userRepository.getUserByIdAndRole(id, "COORDINATOR");
+        if (!getCoordinator.isPresent()) {
+            return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy người dùng!"), HttpStatus.OK);
         }
         coordinator.setId(id);
         userService.update(coordinator);
-        return new ResponseEntity<>(new ApiResponse(true, "Update coordinator successfully"), HttpStatus.OK);
+        return new ResponseEntity<>(getCoordinator, HttpStatus.OK);
     }
 
     //change Password
     @PostMapping("/change-password/{id}")
     public ResponseEntity<?> changePassword(@RequestBody ChangePasswordModel changePasswordModel, @PathVariable("id") int id) {
-        Optional<User> getCoordinator = userService.findUserByID(id);
-        if (!getCoordinator.isPresent()) {
-            return new ResponseEntity<>(new ApiResponse(true, "User not found"), HttpStatus.NOT_FOUND);
+        Optional<User> getCustomer = userRepository.getUserByIdAndRole(id, "COORDINATOR");
+        if (!getCustomer.isPresent()) {
+            return new ResponseEntity<>(new ApiResponse(true, "Người dùng không tồn tại!"), HttpStatus.OK);
         }
-        if (!getCoordinator.get().getRole().equals("COORDINATOR")) {
-            return new ResponseEntity<>(new ApiResponse(true, "User is not allowed"), HttpStatus.NOT_FOUND);
-        }
-        if (!BCrypt.checkpw(changePasswordModel.getOldPassword(), getCoordinator.get().getPassword())) {
-            return new ResponseEntity<>(new ApiResponse(true, "Incorrect current password"), HttpStatus.BAD_REQUEST);
+        if (!BCrypt.checkpw(changePasswordModel.getOldPassword(), getCustomer.get().getPassword())) {
+            return new ResponseEntity<>(new ApiResponse(true, "Mật khẩu hiện tại không đúng!"), HttpStatus.OK);
         }
         changePasswordModel.setID(id);
-        getCoordinator.get().setPassword(bCryptPasswordEncoder.encode(changePasswordModel.getNewPassword()));
-        userService.saveUser(getCoordinator.get());
-        return new ResponseEntity<>(new ApiResponse(true, "Change password successfully!"), HttpStatus.OK);
+        getCustomer.get().setPassword(bCryptPasswordEncoder.encode(changePasswordModel.getNewPassword()));
+        userService.saveUser(getCustomer.get());
+        return new ResponseEntity<>(new ApiResponse(true, "Thay đổi mật khẩu thành công!"), HttpStatus.OK);
     }
+
 }

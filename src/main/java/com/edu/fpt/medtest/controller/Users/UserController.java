@@ -5,33 +5,24 @@ import com.edu.fpt.medtest.entity.Notification;
 import com.edu.fpt.medtest.entity.Town;
 import com.edu.fpt.medtest.entity.User;
 import com.edu.fpt.medtest.model.ForgotPasswordModel;
-import com.edu.fpt.medtest.model.LoginAccountModel;
-import com.edu.fpt.medtest.model.LoginModel;
 import com.edu.fpt.medtest.model.SentMailModel;
 import com.edu.fpt.medtest.repository.DistrictRepository;
 import com.edu.fpt.medtest.repository.TownRepository;
 import com.edu.fpt.medtest.repository.UserRepository;
-import com.edu.fpt.medtest.security.SecurityUtils;
 import com.edu.fpt.medtest.service.MailService;
 import com.edu.fpt.medtest.service.NotificationService;
 import com.edu.fpt.medtest.service.UserService;
 import com.edu.fpt.medtest.utils.ApiResponse;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.MailException;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 
 @Service
@@ -119,13 +110,10 @@ public class UserController {
     //forgotPassword
     @PostMapping("/forgot-password")
     public ResponseEntity<?> forgotPassword(@RequestBody ForgotPasswordModel forgotPasswordModel) {
-        //boolean existPhoneNumber = userRepository.existsByPhoneNumber(forgotPasswordModel.getPhoneNumber());
         boolean existPhoneNumber = userRepository.existsByPhoneNumberAndRole(forgotPasswordModel.getPhoneNumber(), "CUSTOMER");
         if (!existPhoneNumber == true) {
-            return new ResponseEntity<>(new ApiResponse(false, "There is no user with phone number " + forgotPasswordModel.getPhoneNumber()), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy số điện thoại đã nhập!"), HttpStatus.OK);
         }
-
-        //User forgotPasswordUser = userRepository.getUserByPhoneNumber(forgotPasswordModel.getPhoneNumber());
         User forgotPasswordUser = userRepository.getUserByPhoneNumberAndRole(forgotPasswordModel.getPhoneNumber(), "CUSTOMER");
         sentMailModel.setEmail(forgotPasswordUser.getEmail());
         sentMailModel.setPhoneNumber(forgotPasswordUser.getPhoneNumber());
@@ -134,8 +122,7 @@ public class UserController {
         } catch (MailException mailException) {
             System.out.println(mailException);
         }
-        System.out.println();
-        return new ResponseEntity<>(new ApiResponse(true, "New password is sent to your mail"), HttpStatus.OK);
+        return new ResponseEntity<>(new ApiResponse(true, "Mật khẩu mới đã được gửi đến email bạn đã đăng kí!"), HttpStatus.OK);
     }
 
     //list notification for user

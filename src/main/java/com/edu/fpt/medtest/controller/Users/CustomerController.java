@@ -94,10 +94,10 @@ public class CustomerController {
     public ResponseEntity<?> register(@RequestBody User customer) {
         boolean existByPhoneAndRole = userRepository.existsByPhoneNumberAndRole(customer.getPhoneNumber(), "CUSTOMER");
         if (existByPhoneAndRole == true) {
-            return new ResponseEntity<>(new ApiResponse(false, "Phone number is already taken"), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(new ApiResponse(true, "Số điện thoại đã tồn tại!"), HttpStatus.OK);
         }
         String enCryptPassword = bCryptPasswordEncoder.encode(customer.getPassword());
-        customer.setActive(0);
+        customer.setActive(1);
         customer.setAddress(null);
         customer.setRole("CUSTOMER");
         customer.setImage(customer.getImage());
@@ -106,7 +106,7 @@ public class CustomerController {
         customer.setPassword(enCryptPassword);
         userService.saveUser(customer);
 
-        return new ResponseEntity<>(new ApiResponse(true, "Successfully registered"), HttpStatus.OK);
+        return new ResponseEntity<>(new ApiResponse(true, "Đã đăng kí thành công!"), HttpStatus.OK);
     }
 
     //list all customer
@@ -123,29 +123,23 @@ public class CustomerController {
     //get customer - view detail info
     @GetMapping("/detail/{id}")
     public ResponseEntity<?> getUser(@PathVariable("id") int id) {
-        Optional<User> getUser = userService.findUserByID(id);
-        if (!getUser.isPresent()) {
-            return new ResponseEntity<>(new ApiResponse(true, "User not found"), HttpStatus.NOT_FOUND);
+        Optional<User> getCustomer = userRepository.getUserByIdAndRole(id, "CUSTOMER");
+        if (!getCustomer.isPresent()) {
+            return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy người dùng!"), HttpStatus.OK);
         }
-        if (!getUser.get().getRole().equals("CUSTOMER")) {
-            return new ResponseEntity<>(new ApiResponse(true, "User is not allowed"), HttpStatus.NOT_FOUND);
-        }
-        return new ResponseEntity<>(getUser, HttpStatus.OK);
+        return new ResponseEntity<>(getCustomer, HttpStatus.OK);
     }
 
     //update customer info
     @PutMapping("/detail/update/{id}")
     public ResponseEntity<?> updateUser(@RequestBody User customer, @PathVariable("id") int id) {
-        Optional<User> getUser = userService.findUserByID(id);
-        if (!getUser.isPresent()) {
-            return new ResponseEntity<>(new ApiResponse(true, "User not found"), HttpStatus.NOT_FOUND);
-        }
-        if (!getUser.get().getRole().equals("CUSTOMER")) {
-            return new ResponseEntity<>(new ApiResponse(true, "User is not allowed"), HttpStatus.NOT_FOUND);
+        Optional<User> getCustomer = userRepository.getUserByIdAndRole(id, "CUSTOMER");
+        if (!getCustomer.isPresent()) {
+            return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy người dùng!"), HttpStatus.OK);
         }
         customer.setId(id);
         userService.update(customer);
-        return new ResponseEntity<>(getUser, HttpStatus.OK);
+        return new ResponseEntity<>(getCustomer, HttpStatus.OK);
     }
 
     //view list appointment theo 1 customer
@@ -178,20 +172,17 @@ public class CustomerController {
     //change Password
     @PostMapping("/change-password/{id}")
     public ResponseEntity<?> changePassword(@RequestBody ChangePasswordModel changePasswordModel, @PathVariable("id") int id) {
-        Optional<User> getCustomer = userService.findUserByID(id);
+        Optional<User> getCustomer = userRepository.getUserByIdAndRole(id, "CUSTOMER");
         if (!getCustomer.isPresent()) {
-            return new ResponseEntity<>(new ApiResponse(true, "User not found"), HttpStatus.NOT_FOUND);
-        }
-        if (!getCustomer.get().getRole().equals("CUSTOMER")) {
-            return new ResponseEntity<>(new ApiResponse(true, "User is not allowed"), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(new ApiResponse(true, "Người dùng không tồn tại!"), HttpStatus.OK);
         }
         if (!BCrypt.checkpw(changePasswordModel.getOldPassword(), getCustomer.get().getPassword())) {
-            return new ResponseEntity<>(new ApiResponse(true, "Incorrect current password"), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(new ApiResponse(true, "Mật khẩu hiện tại không đúng!"), HttpStatus.OK);
         }
         changePasswordModel.setID(id);
         getCustomer.get().setPassword(bCryptPasswordEncoder.encode(changePasswordModel.getNewPassword()));
         userService.saveUser(getCustomer.get());
-        return new ResponseEntity<>(new ApiResponse(true, "Change password successfully!"), HttpStatus.OK);
+        return new ResponseEntity<>(new ApiResponse(true, "Thay đổi mật khẩu thành công!"), HttpStatus.OK);
     }
 
     //list request of customer

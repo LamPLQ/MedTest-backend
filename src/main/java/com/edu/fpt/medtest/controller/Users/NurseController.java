@@ -92,7 +92,7 @@ public class NurseController {
     public ResponseEntity<?> register(@RequestBody User nurse) {
         boolean existByPhoneAndRole = userRepository.existsByPhoneNumberAndRole(nurse.getPhoneNumber(), "NURSE");
         if (existByPhoneAndRole == true) {
-            return new ResponseEntity<>(new ApiResponse(false, "Phone number is already taken"), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(new ApiResponse(true, "Số điện thoại đã tồn tại!"), HttpStatus.OK);
         }
         nurse.setActive(1);
         nurse.setAddress(null);
@@ -102,7 +102,7 @@ public class NurseController {
         nurse.setDistrictCode(null);
         nurse.setPassword(bCryptPasswordEncoder.encode(nurse.getPassword()));
         userService.saveUser(nurse);
-        return new ResponseEntity<>(new ApiResponse(true, "Successfully registered"), HttpStatus.OK);
+        return new ResponseEntity<>(new ApiResponse(true, "Đã đăng kí thành công!"), HttpStatus.OK);
     }
 
     //list all nurse
@@ -118,48 +118,39 @@ public class NurseController {
     //get nurse - view detail info
     @GetMapping("/detail/{id}")
     public ResponseEntity<?> getUser(@PathVariable("id") int id) {
-        Optional<User> getUser = userService.findUserByID(id);
-        if (!getUser.isPresent()) {
-            return new ResponseEntity<>(new ApiResponse(true, "User not found"), HttpStatus.NOT_FOUND);
+        Optional<User> getNurse = userRepository.getUserByIdAndRole(id, "NURSE");
+        if (!getNurse.isPresent()) {
+            return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy người dùng!"), HttpStatus.OK);
         }
-        if (!getUser.get().getRole().equals("NURSE")) {
-            return new ResponseEntity<>(new ApiResponse(true, "User is not allowed"), HttpStatus.NOT_FOUND);
-        }
-        return new ResponseEntity<>(getUser, HttpStatus.OK);
+        return new ResponseEntity<>(getNurse, HttpStatus.OK);
     }
 
     //update nurse info
     @PutMapping("/detail/update/{id}")
     public ResponseEntity<?> updateUser(@RequestBody User nurse, @PathVariable("id") int id) {
-        Optional<User> getUser = userService.findUserByID(id);
-        if (!getUser.isPresent()) {
-            return new ResponseEntity<>(new ApiResponse(true, "Nurse not found"), HttpStatus.NOT_FOUND);
-        }
-        if (!getUser.get().getRole().equals("NURSE")) {
-            return new ResponseEntity<>(new ApiResponse(true, "User is not allowed"), HttpStatus.NOT_FOUND);
+        Optional<User> getNurse = userRepository.getUserByIdAndRole(id, "NURSE");
+        if (!getNurse.isPresent()) {
+            return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy người dùng!"), HttpStatus.OK);
         }
         nurse.setId(id);
         userService.update(nurse);
-        return new ResponseEntity<>(new ApiResponse(true, "Update nurse successfully"), HttpStatus.OK);
+        return new ResponseEntity<>(getNurse, HttpStatus.OK);
     }
 
     //change Password
     @PostMapping("/change-password/{id}")
     public ResponseEntity<?> changePassword(@RequestBody ChangePasswordModel changePasswordModel, @PathVariable("id") int id) {
-        Optional<User> getNurse = userService.findUserByID(id);
-        if (!getNurse.isPresent()) {
-            return new ResponseEntity<>(new ApiResponse(true, "User not found"), HttpStatus.NOT_FOUND);
+        Optional<User> getCustomer = userRepository.getUserByIdAndRole(id, "NURSE");
+        if (!getCustomer.isPresent()) {
+            return new ResponseEntity<>(new ApiResponse(true, "Người dùng không tồn tại!"), HttpStatus.OK);
         }
-        if (!getNurse.get().getRole().equals("NURSE")) {
-            return new ResponseEntity<>(new ApiResponse(true, "User is not allowed"), HttpStatus.NOT_FOUND);
-        }
-        if (!BCrypt.checkpw(changePasswordModel.getOldPassword(), getNurse.get().getPassword())) {
-            return new ResponseEntity<>(new ApiResponse(true, "Incorrect current password"), HttpStatus.BAD_REQUEST);
+        if (!BCrypt.checkpw(changePasswordModel.getOldPassword(), getCustomer.get().getPassword())) {
+            return new ResponseEntity<>(new ApiResponse(true, "Mật khẩu hiện tại không đúng!"), HttpStatus.OK);
         }
         changePasswordModel.setID(id);
-        getNurse.get().setPassword(bCryptPasswordEncoder.encode(changePasswordModel.getNewPassword()));
-        userService.saveUser(getNurse.get());
-        return new ResponseEntity<>(new ApiResponse(true, "Change password successfully!"), HttpStatus.OK);
+        getCustomer.get().setPassword(bCryptPasswordEncoder.encode(changePasswordModel.getNewPassword()));
+        userService.saveUser(getCustomer.get());
+        return new ResponseEntity<>(new ApiResponse(true, "Thay đổi mật khẩu thành công!"), HttpStatus.OK);
     }
 
     //Screen "Tìm đơn xét nghiệm"
