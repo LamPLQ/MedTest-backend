@@ -180,20 +180,54 @@ public class RequestController {
     public ResponseEntity<?> updateRequestStatus(@RequestBody RequestHistory requestHistory, @PathVariable("id") int ID) {
         Optional<Request> getRequest = requestRepository.findById(ID);
         if (!getRequest.isPresent()) {
-            return new ResponseEntity<>(new ApiResponse(true, "Cannot find this request"), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy yêu cầu mã ID = " + ID), HttpStatus.OK);
         }
         requestHistory.setRequestID(getRequest.get().getRequestID());
         requestHistoryService.save(requestHistory);
+
         Notification notification = new Notification();
-        notification.setUserID(requestRepository.findById(ID).get().getUserID());
+        notification.setUserID(getRequest.get().getUserID());
         notification.setRequestID(ID);
         notification.setAppointmentID(1);
         notification.setIsRead(0);
         notification.setType("REQUEST");
-        notification.setMessage("RequestID = " + ID +
-                +requestHistoryRepository.getOne(requestHistory.getRequestHistoryID()).getRequestHistoryID()
-                + " have changed status into: "
-                + requestHistoryRepository.getOne(requestHistory.getRequestHistoryID()).getStatus());
+        //set message of notification
+        String status = requestHistory.getStatus();
+        switch (status) {
+            case "accepted":
+                notification.setMessage("Y tá " + userRepository.findById(requestHistory.getUserID()).get().getName() + " đã nhận đơn xét nghiệm mã ID = " + ID + ". Trạng thái đơn hiện tại: Đang đợi lấy mẫu.");
+                break;
+            case "transporting":
+                notification.setMessage("Y tá" + userRepository.findById(requestHistory.getUserID()).get().getName() + " đã hoàn thành lấy mẫu xét nghiệm mã ID = " + ID + ". Trạng thái đơn hiện tại: Đang vận chuyển.");
+                break;
+            case "waitingforresult":
+                notification.setMessage("Điều phối viên " + userRepository.findById(requestHistory.getUserID()).get().getName() + " đã tiếp nhận mẫu xét nghiệm mã ID = " + ID + ". Trạng thái đơn hiện tại: Đang đợi kết quả");
+                Notification notiForNurse = new Notification();
+                RequestHistory requestOfNurse = requestHistoryRepository.findAllByRequestIDOrderByCreatedTimeDesc(ID).get(1);
+                notiForNurse.setUserID(requestOfNurse.getUserID());
+                notiForNurse.setRequestID(requestOfNurse.getRequestID());
+                notiForNurse.setAppointmentID(1);
+                notiForNurse.setIsRead(0);
+                notiForNurse.setType("REQUEST");
+                notiForNurse.setMessage("Điều phối viên " + userRepository.findById(requestHistory.getUserID()).get().getName() + " đã tiếp nhận mẫu xét nghiệm mã ID = " + ID + " từ y tá "
+                        + userRepository.findById(requestOfNurse.getUserID()).get().getName());
+                notificationService.saveNoti(notiForNurse);
+                break;
+            case "closed":
+                notification.setMessage("Đã hoàn thành kết quả cho mẫu xét nghiệm ID = " + ID + ". Trạng thái đơn hiện tại: Đã xong.");
+                break;
+            case "pending":
+                notification.setMessage("Mẫu xét nghiệm mã ID = " + ID + " đang đợi y tá nhận đơn. Trạng thái đơn hiện tại: Đang đợi y tá nhận đơn.");
+                break;
+            case "lostsample":
+                notification.setMessage("Mẫu xét nghiệm mã ID = " + ID + " sẽ được lấy lại do lỗi từ y tá " + userRepository.findById(requestHistory.getUserID()).get().getName()
+                        + ". Chân thành xin lỗi quý khách! Trạng thái đơn hiện tại: Đang đợi lấy lại mẫu.");
+                break;
+            case "coordinatorlostsample":
+                notification.setMessage("Mẫu xét nghiệm mã ID = " + ID + " sẽ được lấy lại do sơ xuất của điều phối viên. Chân thành xin lỗi quý khách! Trạng thái đơn hiện tại: Đang đợi y tá nhận đơn.");
+                break;
+        }
+        //
         notificationService.saveNoti(notification);
         return new ResponseEntity<>(requestHistory, HttpStatus.OK);
     }

@@ -16,6 +16,7 @@ public class Notification implements Serializable {
 
     @Id
     @Column(name = "ID")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int ID;
 
     @Column(name = "CreatedTime")
