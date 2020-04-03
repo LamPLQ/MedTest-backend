@@ -79,13 +79,16 @@ public class RequestController {
         List<String> selectedTests = requestModel.getSelectedTest();
         int selectedTestID;
         List<Integer> listSelectedTestID = new ArrayList<>();
+        if (selectedTests.size() == 0) {
+            return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy danh sách yêu cầu xét nghiệm!"), HttpStatus.OK);
+        }
         for (String selectedTest : selectedTests) {
             selectedTestID = Integer.parseInt(selectedTest);
             boolean existedTest = testRepository.existsByTestID(selectedTestID);
             if (existedTest == true) {
                 listSelectedTestID.add(selectedTestID);
             } else {
-                return new ResponseEntity<>(new ApiResponse(true, "Not found this test"), HttpStatus.NOT_FOUND);
+                return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy yêu cầu xét nghiệm!"), HttpStatus.OK);
             }
         }
 
@@ -98,7 +101,7 @@ public class RequestController {
             requestTest.setTestID(selectingTestID);
             lsRequestTest.add(requestTest);
         }
-        System.out.println(lsRequestTest);
+        //System.out.println(lsRequestTest);
         requestTestService.saveListRequestTest(lsRequestTest);
 
         //get list chosen test
@@ -109,8 +112,7 @@ public class RequestController {
             testAmount += testRepository.findById(requestTest.getTestID()).get().getPrice();
             lsChosenTest.add(chosenTest);
         }
-        System.out.println(lsChosenTest);
-
+        //System.out.println(lsChosenTest);
 
         //return detail
         DetailRequestModel detailRequestModel = new DetailRequestModel();
@@ -189,9 +191,9 @@ public class RequestController {
         notification.setIsRead(0);
         notification.setType("REQUEST");
         notification.setMessage("RequestID = " + ID +
-                + requestHistoryRepository.getOne(requestHistory.getRequestHistoryID()).getRequestHistoryID()
+                +requestHistoryRepository.getOne(requestHistory.getRequestHistoryID()).getRequestHistoryID()
                 + " have changed status into: "
-                + requestHistoryRepository.getOne(requestHistory.getRequestHistoryID()).getStatus() );
+                + requestHistoryRepository.getOne(requestHistory.getRequestHistoryID()).getStatus());
         notificationService.saveNoti(notification);
         return new ResponseEntity<>(requestHistory, HttpStatus.OK);
     }
@@ -205,7 +207,7 @@ public class RequestController {
         //Check if request existed
         boolean existedRequest = requestRepository.existsByRequestID(requestId);
         if (existedRequest == false) {
-            return new ResponseEntity<>(new ApiResponse(true, "There is no request with ID = " + requestId), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(new ApiResponse(true, "Không có yêu cầu với mã ID = " + requestId), HttpStatus.OK);
         }
 
         //Get all status of the request with ID with descending created time
@@ -225,10 +227,10 @@ public class RequestController {
             detailRequestModel.setRequestAddress(newCreatedRequest.getAddress() + " " + newCreatedRequestTown.getTownName() + " " + newCreatedRequestDistrict.getDistrictName()); //customer full address
             detailRequestModel.setRequestMeetingTime(newCreatedRequest.getMeetingTime()); //meeting time
             detailRequestModel.setRequestCreatedTime(newCreatedRequest.getCreatedDate()); //created time
-            detailRequestModel.setNurseID("NOT HAVE ANY NURSE YET!");
-            detailRequestModel.setNurseName("NOT HAVE ANY NURSE YET!");
-            detailRequestModel.setCoordinatorID("NOT HAVE ANY COORDINATOR YET!");
-            detailRequestModel.setCoordinatorName("NOT HAVE ANY COORDINATOR YET!");
+            detailRequestModel.setNurseID("Chưa có y tá nhận!");
+            detailRequestModel.setNurseName("Chưa có y tá nhận!");
+            detailRequestModel.setCoordinatorID("Chưa có điều phối viên xử lý!");
+            detailRequestModel.setCoordinatorName("Chưa có điều phối viên xử lý!");
             detailRequestModel.setRequestStatus("pending"); //status
             //set list selected test
             List<RequestTest> lsRequestTests = requestTestRepository.getAllByRequestID(requestId);
@@ -244,8 +246,10 @@ public class RequestController {
             //set amount of test
             detailRequestModel.setRequestAmount(String.valueOf(testAmount));
             //set note
-            detailRequestModel.setRequestNote("Just created");
-        } else {
+            detailRequestModel.setRequestNote("Yêu cầu xét nghiệm mới tạo.");
+        }
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        else {
             //Get the latest status of request
             RequestHistory requestHistory = lsStatusRequest.get(0);
 
@@ -253,8 +257,8 @@ public class RequestController {
             List<RequestHistory> getListRequestAcceptedNurse =
                     requestHistoryRepository.findByRequestIDAndStatusOrderByCreatedTimeDesc(requestHistory.getRequestID(), "accepted");
             if (getListRequestAcceptedNurse.isEmpty() || requestHistory.getStatus().equals("pending")) {
-                detailRequestModel.setNurseID("NOT HAVE ANY NURSE YET!");
-                detailRequestModel.setNurseName("NOT HAVE ANY NURSE YET!");
+                detailRequestModel.setNurseID("Chưa có y tá nhận!");
+                detailRequestModel.setNurseName("Chưa có y tá nhận!");
             } else {
                 //get nurse ID
                 detailRequestModel.setNurseID(String.valueOf(getListRequestAcceptedNurse.get(0).getUserID()));
@@ -266,8 +270,8 @@ public class RequestController {
             List<RequestHistory> getListRequestAcceptedCoordinator =
                     requestHistoryRepository.findByRequestIDAndStatusOrderByCreatedTimeDesc(requestHistory.getRequestID(), "waitingforresult");
             if (getListRequestAcceptedCoordinator.isEmpty() || requestHistory.getStatus().equals("pending")) {
-                detailRequestModel.setCoordinatorID("NOT HAVE ANY COORDINATOR YET!");
-                detailRequestModel.setCoordinatorName("NOT HAVE ANY COORDINATOR YET!");
+                detailRequestModel.setCoordinatorID("Chưa có điều phối viên xử lý!");
+                detailRequestModel.setCoordinatorName("Chưa có điều phối viên xử lý!");
             } else {
                 //get coordinator ID
                 detailRequestModel.setCoordinatorID(String.valueOf(getListRequestAcceptedCoordinator.get(0).getUserID()));
@@ -313,11 +317,11 @@ public class RequestController {
     public ResponseEntity<?> getListResult(@PathVariable("id") int requestID) {
         Optional<Request> request = requestRepository.findById(requestID);
         if (!request.isPresent()) {
-            return new ResponseEntity<>(new ApiResponse(true, "There is no request with ID = " + requestID), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(new ApiResponse(true, "Không tồn tại yêu cầu xét nghiệm với mã ID = " + requestID), HttpStatus.OK);
         }
         List<Result> lsResult = resultService.lsResultByRequestID(requestID);
         if (lsResult.isEmpty()) {
-            return new ResponseEntity<>(new ApiResponse(true, "No result for this request"), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(new ApiResponse(true, "Chưa có kết quả cho yêu cầu xét nghiệm này!"), HttpStatus.OK);
         }
         return new ResponseEntity<>(lsResult, HttpStatus.OK);
     }
@@ -325,7 +329,7 @@ public class RequestController {
     //save result 1 request
     //////////////////// get file?
     @PostMapping("/detail/{id}/save-result")
-    public ResponseEntity<?> saveResult(@RequestBody Result result, @PathVariable("id") int requestID,@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<?> saveResult(@RequestBody Result result, @PathVariable("id") int requestID, @RequestParam("file") MultipartFile file) {
         result.setRequestID(requestID);
         String fileName = fileStorageService.storeFile(file);
         String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()

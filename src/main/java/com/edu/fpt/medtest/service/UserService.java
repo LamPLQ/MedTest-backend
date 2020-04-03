@@ -27,4 +27,6 @@ public interface UserService {
     List<User> lsUserByTown(String townCode);
 
     void resetPassword(User user);
+
+    void  updateAddress(User user);
 }

@@ -1,6 +1,7 @@
 package com.edu.fpt.medtest.service;
 
 import com.edu.fpt.medtest.entity.Article;
+import com.edu.fpt.medtest.entity.User;
 import com.edu.fpt.medtest.repository.ArticleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -34,5 +35,15 @@ public class ArticleServiceImpl implements ArticleService {
     @Override
     public void deleteArticle(int id) {
         articleRepository.deleteById(id);
+    }
+
+    @Override
+    public void updateArticle(Article article) {
+        Article articleByID = articleRepository.findById(article.getID()).get();
+        articleByID.setContent(article.getContent());
+        articleByID.setShortContent(article.getShortContent());
+        articleByID.setTittle(article.getTittle());
+        articleByID.setImage(article.getImage());
+        articleRepository.save(articleByID);
     }
 }

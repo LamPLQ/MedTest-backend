@@ -142,6 +142,18 @@ public class CustomerController {
         return new ResponseEntity<>(getCustomer, HttpStatus.OK);
     }
 
+    //update customer address
+    @PutMapping("/detail/address/update/{id}")
+    public ResponseEntity<?> updateAddressUser(@RequestBody User customer, @PathVariable("id") int id){
+        Optional<User> getCustomer = userRepository.getUserByIdAndRole(id, "CUSTOMER");
+        if (!getCustomer.isPresent()) {
+            return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy người dùng!"), HttpStatus.OK);
+        }
+        customer.setId(id);
+        userService.updateAddress(customer);
+        return new ResponseEntity<>(getCustomer, HttpStatus.OK);
+    }
+
     //view list appointment theo 1 customer
     @GetMapping("/{id}/appointments/list")
     public ResponseEntity<?> getListAppointment(@PathVariable("id") int id) {
@@ -149,7 +161,7 @@ public class CustomerController {
 //        UserAppointmentModel userAppointment = new UserAppointmentModel();
         User userAppoint = userService.findUserByID(id).get();
         if (lsAppointmentCustomer.isEmpty()) {
-            return new ResponseEntity<>(new ApiResponse(true, "Appointment not found"), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(new ApiResponse(true, "Người dùng hiện tại chưa có lịch hẹn!"), HttpStatus.OK);
         }
         //list detail of each appoinment which belong to user
         List<UserAppointmentModel> listUserAppoinment = new ArrayList<>();
@@ -190,7 +202,7 @@ public class CustomerController {
     public ResponseEntity<?> lsRequestOfUser(@PathVariable("id") int userID) {
         List<Request> lsRequest = requestService.getListByUser(userID);
         if (lsRequest.isEmpty()) {
-            return new ResponseEntity<>(new ApiResponse(true, "Customer has not had any request yet!"), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(new ApiResponse(true, "Hiện tại không có yêu cầu nào từ khách hàng!"), HttpStatus.OK);
         }
         List<DetailRequestModel> lsDRequestDetail = new ArrayList<>();
         for (Request eachRequest : lsRequest) {
@@ -202,7 +214,7 @@ public class CustomerController {
             //Check if request existed
             boolean existedRequest = requestRepository.existsByRequestID(requestId);
             if (existedRequest == false) {
-                return new ResponseEntity<>(new ApiResponse(true, "There is no request with ID = " + requestId), HttpStatus.NOT_FOUND);
+                return new ResponseEntity<>(new ApiResponse(true, "Không có yêu cầu với mã ID = " + requestId), HttpStatus.OK);
             }
 
             //Get all status of the request with ID with descending created time
@@ -219,9 +231,14 @@ public class CustomerController {
                 detailRequestModel.setCustomerName(newCreatedRequestUser.get().getName()); //customerName
                 detailRequestModel.setCustomerPhoneNumber(newCreatedRequestUser.get().getPhoneNumber());//customerPhoneNumber
                 detailRequestModel.setCustomerDOB(newCreatedRequestUser.get().getDob()); //customerDOB
-                detailRequestModel.setRequestAddress(newCreatedRequest.getAddress() + " " + newCreatedRequestTown.getTownName() + " " + newCreatedRequestDistrict.getDistrictName()); //customer full address
+                detailRequestModel.setRequestAddress(newCreatedRequest.getAddress() + " " + newCreatedRequestTown.getTownName() + " "
+                        + newCreatedRequestDistrict.getDistrictName()); //customer full address
                 detailRequestModel.setRequestMeetingTime(newCreatedRequest.getMeetingTime()); //meeting time
                 detailRequestModel.setRequestCreatedTime(newCreatedRequest.getCreatedDate()); //created time
+                detailRequestModel.setNurseID("Chưa có y tá nhận!");
+                detailRequestModel.setNurseName("Chưa có y tá nhận!");
+                detailRequestModel.setCoordinatorID("Chưa có điều phối viên xử lý!");
+                detailRequestModel.setCoordinatorName("Chưa có điều phối viên xử lý!");
                 detailRequestModel.setRequestStatus("pending"); //status
                 //set list selected test
                 List<RequestTest> lsRequestTests = requestTestRepository.getAllByRequestID(requestId);
@@ -237,7 +254,7 @@ public class CustomerController {
                 //set amount of test
                 detailRequestModel.setRequestAmount(String.valueOf(testAmount));
                 //set note
-                detailRequestModel.setRequestNote("Just created!");
+                detailRequestModel.setRequestNote("Yêu cầu xét nghiệm mới tạo.");
 
             } else {
                 //Get the latest status of request
@@ -247,7 +264,8 @@ public class CustomerController {
                 List<RequestHistory> getListRequestAcceptedNurse =
                         requestHistoryRepository.findByRequestIDAndStatusOrderByCreatedTimeDesc(requestHistory.getRequestID(), "accepted");
                 if (getListRequestAcceptedNurse.isEmpty() || requestHistory.getStatus().equals("pending")) {
-                    detailRequestModel.setNurseName("NOT HAVE ANY NURSE YET!");
+                    detailRequestModel.setNurseID("Chưa có y tá nhận!");
+                    detailRequestModel.setNurseName("Chưa có y tá nhận!");
                 } else {
                     //get nurse ID
                     detailRequestModel.setNurseID(String.valueOf(getListRequestAcceptedNurse.get(0).getUserID()));
@@ -259,8 +277,8 @@ public class CustomerController {
                 List<RequestHistory> getListRequestAcceptedCoordinator =
                         requestHistoryRepository.findByRequestIDAndStatusOrderByCreatedTimeDesc(requestHistory.getRequestID(), "waitingforresult");
                 if (getListRequestAcceptedCoordinator.isEmpty() || requestHistory.getStatus().equals("pending")) {
-                    detailRequestModel.setCoordinatorID("0");
-                    detailRequestModel.setCoordinatorName("NOT HAVE ANY COORDINATOR YET!");
+                    detailRequestModel.setCoordinatorID("Chưa có điều phối viên xử lý!");
+                    detailRequestModel.setCoordinatorName("Chưa có điều phối viên xử lý!");
                 } else {
                     //get coordinator ID
                     detailRequestModel.setCoordinatorID(String.valueOf(getListRequestAcceptedCoordinator.get(0).getUserID()));

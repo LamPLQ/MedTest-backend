@@ -15,4 +15,6 @@ public interface ArticleService {
     Optional<Article> getArticle(int id);
 
     void deleteArticle(int id);
+
+    void updateArticle(Article article);
 }

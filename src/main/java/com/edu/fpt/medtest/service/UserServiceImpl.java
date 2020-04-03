@@ -78,5 +78,14 @@ public class UserServiceImpl implements UserService {
         userRepository.save(userResetPasswordByID);
     }
 
+    @Override
+    public void updateAddress(User user) {
+        User userByID = userRepository.findById(user.getId()).get();
+        userByID.setAddress(user.getAddress());
+        userByID.setTownCode(user.getTownCode());
+        userByID.setDistrictCode(user.getDistrictCode());
+        userRepository.save(userByID);
+    }
+
 
 }

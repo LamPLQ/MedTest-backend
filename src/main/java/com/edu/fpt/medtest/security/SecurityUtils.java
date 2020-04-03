@@ -21,6 +21,7 @@ public class SecurityUtils {
     public static final String COORDINATOR_LOGIN = "/users/coordinators/login";
     public static final String FORGOT_PASSWORD = "/users/forgot-password";
     public static final String LIST_ARTICLE = "/articles/list";
+    public static final String DETAIL_ARTICLE = "/articles/detail/{id}";
     public static final String LIST_TESTTYPE_TEST = "/test-types/type-test";
     public static final String LIST_DISTRICT = "/management/districts/list";
     public static final String DETAIL_DISTRICT= "/management/districts/detail/{id}";
@@ -29,7 +30,6 @@ public class SecurityUtils {
     public static final String DETAIL_TOWN = "/management/districts/towns/detail/{id}";
     public static final String DETAIL_TEST = "/test-types/tests/detail/{id}";
     public static final String LIST_TEST = "/test-types/tests/list";
-    public static final String DETAIL_ARTICLE = "/articles/detail/{id}";
 //
     public static final String UPLOAD_FILE = "/uploadFile";
     public static final String SAVE_FILE = "/saveFile/{fileName:.+}";

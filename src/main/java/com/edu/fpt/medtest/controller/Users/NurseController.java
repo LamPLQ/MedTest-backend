@@ -63,11 +63,11 @@ public class NurseController {
     //Login
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginModel loginUser) {
-        boolean existByPhoneNumberAndRole = userRepository.existsByPhoneNumberAndRole(loginUser.getPhoneNumber(),loginUser.getRole());
+        boolean existByPhoneNumberAndRole = userRepository.existsByPhoneNumberAndRole(loginUser.getPhoneNumber(), loginUser.getRole());
         if (!existByPhoneNumberAndRole == true) {
-            return new ResponseEntity<>(new ApiResponse(true, "Người dùng không tồn tại!" ), HttpStatus.OK);
+            return new ResponseEntity<>(new ApiResponse(true, "Người dùng không tồn tại!"), HttpStatus.OK);
         }
-        User userLogin = userRepository.getUserByPhoneNumberAndRole(loginUser.getPhoneNumber(),loginUser.getRole());
+        User userLogin = userRepository.getUserByPhoneNumberAndRole(loginUser.getPhoneNumber(), loginUser.getRole());
         //check password
         if (!BCrypt.checkpw(loginUser.getPassword(), userLogin.getPassword())) {
             return new ResponseEntity<>(new ApiResponse(true, "Sai mật khẩu!"), HttpStatus.OK);
@@ -80,7 +80,7 @@ public class NurseController {
                 .compact();
 
         //return current user
-        User successfulUser = (userRepository.getUserByPhoneNumberAndRole(loginUser.getPhoneNumber(),loginUser.getRole()));
+        User successfulUser = (userRepository.getUserByPhoneNumberAndRole(loginUser.getPhoneNumber(), loginUser.getRole()));
         LoginAccountModel loginAccountModel = new LoginAccountModel();
         loginAccountModel.setCustomerInfo(successfulUser);
         loginAccountModel.setToken(token);
@@ -161,17 +161,13 @@ public class NurseController {
         // list request will return for nurse
         List<DetailRequestModel> lsFindingRequest = new ArrayList<>();
 
-        /*
-        List request just be created (status = "pending", have no record in request_history table)
-        */
-
-        //List by created time desc
-        //List<Request> lsAllRequest = requestRepository.findAllByOrderByCreatedDateDesc();
-
         //List all created request
         List<Request> lsAllRequest = requestService.lsRequest();
+        if (lsAllRequest.isEmpty()) {
+            return new ResponseEntity<>(new ApiResponse(true, "Hiện tại không có đơn đang chờ lấy mẫu!"), HttpStatus.OK);
+        }
         //with each request in list request
-        for (Request requestPending : lsAllRequest) {
+        for (Request requestPending : lsAllRequest.subList(1, lsAllRequest.size())) {
             DetailRequestModel detailRequestModel = new DetailRequestModel();
             int requestId = requestPending.getRequestID();
 
@@ -189,9 +185,14 @@ public class NurseController {
                 detailRequestModel.setCustomerName(newCreatedRequestUser.get().getName()); //customerName
                 detailRequestModel.setCustomerPhoneNumber(newCreatedRequestUser.get().getPhoneNumber());//customerPhoneNumber
                 detailRequestModel.setCustomerDOB(newCreatedRequestUser.get().getDob()); //customerDOB
-                detailRequestModel.setRequestAddress(newCreatedRequest.getAddress() + " " + newCreatedRequestTown.getTownName() + " " + newCreatedRequestDistrict.getDistrictName()); //customer full address
+                detailRequestModel.setRequestAddress(newCreatedRequest.getAddress() + " "
+                        + newCreatedRequestTown.getTownName() + " " + newCreatedRequestDistrict.getDistrictName()); //customer full address
                 detailRequestModel.setRequestMeetingTime(newCreatedRequest.getMeetingTime()); //meeting time
                 detailRequestModel.setRequestCreatedTime(newCreatedRequest.getCreatedDate()); //created time
+                detailRequestModel.setNurseID("Chưa có y tá nhận!");
+                detailRequestModel.setNurseName("Chưa có y tá nhận!");
+                detailRequestModel.setCoordinatorID("Chưa có điều phối viên xử lý!");
+                detailRequestModel.setCoordinatorName("Chưa có điều phối viên xử lý!");
                 detailRequestModel.setRequestStatus("pending"); //status
                 //set list selected test
                 List<RequestTest> lsRequestTests = requestTestRepository.getAllByRequestID(requestId);
@@ -206,7 +207,7 @@ public class NurseController {
                 //set amount of test
                 detailRequestModel.setRequestAmount(String.valueOf(testAmount));
                 //set note
-                detailRequestModel.setRequestNote("Just created!");
+                detailRequestModel.setRequestNote("Yêu cầu xét nghiệm mới tạo.");
                 lsFindingRequest.add(detailRequestModel);
             }
             /*
@@ -219,10 +220,12 @@ public class NurseController {
                 if (requestHistory.getStatus().equals("pending")) {
                     //get nurse ID
                     //detailRequestModel.setNurseID(String.valueOf(requestHistory.getUserID()));
-                    detailRequestModel.setNurseID("null");
+                    detailRequestModel.setNurseID("Chưa có y tá nhận!");
                     //get nurse name
                     //detailRequestModel.setNurseName(userRepository.findById(requestHistory.getUserID()).get().getName());
-                    detailRequestModel.setNurseName("NOT HAVE ANY NURSE YET");
+                    detailRequestModel.setNurseName("Chưa có y tá nhận!");
+                    detailRequestModel.setCoordinatorID("Chưa có điều phối viên xử lý!");
+                    detailRequestModel.setCoordinatorName("Chưa có điều phối viên xử lý!");
                     Request nowRequest = requestRepository.getOne(requestHistory.getRequestID());
 
                     //return detail request
@@ -257,7 +260,9 @@ public class NurseController {
                     //get coordinator ID
                     detailRequestModel.setCoordinatorID(String.valueOf(requestHistory.getUserID()));
                     //get coordinator name
-                    detailRequestModel.setCoordinatorID(String.valueOf(requestHistory.getUserID()));
+                    detailRequestModel.setCoordinatorName(userRepository.findById(requestHistory.getUserID()).get().getName());
+                    detailRequestModel.setNurseID("Chưa có y tá nhận!");
+                    detailRequestModel.setNurseName("Chưa có y tá nhận!");
 
                     Request nowRequest = requestRepository.getOne(requestHistory.getRequestID());
 
@@ -291,7 +296,7 @@ public class NurseController {
             }
         }
         if (lsFindingRequest.isEmpty())
-            return new ResponseEntity<>(new ApiResponse(true, "NO RECENTLY REQUEST"), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(new ApiResponse(true, "Tất cả các đơn đều đã được nhận!"), HttpStatus.OK);
         return new ResponseEntity<>(lsFindingRequest, HttpStatus.OK);
     }
 
@@ -304,12 +309,15 @@ public class NurseController {
 
         //List all created request
         List<Request> lsAllRequest = requestService.lsRequest();
+        if (lsAllRequest.isEmpty()) {
+            return new ResponseEntity<>(new ApiResponse(true, "Hiện tại không có đơn đang chờ lấy mẫu!"), HttpStatus.OK);
+        }
         //with each request in list request
         List<RequestHistory> lsLastStatus = new ArrayList<>();
-        for (Request requestPending : lsAllRequest) {
+        for (Request requestPending : lsAllRequest.subList(1,lsAllRequest.size())) {
             boolean existRequestID = requestHistoryRepository.existsByRequestID(requestPending.getRequestID());
             if (existRequestID == false) {
-                System.out.println("Dont have this requestID");
+                System.out.println("Don't have this requestID");
             } else {
                 //System.out.println("OK");
                 RequestHistory requestAvailable = requestHistoryRepository.findByRequestIDOrderByCreatedTimeDesc(requestPending.getRequestID()).get(0);
@@ -350,8 +358,8 @@ public class NurseController {
                 //request created time
                 detail.setRequestCreatedTime(recentRequest.getCreatedDate());
                 //coordinator
-                detail.setCoordinatorID("NOT HAVE ANY COORDINATOR YET");
-                detail.setCoordinatorName("NOT HAVE ANY COORDINATOR YET");
+                detail.setCoordinatorID("Chưa có điều phối viên xử lý!");
+                detail.setCoordinatorName("Chưa có điều phối viên xử lý!");
                 //requestNote
                 detail.setRequestNote(request.getNote());
                 List<RequestTest> lsRequestTests = requestTestRepository.getAllByRequestID(recentRequest.getRequestID());
@@ -369,7 +377,7 @@ public class NurseController {
             }
         }
         if (lsNurseHandling.isEmpty()) {
-            return new ResponseEntity<>(new ApiResponse(true, "There is no handling request for nurseID = " + nurseID), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(new ApiResponse(true, "Y tá không còn đơn cần xử lý!"), HttpStatus.OK);
         }
         return new ResponseEntity<>(lsNurseHandling, HttpStatus.OK);
     }
@@ -383,12 +391,15 @@ public class NurseController {
 
         //List all created request
         List<Request> lsAllRequest = requestService.lsRequest();
+        if (lsAllRequest.isEmpty()) {
+            return new ResponseEntity<>(new ApiResponse(true, "Hiện tại không có đơn đang chờ lấy mẫu!"), HttpStatus.OK);
+        }
         //with each request in list request
         List<RequestHistory> lsLastStatus = new ArrayList<>();
-        for (Request requestPending : lsAllRequest) {
+        for (Request requestPending : lsAllRequest.subList(1,lsAllRequest.size())) {
             boolean existRequestID = requestHistoryRepository.existsByRequestID(requestPending.getRequestID());
             if (existRequestID == false) {
-                System.out.println("Dont have this requestID");
+                System.out.println("Don't have this requestID");
             } else {
                 //System.out.println("OK");
                 RequestHistory requestAvailable = requestHistoryRepository.findByRequestIDOrderByCreatedTimeDesc(requestPending.getRequestID()).get(0);
@@ -450,7 +461,7 @@ public class NurseController {
             }
         }
         if (lsCompletedReqs.isEmpty()) {
-            return new ResponseEntity(new ApiResponse(true, "Have nó request history for nurseID = " + nurseID), HttpStatus.NOT_FOUND);
+            return new ResponseEntity(new ApiResponse(true, "Y tá chưa hoàn thiện yêu cầu nào!"), HttpStatus.OK);
         }
         return new ResponseEntity<>(lsCompletedReqs, HttpStatus.OK);
 
