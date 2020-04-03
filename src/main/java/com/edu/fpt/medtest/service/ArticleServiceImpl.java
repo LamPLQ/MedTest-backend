@@ -22,7 +22,7 @@ public class ArticleServiceImpl implements ArticleService {
 
     @Override
     public List<Article> listArticle() {
-        List<Article> listArticle = articleRepository.findAll();
+        List<Article> listArticle = articleRepository.findAllByOrderByCreatedTimeDesc();
         return listArticle;
     }
 

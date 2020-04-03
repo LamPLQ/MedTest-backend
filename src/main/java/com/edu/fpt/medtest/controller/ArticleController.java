@@ -1,6 +1,8 @@
 package com.edu.fpt.medtest.controller;
 
 import com.edu.fpt.medtest.entity.Article;
+import com.edu.fpt.medtest.model.ArticleModel;
+import com.edu.fpt.medtest.repository.UserRepository;
 import com.edu.fpt.medtest.service.ArticleService;
 import com.edu.fpt.medtest.utils.ApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,6 +21,9 @@ public class ArticleController {
     @Autowired
     private ArticleService articleService;
 
+    @Autowired
+    private UserRepository userRepository;
+
     //get list
     @GetMapping("/list")
     public ResponseEntity<?> listArticle() {
@@ -25,7 +31,20 @@ public class ArticleController {
         if (listArticle.isEmpty()) {
             return new ResponseEntity<>(new ApiResponse(true, "Không có bài viết nào mới!"), HttpStatus.OK);
         }
-        return new ResponseEntity<>(listArticle, HttpStatus.OK);
+        List<ArticleModel> lsArticleReturn = new ArrayList<>();
+        for(Article lsArticle: listArticle){
+            ArticleModel model = new ArticleModel();
+            model.setID(lsArticle.getID());
+            model.setContent(lsArticle.getContent());
+            model.setShortContent(lsArticle.getShortContent());
+            model.setTittle(lsArticle.getTittle());
+            model.setImage(lsArticle.getImage());
+            model.setCreatedTime(lsArticle.getCreatedTime());
+            model.setUserID(lsArticle.getUserID());
+            model.setCreatorName(userRepository.findById(lsArticle.getUserID()).get().getName());
+            lsArticleReturn.add(model);
+        }
+        return new ResponseEntity<>(lsArticleReturn, HttpStatus.OK);
     }
 
 
