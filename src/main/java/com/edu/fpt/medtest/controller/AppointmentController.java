@@ -29,9 +29,6 @@ public class AppointmentController {
     private UserRepository userRepository;
 
     @Autowired
-    private UserService userService;
-
-    @Autowired
     private NotificationService notificationService;
 
     //list appointment
