@@ -185,8 +185,11 @@ public class NurseController {
                 detailRequestModel.setCustomerName(newCreatedRequestUser.get().getName()); //customerName
                 detailRequestModel.setCustomerPhoneNumber(newCreatedRequestUser.get().getPhoneNumber());//customerPhoneNumber
                 detailRequestModel.setCustomerDOB(newCreatedRequestUser.get().getDob()); //customerDOB
-                detailRequestModel.setRequestAddress(newCreatedRequest.getAddress() + " "
-                        + newCreatedRequestTown.getTownName() + " " + newCreatedRequestDistrict.getDistrictName()); //customer full address
+                detailRequestModel.setRequestAddress(newCreatedRequest.getAddress()); //customer  address
+                detailRequestModel.setRequestDistrictID(newCreatedRequest.getDistrictCode());//district code
+                detailRequestModel.setRequestDistrictName(newCreatedRequestDistrict.getDistrictName());//district name
+                detailRequestModel.setRequestTownID(newCreatedRequest.getTownCode());//town code
+                detailRequestModel.setRequestTownName(newCreatedRequestTown.getTownName());//town name
                 detailRequestModel.setRequestMeetingTime(newCreatedRequest.getMeetingTime()); //meeting time
                 detailRequestModel.setRequestCreatedTime(newCreatedRequest.getCreatedDate()); //created time
                 detailRequestModel.setNurseID("Chưa có y tá nhận!");
@@ -235,7 +238,12 @@ public class NurseController {
                     detailRequestModel.setCustomerName(userRepository.findById(nowRequest.getUserID()).get().getName());
                     detailRequestModel.setCustomerPhoneNumber(userRepository.findById(nowRequest.getUserID()).get().getPhoneNumber());
                     detailRequestModel.setCustomerDOB(userRepository.findById(nowRequest.getUserID()).get().getDob());
-                    detailRequestModel.setRequestAddress(nowRequest.getAddress() + " " + townRepository.findById(nowRequest.getTownCode()).get().getTownName() + " " + districtRepository.findById(nowRequest.getDistrictCode()).get().getDistrictName());
+                    //detailRequestModel.setRequestAddress(nowRequest.getAddress() + " " + townRepository.findById(nowRequest.getTownCode()).get().getTownName() + " " + districtRepository.findById(nowRequest.getDistrictCode()).get().getDistrictName());
+                    detailRequestModel.setRequestAddress(nowRequest.getAddress());
+                    detailRequestModel.setRequestDistrictID(nowRequest.getDistrictCode());
+                    detailRequestModel.setRequestDistrictName(districtRepository.findById(nowRequest.getDistrictCode()).get().getDistrictName());
+                    detailRequestModel.setRequestTownID(nowRequest.getTownCode());
+                    detailRequestModel.setRequestTownName(townRepository.findById(nowRequest.getTownCode()).get().getTownName());
                     detailRequestModel.setRequestMeetingTime(nowRequest.getMeetingTime());
                     detailRequestModel.setRequestCreatedTime(nowRequest.getCreatedDate());
                     // get list test
@@ -273,8 +281,13 @@ public class NurseController {
                     detailRequestModel.setCustomerName(userRepository.findById(nowRequest.getUserID()).get().getName());
                     detailRequestModel.setCustomerPhoneNumber(userRepository.findById(nowRequest.getUserID()).get().getPhoneNumber());
                     detailRequestModel.setCustomerDOB(userRepository.findById(nowRequest.getUserID()).get().getDob());
-                    detailRequestModel.setRequestAddress(nowRequest.getAddress() + " " + townRepository.findById(nowRequest.getTownCode()).get().getTownName()
-                            + " " + districtRepository.findById(nowRequest.getDistrictCode()).get().getDistrictName());
+                    //detailRequestModel.setRequestAddress(nowRequest.getAddress() + " " + townRepository.findById(nowRequest.getTownCode()).get().getTownName()
+                     //       + " " + districtRepository.findById(nowRequest.getDistrictCode()).get().getDistrictName());
+                    detailRequestModel.setRequestAddress(nowRequest.getAddress());
+                    detailRequestModel.setRequestDistrictID(nowRequest.getDistrictCode());
+                    detailRequestModel.setRequestDistrictName(districtRepository.findById(nowRequest.getDistrictCode()).get().getDistrictName());
+                    detailRequestModel.setRequestTownID(nowRequest.getTownCode());
+                    detailRequestModel.setRequestTownName(townRepository.findById(nowRequest.getTownCode()).get().getTownName());
                     detailRequestModel.setRequestMeetingTime(nowRequest.getMeetingTime());
                     detailRequestModel.setRequestCreatedTime(nowRequest.getCreatedDate());
                     // get list test
@@ -351,6 +364,10 @@ public class NurseController {
                 detail.setRequestAddress(recentRequest.getAddress() + " " +
                         townRepository.findById(recentRequest.getTownCode()).get().getTownName() + " " +
                         districtRepository.findById(recentRequest.getDistrictCode()).get().getDistrictName());
+                detail.setRequestTownID(recentRequest.getTownCode());
+                detail.setRequestTownName(townRepository.findById(recentRequest.getTownCode()).get().getTownName());
+                detail.setRequestDistrictID(recentRequest.getDistrictCode());
+                detail.setRequestDistrictName(districtRepository.findById(recentRequest.getDistrictCode()).get().getDistrictName());
                 //request meetingTime
                 detail.setRequestMeetingTime(recentRequest.getMeetingTime());
                 //request status
@@ -411,14 +428,54 @@ public class NurseController {
             if (request.getStatus().equals("closed") || request.getStatus().equals("waitingforresult")) {
                 //list of "accepted" status with each request history
                 boolean existByRequestIDAndStatusAccepted = requestHistoryRepository.existsByRequestIDAndStatusAndUserID(request.getRequestID(), "accepted", nurseID);
+                System.out.println("Test" + request.getRequestID());
+                System.out.println("Test" + nurseID);
                 if (existByRequestIDAndStatusAccepted == false) {
                     System.out.println("No request history with /accepted/ status");
                 } else {
                     RequestHistory acceptedStatusRequest = requestHistoryRepository.findAllByRequestIDAndStatusAndUserIDOrderByCreatedTimeDesc(request.getRequestID(), "accepted", nurseID).get(0);
                     //System.out.println(acceptedStatusRequest.getRequestID() + acceptedStatusRequest.getNote());
+
                     boolean existByRequestIDAndStatusTransporting = requestHistoryRepository.existsByRequestIDAndStatusAndUserID(request.getRequestID(), "transporting", nurseID);
                     if (existByRequestIDAndStatusTransporting == false) {
                         System.out.println("No request history with /transporting/ status");
+                        //customer cancel when nurse accepted request
+                        CompletedRequestModel cancelAfterAccept = new CompletedRequestModel();
+                        cancelAfterAccept.setRequestID(String.valueOf(request.getRequestID()));
+                        ////////////////////Object Request
+                        Request cancelAfterAcceptRequest = requestRepository.getOne(request.getRequestID());
+                        ////////////////////
+                        cancelAfterAccept.setCustomerID(String.valueOf(cancelAfterAcceptRequest.getUserID()));
+                        cancelAfterAccept.setCustomerName(userRepository.findById(cancelAfterAcceptRequest.getUserID()).get().getName());
+                        cancelAfterAccept.setCustomerPhoneNumber(userRepository.findById(cancelAfterAcceptRequest.getUserID()).get().getPhoneNumber());
+                        cancelAfterAccept.setCustomerDOB(userRepository.findById(cancelAfterAcceptRequest.getUserID()).get().getDob());
+                        cancelAfterAccept.setRequestAddress(cancelAfterAcceptRequest.getAddress());
+                        cancelAfterAccept.setRequestDistrictID(cancelAfterAcceptRequest.getDistrictCode());
+                        cancelAfterAccept.setRequestDistrictName(districtRepository.findById(cancelAfterAcceptRequest.getDistrictCode()).get().getDistrictName());
+                        cancelAfterAccept.setRequestTownID(cancelAfterAcceptRequest.getTownCode());
+                        cancelAfterAccept.setRequestTownName(townRepository.findById(cancelAfterAcceptRequest.getTownCode()).get().getTownName());
+                        cancelAfterAccept.setRequestMeetingTime(cancelAfterAcceptRequest.getMeetingTime());
+                        cancelAfterAccept.setRequestCreatedTime(cancelAfterAcceptRequest.getCreatedDate());
+                        cancelAfterAccept.setNurseID(String.valueOf(nurseID));
+                        cancelAfterAccept.setNurseName(userRepository.findById(nurseID).get().getName());
+                        cancelAfterAccept.setCoordinatorID("Chưa có điều phối viên nhận");
+                        cancelAfterAccept.setCoordinatorName("Chưa có điều phối viên nhận");
+                        cancelAfterAccept.setRequestStatus(request.getStatus());
+                        cancelAfterAccept.setRequestNote(request.getNote());
+                        cancelAfterAccept.setRequestAcceptedTime(acceptedStatusRequest.getCreatedTime());
+                        List<RequestTest> lsRequestTests1 = requestTestRepository.getAllByRequestID(cancelAfterAcceptRequest.getRequestID());
+                        List<String> lsTestID1 = new ArrayList<>();
+                        long testAmount1 = 0;
+                        for (RequestTest tracking : lsRequestTests1) {
+                            String testID = String.valueOf(tracking.getTestID());
+                            testAmount1 += testRepository.findById(tracking.getTestID()).get().getPrice();
+                            lsTestID1.add(testID);
+                        }
+                        cancelAfterAccept.setLsSelectedTest(lsTestID1);
+                        //set amount of test
+                        cancelAfterAccept.setRequestAmount(String.valueOf(testAmount1));
+                        lsCompletedReqs.add(cancelAfterAccept);
+                        //////////////////////////////////////////////
                     } else {
                         RequestHistory transportingStatusRequest = requestHistoryRepository.findAllByRequestIDAndStatusAndUserIDOrderByCreatedTimeDesc(request.getRequestID(), "transporting", nurseID).get(0);
                         //System.out.println(transportingStatusRequest.getRequestID() + transportingStatusRequest.getNote());
@@ -431,9 +488,11 @@ public class NurseController {
                         completedRequestModel.setCustomerName(userRepository.findById(workingRequest.getUserID()).get().getName());
                         completedRequestModel.setCustomerPhoneNumber(userRepository.findById(workingRequest.getUserID()).get().getPhoneNumber());
                         completedRequestModel.setCustomerDOB(userRepository.findById(workingRequest.getUserID()).get().getDob());
-                        completedRequestModel.setRequestAddress(workingRequest.getAddress() + " " +
-                                townRepository.findById(workingRequest.getTownCode()).get().getTownName() + " " +
-                                districtRepository.findById(workingRequest.getDistrictCode()).get().getDistrictName());
+                        completedRequestModel.setRequestAddress(workingRequest.getAddress());
+                        completedRequestModel.setRequestDistrictID(workingRequest.getDistrictCode());
+                        completedRequestModel.setRequestDistrictName(districtRepository.findById(workingRequest.getDistrictCode()).get().getDistrictName());
+                        completedRequestModel.setRequestTownID(workingRequest.getTownCode());
+                        completedRequestModel.setRequestTownName(townRepository.findById(workingRequest.getTownCode()).get().getTownName());
                         completedRequestModel.setRequestMeetingTime(workingRequest.getMeetingTime());
                         completedRequestModel.setRequestCreatedTime(workingRequest.getCreatedDate());
                         completedRequestModel.setNurseID(String.valueOf(nurseID));

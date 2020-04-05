@@ -123,7 +123,8 @@ public class CustomerController {
     //get customer - view detail info
     @GetMapping("/detail/{id}")
     public ResponseEntity<?> getUser(@PathVariable("id") int id) {
-        Optional<User> getCustomer = userRepository.getUserByIdAndRole(id, "CUSTOMER");
+        //Optional<User> getCustomer = userRepository.getUserByIdAndRole(id, "CUSTOMER");
+        Optional<User> getCustomer = userService.getUserByID(id);
         if (!getCustomer.isPresent()) {
             return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy người dùng!"), HttpStatus.OK);
         }
@@ -133,7 +134,8 @@ public class CustomerController {
     //update customer info
     @PutMapping("/detail/update/{id}")
     public ResponseEntity<?> updateUser(@RequestBody User customer, @PathVariable("id") int id) {
-        Optional<User> getCustomer = userRepository.getUserByIdAndRole(id, "CUSTOMER");
+        //Optional<User> getCustomer = userRepository.getUserByIdAndRole(id, "CUSTOMER");
+        Optional<User> getCustomer = userService.getUserByID(id);
         if (!getCustomer.isPresent()) {
             return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy người dùng!"), HttpStatus.OK);
         }
@@ -145,7 +147,8 @@ public class CustomerController {
     //update customer address
     @PutMapping("/detail/address/update/{id}")
     public ResponseEntity<?> updateAddressUser(@RequestBody User customer, @PathVariable("id") int id){
-        Optional<User> getCustomer = userRepository.getUserByIdAndRole(id, "CUSTOMER");
+        //Optional<User> getCustomer = userRepository.getUserByIdAndRole(id, "CUSTOMER");
+        Optional<User> getCustomer = userService.getUserByID(id);
         if (!getCustomer.isPresent()) {
             return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy người dùng!"), HttpStatus.OK);
         }
@@ -231,8 +234,11 @@ public class CustomerController {
                 detailRequestModel.setCustomerName(newCreatedRequestUser.get().getName()); //customerName
                 detailRequestModel.setCustomerPhoneNumber(newCreatedRequestUser.get().getPhoneNumber());//customerPhoneNumber
                 detailRequestModel.setCustomerDOB(newCreatedRequestUser.get().getDob()); //customerDOB
-                detailRequestModel.setRequestAddress(newCreatedRequest.getAddress() + " " + newCreatedRequestTown.getTownName() + " "
-                        + newCreatedRequestDistrict.getDistrictName()); //customer full address
+                detailRequestModel.setRequestAddress(newCreatedRequest.getAddress()); //customer  address
+                detailRequestModel.setRequestDistrictID(newCreatedRequest.getDistrictCode());//district code
+                detailRequestModel.setRequestDistrictName(newCreatedRequestDistrict.getDistrictName());//district name
+                detailRequestModel.setRequestTownID(newCreatedRequest.getTownCode());//town code
+                detailRequestModel.setRequestTownName(newCreatedRequestTown.getTownName());//town name
                 detailRequestModel.setRequestMeetingTime(newCreatedRequest.getMeetingTime()); //meeting time
                 detailRequestModel.setRequestCreatedTime(newCreatedRequest.getCreatedDate()); //created time
                 detailRequestModel.setNurseID("Chưa có y tá nhận!");
@@ -295,8 +301,11 @@ public class CustomerController {
                 detailRequestModel.setCustomerName(userRepository.findById(nowRequest.getUserID()).get().getName());
                 detailRequestModel.setCustomerPhoneNumber(userRepository.findById(nowRequest.getUserID()).get().getPhoneNumber());
                 detailRequestModel.setCustomerDOB(userRepository.findById(nowRequest.getUserID()).get().getDob());
-                detailRequestModel.setRequestAddress(nowRequest.getAddress() + " " + townRepository.findById(nowRequest.getTownCode()).get().getTownName()
-                        + " " + districtRepository.findById(nowRequest.getDistrictCode()).get().getDistrictName());
+                detailRequestModel.setRequestAddress(nowRequest.getAddress());
+                detailRequestModel.setRequestDistrictID(nowRequest.getDistrictCode());
+                detailRequestModel.setRequestDistrictName(districtRepository.findById(nowRequest.getDistrictCode()).get().getDistrictName());
+                detailRequestModel.setRequestTownID(nowRequest.getTownCode());
+                detailRequestModel.setRequestTownName(townRepository.findById(nowRequest.getTownCode()).get().getTownName());
                 detailRequestModel.setRequestMeetingTime(nowRequest.getMeetingTime());
                 detailRequestModel.setRequestCreatedTime(nowRequest.getCreatedDate());
                 // get list test

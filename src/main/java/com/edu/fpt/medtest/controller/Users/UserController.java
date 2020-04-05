@@ -21,6 +21,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -140,6 +141,23 @@ public class UserController {
     public ResponseEntity<?> createNoti(@RequestBody Notification notification) {
         notificationService.saveNoti(notification);
         return new ResponseEntity<>(new ApiResponse(true, "Created Notification successfully"), HttpStatus.OK);
+    }
+
+    //list all user
+    @GetMapping("/list-all-user")
+    public ResponseEntity listAllUser(){
+        List<User> lsAllUser = userService.getListUser();
+        if (lsAllUser.isEmpty()){
+            return new ResponseEntity(new ApiResponse(true,"Không có người dùng trong hệ thống!"), HttpStatus.OK);
+        }
+        List<User> returnList = new ArrayList<>();
+        for (User user:lsAllUser.subList(1,lsAllUser.size())){
+            returnList.add(user);
+        }
+        if (returnList.isEmpty()){
+            return new ResponseEntity(new ApiResponse(true,"Không có người dùng!"), HttpStatus.OK);
+        }
+        return new ResponseEntity(returnList,HttpStatus.OK) ;
     }
 }
 

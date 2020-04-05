@@ -18,6 +18,7 @@ import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -85,11 +86,14 @@ public class CoordinatorController {
     public ResponseEntity<?> list() {
         List<User> users = userRepository.findAllByRole("COORDINATOR");
         if (users.isEmpty()) {
-            return new ResponseEntity<>(new ApiResponse(true, "No user is found"), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy bất kì điều phối viên nào!"), HttpStatus.OK);
         }
-        return new ResponseEntity<>(users, HttpStatus.OK);
+        List<User> returnCoordinator = new ArrayList<>();
+        for (User user: users.subList(1,users.size())){
+            returnCoordinator.add(user);
+        }
+        return new ResponseEntity<>(returnCoordinator, HttpStatus.OK);
     }
-
     //get coordinators - view detail info
     @GetMapping("/detail/{id}")
     public ResponseEntity<?> getUser(@PathVariable("id") int id) {

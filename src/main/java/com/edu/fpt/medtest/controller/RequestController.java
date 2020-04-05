@@ -123,6 +123,10 @@ public class RequestController {
         detailRequestModel.setCustomerDOB(userRepository.findById(request.getUserID()).get().getDob());
         detailRequestModel.setRequestAddress(request.getAddress() + " " + townRepository.getOne(request.getTownCode()).getTownName()
                 + " " + districtRepository.getOne(request.getDistrictCode()).getDistrictName());
+        detailRequestModel.setRequestTownID(request.getTownCode());
+        detailRequestModel.setRequestTownName(townRepository.getOne(request.getTownCode()).getTownName());
+        detailRequestModel.setRequestDistrictID(request.getDistrictCode());
+        detailRequestModel.setRequestDistrictName(districtRepository.getOne(request.getDistrictCode()).getDistrictName());
         detailRequestModel.setRequestMeetingTime(request.getMeetingTime());
         detailRequestModel.setRequestCreatedTime(request.getCreatedDate());
         detailRequestModel.setRequestStatus("pending");
@@ -258,7 +262,11 @@ public class RequestController {
             detailRequestModel.setCustomerName(newCreatedRequestUser.get().getName()); //customerName
             detailRequestModel.setCustomerPhoneNumber(newCreatedRequestUser.get().getPhoneNumber());//customerPhoneNumber
             detailRequestModel.setCustomerDOB(newCreatedRequestUser.get().getDob()); //customerDOB
-            detailRequestModel.setRequestAddress(newCreatedRequest.getAddress() + " " + newCreatedRequestTown.getTownName() + " " + newCreatedRequestDistrict.getDistrictName()); //customer full address
+            detailRequestModel.setRequestAddress(newCreatedRequest.getAddress()); //customer  address
+            detailRequestModel.setRequestDistrictID(newCreatedRequest.getDistrictCode());//district code
+            detailRequestModel.setRequestDistrictName(newCreatedRequestDistrict.getDistrictName());//district name
+            detailRequestModel.setRequestTownID(newCreatedRequest.getTownCode());//town code
+            detailRequestModel.setRequestTownName(newCreatedRequestTown.getTownName());//town name
             detailRequestModel.setRequestMeetingTime(newCreatedRequest.getMeetingTime()); //meeting time
             detailRequestModel.setRequestCreatedTime(newCreatedRequest.getCreatedDate()); //created time
             detailRequestModel.setNurseID("Chưa có y tá nhận!");
@@ -322,8 +330,11 @@ public class RequestController {
             detailRequestModel.setCustomerName(userRepository.findById(nowRequest.getUserID()).get().getName());
             detailRequestModel.setCustomerPhoneNumber(userRepository.findById(nowRequest.getUserID()).get().getPhoneNumber());
             detailRequestModel.setCustomerDOB(userRepository.findById(nowRequest.getUserID()).get().getDob());
-            detailRequestModel.setRequestAddress(nowRequest.getAddress() + " " + townRepository.findById(nowRequest.getTownCode()).get().getTownName()
-                    + " " + districtRepository.findById(nowRequest.getDistrictCode()).get().getDistrictName());
+            detailRequestModel.setRequestAddress(nowRequest.getAddress());
+            detailRequestModel.setRequestDistrictID(nowRequest.getDistrictCode());
+            detailRequestModel.setRequestDistrictName(districtRepository.findById(nowRequest.getDistrictCode()).get().getDistrictName());
+            detailRequestModel.setRequestTownID(nowRequest.getTownCode());
+            detailRequestModel.setRequestTownName(townRepository.findById(nowRequest.getTownCode()).get().getTownName());
             detailRequestModel.setRequestMeetingTime(nowRequest.getMeetingTime());
             detailRequestModel.setRequestCreatedTime(nowRequest.getCreatedDate());
             // get list test
@@ -344,6 +355,132 @@ public class RequestController {
 
         }
         return new ResponseEntity<>(detailRequestModel, HttpStatus.OK);
+    }
+
+    //list all request
+    @GetMapping("/list-all-request")
+    public ResponseEntity<?> getAllRequest(){
+        List<Request> lsAllRequest = requestService.lsRequest();
+        if (lsAllRequest.isEmpty()){
+            return new ResponseEntity<>(new ApiResponse(true,"Không có yêu cầu xét nghiệm!"), HttpStatus.OK);
+        }
+        List<DetailRequestModel> returnList = new ArrayList<>();
+        for (Request request:lsAllRequest.subList(1, lsAllRequest.size())){
+            int requestId = request.getRequestID();
+            //Object will return as a request detail
+            DetailRequestModel detailRequestModel = new DetailRequestModel();
+
+            //Get all status of the request with ID with descending created time
+            List<RequestHistory> lsStatusRequest = requestHistoryService.listRecentStatus(requestId);
+
+            //check if request has no update yet (status = pending) -> a recently created request
+            if (lsStatusRequest.isEmpty()) {
+                Request newCreatedRequest = requestRepository.getOne(requestId);
+                Optional<User> newCreatedRequestUser = userRepository.findById(newCreatedRequest.getUserID());
+                Town newCreatedRequestTown = townRepository.getOne(newCreatedRequest.getTownCode());
+                District newCreatedRequestDistrict = districtRepository.getOne(newCreatedRequest.getDistrictCode());
+                detailRequestModel.setRequestID(String.valueOf(requestId)); //requestID
+                detailRequestModel.setCustomerID(String.valueOf(newCreatedRequest.getUserID())); //customerID
+                detailRequestModel.setCustomerName(newCreatedRequestUser.get().getName()); //customerName
+                detailRequestModel.setCustomerPhoneNumber(newCreatedRequestUser.get().getPhoneNumber());//customerPhoneNumber
+                detailRequestModel.setCustomerDOB(newCreatedRequestUser.get().getDob()); //customerDOB
+                detailRequestModel.setRequestAddress(newCreatedRequest.getAddress()); //customer  address
+                detailRequestModel.setRequestDistrictID(newCreatedRequest.getDistrictCode());//district code
+                detailRequestModel.setRequestDistrictName(newCreatedRequestDistrict.getDistrictName());//district name
+                detailRequestModel.setRequestTownID(newCreatedRequest.getTownCode());//town code
+                detailRequestModel.setRequestTownName(newCreatedRequestTown.getTownName());//town name
+                detailRequestModel.setRequestMeetingTime(newCreatedRequest.getMeetingTime()); //meeting time
+                detailRequestModel.setRequestCreatedTime(newCreatedRequest.getCreatedDate()); //created time
+                detailRequestModel.setNurseID("Chưa có y tá nhận!");
+                detailRequestModel.setNurseName("Chưa có y tá nhận!");
+                detailRequestModel.setCoordinatorID("Chưa có điều phối viên xử lý!");
+                detailRequestModel.setCoordinatorName("Chưa có điều phối viên xử lý!");
+                detailRequestModel.setRequestStatus("pending"); //status
+                //set list selected test
+                List<RequestTest> lsRequestTests = requestTestRepository.getAllByRequestID(requestId);
+                List<String> lsTestID = new ArrayList<>();
+                long testAmount = 0;
+                for (RequestTest tracking : lsRequestTests) {
+                    System.out.println(tracking.getTestID());
+                    String testID = String.valueOf(tracking.getTestID());
+                    testAmount += testRepository.findById(tracking.getTestID()).get().getPrice();
+                    lsTestID.add(testID);
+                }
+                detailRequestModel.setLsSelectedTest(lsTestID);
+                //set amount of test
+                detailRequestModel.setRequestAmount(String.valueOf(testAmount));
+                //set note
+                detailRequestModel.setRequestNote("Yêu cầu xét nghiệm mới tạo.");
+            }
+            ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            else {
+                //Get the latest status of request
+                RequestHistory requestHistory = lsStatusRequest.get(0);
+
+                //get the latest status which status = accepted -> find nurse
+                List<RequestHistory> getListRequestAcceptedNurse =
+                        requestHistoryRepository.findByRequestIDAndStatusOrderByCreatedTimeDesc(requestHistory.getRequestID(), "accepted");
+                if (getListRequestAcceptedNurse.isEmpty() || requestHistory.getStatus().equals("pending")) {
+                    detailRequestModel.setNurseID("Chưa có y tá nhận!");
+                    detailRequestModel.setNurseName("Chưa có y tá nhận!");
+                } else {
+                    //get nurse ID
+                    detailRequestModel.setNurseID(String.valueOf(getListRequestAcceptedNurse.get(0).getUserID()));
+                    //get nurse name
+                    detailRequestModel.setNurseName(userRepository.findById(getListRequestAcceptedNurse.get(0).getUserID()).get().getName());
+                }
+
+                //get the latest status which status = waitingforresult -> find coordinator
+                List<RequestHistory> getListRequestAcceptedCoordinator =
+                        requestHistoryRepository.findByRequestIDAndStatusOrderByCreatedTimeDesc(requestHistory.getRequestID(), "waitingforresult");
+                if (getListRequestAcceptedCoordinator.isEmpty() || requestHistory.getStatus().equals("pending")) {
+                    detailRequestModel.setCoordinatorID("Chưa có điều phối viên xử lý!");
+                    detailRequestModel.setCoordinatorName("Chưa có điều phối viên xử lý!");
+                } else {
+                    //get coordinator ID
+                    detailRequestModel.setCoordinatorID(String.valueOf(getListRequestAcceptedCoordinator.get(0).getUserID()));
+                    //get coordinator name
+                    detailRequestModel.setCoordinatorName(userRepository.findById(getListRequestAcceptedCoordinator.get(0).getUserID()).get().getName());
+                }
+
+                Request nowRequest = requestRepository.getOne(requestHistory.getRequestID());
+
+                //return detail request
+                detailRequestModel.setRequestStatus(requestHistory.getStatus());
+                detailRequestModel.setRequestID(String.valueOf(nowRequest.getRequestID()));
+                detailRequestModel.setCustomerID(String.valueOf(nowRequest.getUserID()));
+                detailRequestModel.setCustomerName(userRepository.findById(nowRequest.getUserID()).get().getName());
+                detailRequestModel.setCustomerPhoneNumber(userRepository.findById(nowRequest.getUserID()).get().getPhoneNumber());
+                detailRequestModel.setCustomerDOB(userRepository.findById(nowRequest.getUserID()).get().getDob());
+                detailRequestModel.setRequestAddress(nowRequest.getAddress());
+                detailRequestModel.setRequestDistrictID(nowRequest.getDistrictCode());
+                detailRequestModel.setRequestDistrictName(districtRepository.findById(nowRequest.getDistrictCode()).get().getDistrictName());
+                detailRequestModel.setRequestTownID(nowRequest.getTownCode());
+                detailRequestModel.setRequestTownName(townRepository.findById(nowRequest.getTownCode()).get().getTownName());
+                detailRequestModel.setRequestMeetingTime(nowRequest.getMeetingTime());
+                detailRequestModel.setRequestCreatedTime(nowRequest.getCreatedDate());
+                // get list test
+                List<RequestTest> lsRequestTests = requestTestRepository.getAllByRequestID(nowRequest.getRequestID());
+                List<String> lsTestID = new ArrayList<>();
+                long testAmount = 0;
+                for (RequestTest tracking : lsRequestTests) {
+                    System.out.println(tracking.getTestID());
+                    String testID = String.valueOf(tracking.getTestID());
+                    testAmount += testRepository.findById(tracking.getTestID()).get().getPrice();
+                    lsTestID.add(testID);
+                }
+                detailRequestModel.setLsSelectedTest(lsTestID);
+                //set amount of test
+                detailRequestModel.setRequestAmount(String.valueOf(testAmount));
+                //setNote
+                detailRequestModel.setRequestNote(requestHistory.getNote());
+            }
+            returnList.add(detailRequestModel);
+        }
+        if(returnList.isEmpty()){
+            return new ResponseEntity<>(new ApiResponse(true,"Hiện tại chưa có đơn xét nghiệm nào!"), HttpStatus.OK);
+        }
+        return new ResponseEntity<>(returnList,HttpStatus.OK);
     }
 
     //get list result of a request

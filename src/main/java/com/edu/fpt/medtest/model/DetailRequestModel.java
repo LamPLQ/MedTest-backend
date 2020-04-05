@@ -10,6 +10,10 @@ public class DetailRequestModel {
     private String customerPhoneNumber;
     private Date customerDOB;
     private String requestAddress;
+    private String requestDistrictID;
+    private String requestDistrictName;
+    private String requestTownID;
+    private String requestTownName;
     private Date requestMeetingTime;
     private String requestStatus;
     private Date requestCreatedTime;
@@ -20,6 +24,38 @@ public class DetailRequestModel {
     private String requestAmount;
     private String requestNote;
     private List<String> lsSelectedTest;
+
+    public String getRequestDistrictID() {
+        return requestDistrictID;
+    }
+
+    public void setRequestDistrictID(String requestDistrictID) {
+        this.requestDistrictID = requestDistrictID;
+    }
+
+    public String getRequestDistrictName() {
+        return requestDistrictName;
+    }
+
+    public void setRequestDistrictName(String requestDistrictName) {
+        this.requestDistrictName = requestDistrictName;
+    }
+
+    public String getRequestTownID() {
+        return requestTownID;
+    }
+
+    public void setRequestTownID(String requestTownID) {
+        this.requestTownID = requestTownID;
+    }
+
+    public String getRequestTownName() {
+        return requestTownName;
+    }
+
+    public void setRequestTownName(String requestTownName) {
+        this.requestTownName = requestTownName;
+    }
 
     public String getRequestNote() {
         return requestNote;

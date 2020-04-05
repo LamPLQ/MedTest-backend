@@ -39,17 +39,35 @@ public class AppointmentController {
     public ResponseEntity<?> listAppoinment() {
         List<Appointment> listAppointment = appointmentService.listAppoinment();
         if (listAppointment.isEmpty()) {
-            return new ResponseEntity<>(new ApiResponse(true, "Không có lịch hẹn nào!"), HttpStatus.OK);
+            return new ResponseEntity<>(new ApiResponse(true, "Không có lịch hẹn nào trong hệ thống!"), HttpStatus.OK);
         }
-        return new ResponseEntity<>(listAppointment, HttpStatus.OK);
+        List<UserAppointmentModel> returnAppointmentList = new ArrayList<>();
+        for (Appointment appointment : listAppointment.subList(1, listAppointment.size())) {
+            int id = appointment.getID();
+            Optional<Appointment> getAppointment = appointmentService.getAppointmentByID(id);
+            UserAppointmentModel userAppointmentModel = new UserAppointmentModel();
+            userAppointmentModel.setAppointment_customerName(userRepository.findById(getAppointment.get().getCustomerID()).get().getName());
+            userAppointmentModel.setAppointment_phoneNumber(userRepository.findById(getAppointment.get().getCustomerID()).get().getPhoneNumber());
+            userAppointmentModel.setAppointment_DOB(userRepository.findById(getAppointment.get().getCustomerID()).get().getDob());
+            userAppointmentModel.setAppointment_id(getAppointment.get().getID());
+            userAppointmentModel.setAppointment_status(getAppointment.get().getStatus());
+            userAppointmentModel.setAppointment_note(getAppointment.get().getNote());
+            userAppointmentModel.setAppointment_meetingTime(getAppointment.get().getMeetingTime());
+            userAppointmentModel.setAppointment_createdTime(getAppointment.get().getCreatedTime());
+            returnAppointmentList.add(userAppointmentModel);
+        }
+        if(returnAppointmentList.isEmpty()){
+            return new ResponseEntity<>(new ApiResponse(true, "Không có lịch hẹn nào hiện tại!"), HttpStatus.OK);
+        }
+        return new ResponseEntity<>(returnAppointmentList, HttpStatus.OK);
     }
 
     //create new appointment
     @PostMapping("/create")
     public ResponseEntity<?> createNewAppointment(@RequestBody Appointment appointment) {
-        Optional<User> userCreateAppointment = userRepository.getUserByIdAndRole(appointment.getCustomerID(),"CUSTOMER");
-        if(!userCreateAppointment.isPresent()){
-            return new ResponseEntity<>(new ApiResponse(true,"Người dùng không được phép truy cập tính năng này"),HttpStatus.OK);
+        Optional<User> userCreateAppointment = userRepository.getUserByIdAndRole(appointment.getCustomerID(), "CUSTOMER");
+        if (!userCreateAppointment.isPresent()) {
+            return new ResponseEntity<>(new ApiResponse(true, "Người dùng không được phép truy cập tính năng này"), HttpStatus.OK);
         }
         appointment.setNote("");
         appointment.setStatus("pending");
@@ -66,17 +84,9 @@ public class AppointmentController {
         if (!getAppointment.isPresent()) {
             return new ResponseEntity<>(new ApiResponse(true, "Lịch hẹn không tồn tại"), HttpStatus.OK);
         } else {
-            User userAppoint = new User();
-            userAppoint.setId(getAppointment.get().getID());
-            List<User> user = userService.getListUser();
-            for (User userTracking : user) {
-                if (userTracking.getId() == userAppoint.getId()) {
-                    userAppoint = userTracking;
-                    userAppointmentModel.setAppointment_customerName(userAppoint.getName());
-                    userAppointmentModel.setAppointment_phoneNumber(userAppoint.getPhoneNumber());
-                    userAppointmentModel.setAppointment_DOB(userAppoint.getDob());
-                }
-            }
+            userAppointmentModel.setAppointment_customerName(userRepository.findById(getAppointment.get().getCustomerID()).get().getName());
+            userAppointmentModel.setAppointment_phoneNumber(userRepository.findById(getAppointment.get().getCustomerID()).get().getPhoneNumber());
+            userAppointmentModel.setAppointment_DOB(userRepository.findById(getAppointment.get().getCustomerID()).get().getDob());
             userAppointmentModel.setAppointment_id(getAppointment.get().getID());
             userAppointmentModel.setAppointment_status(getAppointment.get().getStatus());
             userAppointmentModel.setAppointment_note(getAppointment.get().getNote());
@@ -116,8 +126,8 @@ public class AppointmentController {
         if (!getAppointment.isPresent()) {
             return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy cuộc hẹn!"), HttpStatus.OK);
         }
-        if(getAppointment.get().getStatus().equals("canceled")){
-            return new ResponseEntity<>(new ApiResponse(true,"Cuộc hẹn đã bị huỷ!"), HttpStatus.OK);
+        if (getAppointment.get().getStatus().equals("canceled")) {
+            return new ResponseEntity<>(new ApiResponse(true, "Cuộc hẹn đã bị huỷ!"), HttpStatus.OK);
         }
         appointment.setID(id);
         appointmentService.acceptAppointment(appointment);
@@ -142,8 +152,8 @@ public class AppointmentController {
         if (!getAppointment.isPresent()) {
             return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy cuộc hẹn!"), HttpStatus.OK);
         }
-        if(getAppointment.get().getStatus().equals("canceled")){
-            return new ResponseEntity<>(new ApiResponse(true,"Cuộc hẹn đã bị huỷ!"), HttpStatus.OK);
+        if (getAppointment.get().getStatus().equals("canceled")) {
+            return new ResponseEntity<>(new ApiResponse(true, "Cuộc hẹn đã bị huỷ!"), HttpStatus.OK);
         }
         appointment.setID(id);
         appointmentService.acceptAppointment(appointment);
@@ -166,11 +176,11 @@ public class AppointmentController {
     public ResponseEntity<?> getListAppointmentByStatus(@PathVariable("status") String status) {
         List<Appointment> lsAppointByStatus = appointmentService.listAppointmentByStatus(status);
         String vnStatus = null;
-        if(status.equals("pending")){
+        if (status.equals("pending")) {
             vnStatus = "ĐỢI XÁC NHẬN ";
-        }else if(status.equals("accepted")){
+        } else if (status.equals("accepted")) {
             vnStatus = "ĐÃ ĐƯỢC XÁC NHẬN";
-        }else{
+        } else {
             vnStatus = "ĐƠN ĐÃ HUỶ";
         }
         if (lsAppointByStatus.isEmpty()) {

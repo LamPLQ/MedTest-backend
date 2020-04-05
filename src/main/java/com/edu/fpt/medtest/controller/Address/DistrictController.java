@@ -40,9 +40,16 @@ public class DistrictController {
         List<District> listDistrict = districtService.listDistrict();
         if (listDistrict.isEmpty()) {
             //return new ResponseEntity<>(new ApiResponse(true, "There is no district"), HttpStatus.NOT_FOUND);
-            return new ResponseEntity<>(new ApiResponse(false, "NO_DISTRICT"), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(new ApiResponse(true, "Không có quận/huyện trong hệ thống!"), HttpStatus.OK);
         }
-        return new ResponseEntity<>(listDistrict, HttpStatus.OK);
+        List<District> returnList = new ArrayList<>();
+        for (District district:listDistrict.subList(1,listDistrict.size())){
+            returnList.add(district);
+        }
+        if (returnList.isEmpty()){
+            return new ResponseEntity<>(new ApiResponse(true, "Không có quận/huyện nào!"), HttpStatus.OK);
+        }
+        return new ResponseEntity<>(returnList, HttpStatus.OK);
     }
 
     //Add new district
@@ -52,11 +59,11 @@ public class DistrictController {
         for (District districtTrack : lsDistrict) {
             if (district.getDistrictCode().equalsIgnoreCase(districtTrack.getDistrictCode()))
                 //return new ResponseEntity<>(new ApiResponse(false, "Already have this code"), HttpStatus.BAD_REQUEST);
-            return new ResponseEntity<>(new ApiResponse(false, "CODE_EXISTED"), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(new ApiResponse(true, "Code quận/huyện bị trùng!"), HttpStatus.OK);
         }
         districtService.saveDistrict(district);
         //return new ResponseEntity<>(new ApiResponse(true, "Successfully create district"), HttpStatus.OK);
-        return new ResponseEntity<>(new ApiResponse(true, "SUCCEED_CREATED"), HttpStatus.OK);
+        return new ResponseEntity<>(new ApiResponse(true, "Tạo 1 quận/huyện mới thành công"), HttpStatus.OK);
     }
 
     //View detail of 1 district
@@ -67,7 +74,7 @@ public class DistrictController {
         */
         Optional<District> getDistrict = districtService.findDistrictByCode(code);
         if(!getDistrict.isPresent()){
-            return new ResponseEntity<>(new ApiResponse(false,"NOT_EXIST_DISTRICT"),HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(new ApiResponse(true,"Không tồn tại quận/huyện!"),HttpStatus.OK);
         }
         return new ResponseEntity<>(getDistrict, HttpStatus.OK);
     }
@@ -75,11 +82,15 @@ public class DistrictController {
     //update 1 district detail
     @PutMapping(value = "/detail/update/{code}")
     public ResponseEntity<?> updateDistrict(@RequestBody District district, @PathVariable("code") String code) {
-        Optional<District> getDistrict = Optional.ofNullable(districtService.findDistrictByCode(code)
-                .orElseThrow(() -> new ResourceNotFoundException("DistrictModel", "DistrictCode", code)));
+        /*Optional<District> getDistrict = Optional.ofNullable(districtService.findDistrictByCode(code)
+                .orElseThrow(() -> new ResourceNotFoundException("DistrictModel", "DistrictCode", code)));*/
+        Optional<District> getDistrict = districtService.findDistrictByCode(code);
+        if(!getDistrict.isPresent()){
+            return new ResponseEntity<>(new ApiResponse(true,"Không tồn tại code quận/huyện!"), HttpStatus.OK);
+        }
         district.setDistrictCode(code);
         districtService.saveDistrict(district);
-        return new ResponseEntity<>(new ApiResponse(true, "Update district successfully"), HttpStatus.OK);
+        return new ResponseEntity<>(new ApiResponse(true, "Cập nhật quận/huyện thành công!"), HttpStatus.OK);
     }
 
     //get List district-town by DistrictID
@@ -88,7 +99,7 @@ public class DistrictController {
         List<DistrictModel> lsResult = new ArrayList<>();
         //List<District> list = districtRepository.findAll();
         List<District> list = districtService.listDistrict();
-        for (District district : list) {
+        for (District district : list.subList(1,list.size())) {
             //List<Town> townList = townRepository.getAllByDistrictCode(district.getDistrictCode());
             List<Town> townList = townService.getAllByDistrictCode(district.getDistrictCode());
             DistrictModel districtModel = new DistrictModel();

@@ -29,4 +29,6 @@ public interface UserService {
     void resetPassword(User user);
 
     void  updateAddress(User user);
+
+    Optional<User> getUserByID(int ID);
 }
