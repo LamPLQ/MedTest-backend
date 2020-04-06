@@ -213,13 +213,6 @@ public class CustomerController {
             //===========================================
             //Object will return as a request detail
             DetailRequestModel detailRequestModel = new DetailRequestModel();
-
-            //Check if request existed
-            boolean existedRequest = requestRepository.existsByRequestID(requestId);
-            if (existedRequest == false) {
-                return new ResponseEntity<>(new ApiResponse(true, "Không có yêu cầu với mã ID = " + requestId), HttpStatus.OK);
-            }
-
             //Get all status of the request with ID with descending created time
             List<RequestHistory> lsStatusRequest = requestHistoryService.listRecentStatus(requestId);
 
