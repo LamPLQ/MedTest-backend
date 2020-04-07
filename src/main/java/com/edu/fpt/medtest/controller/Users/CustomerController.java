@@ -187,7 +187,8 @@ public class CustomerController {
     //change Password
     @PostMapping("/change-password/{id}")
     public ResponseEntity<?> changePassword(@RequestBody ChangePasswordModel changePasswordModel, @PathVariable("id") int id) {
-        Optional<User> getCustomer = userRepository.getUserByIdAndRole(id, "CUSTOMER");
+        //Optional<User> getCustomer = userRepository.getUserByIdAndRole(id, "CUSTOMER");
+        Optional<User> getCustomer = userService.getUserByID(id);
         if (!getCustomer.isPresent()) {
             return new ResponseEntity<>(new ApiResponse(true, "Người dùng không tồn tại!"), HttpStatus.OK);
         }
