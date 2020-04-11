@@ -31,4 +31,6 @@ public interface UserService {
     void  updateAddress(User user);
 
     Optional<User> getUserByID(int ID);
+
+    User getUserByPhoneNumberAndRole(String phone, String role);
 }

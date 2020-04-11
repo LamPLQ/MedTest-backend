@@ -84,7 +84,7 @@ public class MailService {
         mail.setTo(user.getEmail());
         mail.setSubject("Thay đổi mật khẩu cho ứng dụng MedTest");
         mail.setText("Mật khẩu mới của bạn là: " + "'" + newPassword + "'" + " " + ". Hãy thay đổi mật khẩu ngay sau khi đăng nhập vào hệ thống!");
-        User resetPasswordUser = userRepository.getUserByPhoneNumberAndEmailAndRole(user.getPhoneNumber(), user.getEmail(), "CUSTOMER");
+        User resetPasswordUser = userRepository.getUserByPhoneNumberAndEmailAndRole(user.getPhoneNumber(), user.getEmail(), user.getRole());
         System.out.println(resetPasswordUser.getId());
         resetPasswordUser.setPassword(bCryptPasswordEncoder.encode(newPassword));
         userService.resetPassword(resetPasswordUser);

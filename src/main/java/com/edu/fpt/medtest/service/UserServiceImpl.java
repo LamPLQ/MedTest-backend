@@ -93,4 +93,10 @@ public class UserServiceImpl implements UserService {
         return  getUserById;
     }
 
+    @Override
+    public User getUserByPhoneNumberAndRole(String phone, String role) {
+        User getUserByPhoneNumberAndRole = userRepository.getUserByPhoneNumberAndRole(phone, role);
+        return getUserByPhoneNumberAndRole;
+    }
+
 }

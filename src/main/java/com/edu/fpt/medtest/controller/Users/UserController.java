@@ -97,15 +97,22 @@ public class UserController {
     //Reset password for user
     @PostMapping("/reset-password/{id}")
     public ResponseEntity<?> resetPassword(@PathVariable("id") int id) {
-        Optional<User> getUserById = userRepository.findById(id);
-        if (!getUserById.isPresent()) {
-            return new ResponseEntity<>(new ApiResponse(true, "There is no user with id"), HttpStatus.NOT_FOUND);
+        Optional<User> userByID = userService.getUserByID(id);
+        if(!userByID.isPresent()){
+            return new ResponseEntity<>(new ApiResponse(true,"Không tồn tại người dùng này"), HttpStatus.OK);
         }
-        getUserById.get().setId(id);
-        getUserById.get().setPassword(bCryptPasswordEncoder.encode("medtest2020"));
-        userService.resetPassword(getUserById.get());
-        return new ResponseEntity<>(
-                new ApiResponse(true, "Reset password for user " + getUserById.get().getName() + "with password: medtest2020"), HttpStatus.OK);
+        if(userByID.get().getRole().equals("CUSTOMER")){
+            return new ResponseEntity<>(new ApiResponse(true,"Người dùng hiện tại không thực hiện được chức năng này"), HttpStatus.OK);
+        }
+        sentMailModel.setEmail(userByID.get().getEmail());
+        sentMailModel.setPhoneNumber(userByID.get().getPhoneNumber());
+        sentMailModel.setRole(userByID.get().getRole());
+        try{
+            mailService.sendEmail(sentMailModel);
+        }catch (MailException mailException){
+            System.out.println(mailException);
+        }
+        return new ResponseEntity<>(new ApiResponse(true, "Mật khẩu mới đã được gửi đến email " + userByID.get().getEmail() + "của userID = " + userByID.get().getEmail()), HttpStatus.OK);
     }
 
     //forgotPassword
@@ -115,9 +122,10 @@ public class UserController {
         if (!existPhoneNumber == true) {
             return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy số điện thoại đã nhập!"), HttpStatus.OK);
         }
-        User forgotPasswordUser = userRepository.getUserByPhoneNumberAndRole(forgotPasswordModel.getPhoneNumber(), "CUSTOMER");
+        User forgotPasswordUser = userService.getUserByPhoneNumberAndRole(forgotPasswordModel.getPhoneNumber(), "CUSTOMER");
         sentMailModel.setEmail(forgotPasswordUser.getEmail());
         sentMailModel.setPhoneNumber(forgotPasswordUser.getPhoneNumber());
+        sentMailModel.setRole(forgotPasswordUser.getRole());
         try {
             mailService.sendEmail(sentMailModel);
         } catch (MailException mailException) {
