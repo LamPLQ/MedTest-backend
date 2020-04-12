@@ -11,7 +11,7 @@ public class RequestTest implements Serializable {
     private int requestTestID;
 
     @Column(name = "RequestID")
-    private int requestID;
+    private String requestID;
 
     @Column(name = "TestID")
     private int testID;
@@ -27,11 +27,20 @@ public class RequestTest implements Serializable {
         this.requestTestID = requestTestID;
     }
 
-    public int getRequestID() {
+   /* public int getRequestID() {
         return requestID;
     }
 
     public void setRequestID(int requestID) {
+        this.requestID = requestID;
+    }
+*/
+
+    public String getRequestID() {
+        return requestID;
+    }
+
+    public void setRequestID(String requestID) {
         this.requestID = requestID;
     }
 

@@ -3,6 +3,7 @@ package com.edu.fpt.medtest.service;
 import com.edu.fpt.medtest.entity.User;
 import com.edu.fpt.medtest.model.SentMailModel;
 import com.edu.fpt.medtest.repository.UserRepository;
+import com.edu.fpt.medtest.utils.GetRandomString;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
@@ -14,7 +15,7 @@ import org.springframework.stereotype.Service;
 public class MailService {
 
     // function to generate a random string of length n
-    static String getAlphaNumericString(int n) {
+    /*static String getAlphaNumericString(int n) {
 
         // chose a Character random from this String
         String AlphaNumericString = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -38,7 +39,7 @@ public class MailService {
         }
 
         return sb.toString();
-    }
+    }*/
 
     @Autowired
     private UserRepository userRepository;
@@ -79,7 +80,7 @@ public class MailService {
          * function. SimpleMailMessage Object is required because send() function uses
          * object of SimpleMailMessage as a Parameter
          */
-        String newPassword = getAlphaNumericString(8);
+        String newPassword = GetRandomString.getAlphaNumericString(8);
         SimpleMailMessage mail = new SimpleMailMessage();
         mail.setTo(user.getEmail());
         mail.setSubject("Thay đổi mật khẩu cho ứng dụng MedTest");

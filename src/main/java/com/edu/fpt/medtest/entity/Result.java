@@ -25,7 +25,7 @@ public class Result implements Serializable {
     private Date CreatedTime;
 
     @Column(name = "RequestID")
-    private int requestID;
+    private String requestID;
 
     @Column(name = "UserID")
     private int userID;
@@ -54,11 +54,19 @@ public class Result implements Serializable {
         CreatedTime = createdTime;
     }
 
-    public int getRequestID() {
+    /*public int getRequestID() {
         return requestID;
     }
 
     public void setRequestID(int requestID) {
+        this.requestID = requestID;
+    }*/
+
+    public String getRequestID() {
+        return requestID;
+    }
+
+    public void setRequestID(String requestID) {
         this.requestID = requestID;
     }
 

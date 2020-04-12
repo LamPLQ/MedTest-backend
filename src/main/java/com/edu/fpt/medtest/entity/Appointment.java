@@ -14,8 +14,11 @@ import java.util.Date;
 public class Appointment implements Serializable {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+   /* @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int ID;
+    */
+    @Column(columnDefinition = "text", name = "ID")
+    private String ID;
 
     @CreatedDate
     @Column(name = "CreatedTime")
@@ -52,11 +55,19 @@ public class Appointment implements Serializable {
         this.coordinatorID = coordinatorID;
     }
 
-    public int getID() {
+//    public String getID() {
+//        return ID;
+//    }
+//
+//    public void setID(String ID) {
+//        this.ID = ID;
+//    }
+
+    public String getID() {
         return ID;
     }
 
-    public void setID(int ID) {
+    public void setID(String ID) {
         this.ID = ID;
     }
 

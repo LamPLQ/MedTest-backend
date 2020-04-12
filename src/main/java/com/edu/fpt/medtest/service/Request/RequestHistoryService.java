@@ -10,8 +10,8 @@ public interface RequestHistoryService {
 
     void save(RequestHistory requestHistory);
 
-    List<RequestHistory> listRecentStatus(int requestID);
+    List<RequestHistory> listRecentStatus(String requestID);
 
-    List<RequestHistory> getAllByUserIDAndStatus(int userID, String status);
+    //List<RequestHistory> getAllByUserIDAndStatus(int userID, String status);
 
 }

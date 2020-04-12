@@ -18,16 +18,16 @@ public class RequestHistoryServiceImpl implements RequestHistoryService {
     }
 
     @Override
-    public List<RequestHistory> listRecentStatus(int requestID) {
+    public List<RequestHistory> listRecentStatus(String requestID) {
         List<RequestHistory> lsStatus = requestHistoryRepository.findByRequestIDOrderByCreatedTimeDesc(requestID);
         return lsStatus;
     }
 
-    @Override
+    /*@Override
     public List<RequestHistory> getAllByUserIDAndStatus(int userID, String status) {
         List<RequestHistory> requestByUserIDAndStatus = requestHistoryRepository.findByRequestIDAndStatusOrderByCreatedTimeDesc(userID, status);
         return requestByUserIDAndStatus;
-    }
+    }*/
 
 
 }

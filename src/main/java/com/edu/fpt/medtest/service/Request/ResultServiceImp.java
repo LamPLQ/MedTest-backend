@@ -15,7 +15,7 @@ public class ResultServiceImp implements ResultService {
     ResultRepository resultRepository;
 
     @Override
-    public List<Result> lsResultByRequestID(int requestID) {
+    public List<Result> lsResultByRequestID(String requestID) {
         List<Result> lsResultByRequestID = resultRepository.getAllByRequestID(requestID);
         return lsResultByRequestID;
     }

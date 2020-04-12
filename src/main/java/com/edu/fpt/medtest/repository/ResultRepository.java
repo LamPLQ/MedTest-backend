@@ -8,5 +8,5 @@ import java.util.List;
 
 @Repository
 public interface ResultRepository extends CrudRepository<Result, Integer> {
-    List<Result> getAllByRequestID(int requestID);
+    List<Result> getAllByRequestID(String requestID);
 }

@@ -26,14 +26,16 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     @Override
-    public Optional<Appointment> getAppointmentByID(int id) {
-        Optional<Appointment> getAppointment = appointmentRepository.findById(id);
+    public Appointment getAppointmentByID(String id) {
+        //Optional<Appointment> getAppointment = appointmentRepository.findById(id);
+        Appointment getAppointment = appointmentRepository.findByID(id);
         return getAppointment;
     }
 
     @Override
     public void update(Appointment appointment) {
-        Appointment appointmentByID = appointmentRepository.findById(appointment.getID()).get();
+        //Appointment appointmentByID = appointmentRepository.findById(appointment.getID()).get();
+        Appointment appointmentByID = appointmentRepository.findByID(appointment.getID());
         appointmentByID.setStatus(appointment.getStatus());
         appointmentRepository.save(appointmentByID);
     }
@@ -41,7 +43,8 @@ public class AppointmentServiceImpl implements AppointmentService {
     //coordinator accept appointment
     @Override
     public void acceptAppointment(Appointment appointment) {
-        Appointment appointmentByID = appointmentRepository.findById(appointment.getID()).get();
+        //Appointment appointmentByID = appointmentRepository.findById(appointment.getID()).get();
+        Appointment appointmentByID = appointmentRepository.findByID(appointment.getID());
         appointmentByID.setCoordinatorID(appointment.getCoordinatorID());
         appointmentByID.setStatus(appointment.getStatus());
         appointmentRepository.save(appointmentByID);

@@ -20,9 +20,9 @@ public class RequestServiceImpl implements RequestService {
     }
 
     @Override
-    public Optional<Request> getRequest(int requestID) {
-        Optional<Request> getRequest = requestRepository.findById(requestID);
-        return getRequest;
+    public Request getRequest(String requestID) {
+        Request requestByID = requestRepository.getByRequestID(requestID);
+        return requestByID;
     }
 
     @Override
@@ -32,7 +32,7 @@ public class RequestServiceImpl implements RequestService {
 
     @Override
     public List<Request> getListByUser(int userID) {
-        List<Request> getListRequestByUserID = requestRepository.getAllByUserIDOrderByCreatedDateDesc(userID);
+        List<Request> getListRequestByUserID = requestRepository.getAllByUserIDOrderByCreatedTimeDesc(userID);
         return getListRequestByUserID;
     }
 

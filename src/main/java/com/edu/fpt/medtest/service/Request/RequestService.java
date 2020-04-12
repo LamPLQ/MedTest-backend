@@ -10,7 +10,7 @@ import java.util.Optional;
 public interface RequestService {
     List<Request> lsRequest();
 
-    Optional<Request> getRequest(int requestID);
+    Request getRequest(String requestID);
 
     void saveRequest(Request request);
 
