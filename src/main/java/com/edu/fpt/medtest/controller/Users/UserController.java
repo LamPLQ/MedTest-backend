@@ -6,11 +6,13 @@ import com.edu.fpt.medtest.entity.Town;
 import com.edu.fpt.medtest.entity.User;
 import com.edu.fpt.medtest.model.ForgotPasswordModel;
 import com.edu.fpt.medtest.model.SentMailModel;
+import com.edu.fpt.medtest.model.SmsRequest;
 import com.edu.fpt.medtest.repository.DistrictRepository;
 import com.edu.fpt.medtest.repository.TownRepository;
 import com.edu.fpt.medtest.repository.UserRepository;
 import com.edu.fpt.medtest.service.MailService;
 import com.edu.fpt.medtest.service.NotificationService;
+import com.edu.fpt.medtest.service.SmsService.SmsService;
 import com.edu.fpt.medtest.service.UserService;
 import com.edu.fpt.medtest.utils.ApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +23,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -52,7 +55,7 @@ public class UserController {
     private NotificationService notificationService;
 
     @Autowired
-    private BCryptPasswordEncoder bCryptPasswordEncoder;
+    private SmsService smsService;
 
     // List user with state ACTIVE
     @GetMapping("/list/active")
@@ -167,6 +170,14 @@ public class UserController {
         }
         return new ResponseEntity(returnList,HttpStatus.OK) ;
     }
+
+    //sendMessage to phone
+    @PostMapping("/sms")
+    public ResponseEntity<?> sendSmS(@Valid @RequestBody SmsRequest smsRequest) {
+        smsService.sendSms(smsRequest);
+        return new ResponseEntity<>(new ApiResponse(true,"Send success"), HttpStatus.OK);
+    }
+
 }
 
 

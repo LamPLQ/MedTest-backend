@@ -82,7 +82,7 @@ public class NurseController {
         //return current user
         User successfulUser = (userRepository.getUserByPhoneNumberAndRole(loginUser.getPhoneNumber(), loginUser.getRole()));
         LoginAccountModel loginAccountModel = new LoginAccountModel();
-        loginAccountModel.setCustomerInfo(successfulUser);
+        loginAccountModel.setUserInfo(successfulUser);
         loginAccountModel.setToken(token);
         return new ResponseEntity<>(loginAccountModel, HttpStatus.OK);
     }
