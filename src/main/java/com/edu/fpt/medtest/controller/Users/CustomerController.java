@@ -84,7 +84,7 @@ public class CustomerController {
         //return current user
         User successfulUser = (userRepository.getUserByPhoneNumberAndRole(loginUser.getPhoneNumber(),loginUser.getRole()));
         LoginAccountModel loginAccountModel = new LoginAccountModel();
-        loginAccountModel.setCustomerInfo(successfulUser);
+        loginAccountModel.setUserInfo(successfulUser);
         loginAccountModel.setToken(token);
         return new ResponseEntity<>(loginAccountModel, HttpStatus.OK);
     }
@@ -105,7 +105,6 @@ public class CustomerController {
         customer.setDistrictCode(null);
         customer.setPassword(enCryptPassword);
         userService.saveUser(customer);
-
         return new ResponseEntity<>(new ApiResponse(true, "Đã đăng kí thành công!"), HttpStatus.OK);
     }
 
@@ -115,7 +114,7 @@ public class CustomerController {
         List<User> users = userRepository.findAllByRole("CUSTOMER");
         System.out.println(users);
         if (users.isEmpty()) {
-            return new ResponseEntity<>(new ApiResponse(true, "No user is found"), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(new ApiResponse(true, "Không có người dùng nào trong danh sách hiện tại."), HttpStatus.OK);
         }
         return new ResponseEntity<>(users, HttpStatus.OK);
     }
@@ -210,7 +209,7 @@ public class CustomerController {
         }
         List<DetailRequestModel> lsDRequestDetail = new ArrayList<>();
         for (Request eachRequest : lsRequest) {
-            int requestId = eachRequest.getRequestID();
+            String requestId = eachRequest.getRequestID();
             //===========================================
             //Object will return as a request detail
             DetailRequestModel detailRequestModel = new DetailRequestModel();
@@ -219,11 +218,12 @@ public class CustomerController {
 
             //check if request has no update yet (status = pending) -> a recently created request
             if (lsStatusRequest.isEmpty()) {
-                Request newCreatedRequest = requestRepository.getOne(requestId);
+                //Request newCreatedRequest = requestRepository.getOne(requestId);
+                Request newCreatedRequest = requestService.getRequest(requestId);
                 Optional<User> newCreatedRequestUser = userRepository.findById(newCreatedRequest.getUserID());
                 Town newCreatedRequestTown = townRepository.getOne(newCreatedRequest.getTownCode());
                 District newCreatedRequestDistrict = districtRepository.getOne(newCreatedRequest.getDistrictCode());
-                detailRequestModel.setRequestID(String.valueOf(requestId)); //requestID
+                detailRequestModel.setRequestID(requestId); //requestID
                 detailRequestModel.setCustomerID(String.valueOf(newCreatedRequest.getUserID())); //customerID
                 detailRequestModel.setCustomerName(newCreatedRequestUser.get().getName()); //customerName
                 detailRequestModel.setCustomerPhoneNumber(newCreatedRequestUser.get().getPhoneNumber());//customerPhoneNumber
@@ -234,7 +234,7 @@ public class CustomerController {
                 detailRequestModel.setRequestTownID(newCreatedRequest.getTownCode());//town code
                 detailRequestModel.setRequestTownName(newCreatedRequestTown.getTownName());//town name
                 detailRequestModel.setRequestMeetingTime(newCreatedRequest.getMeetingTime()); //meeting time
-                detailRequestModel.setRequestCreatedTime(newCreatedRequest.getCreatedDate()); //created time
+                detailRequestModel.setRequestCreatedTime(newCreatedRequest.getCreatedTime()); //created time
                 detailRequestModel.setNurseID("Chưa có y tá nhận!");
                 detailRequestModel.setNurseName("Chưa có y tá nhận!");
                 detailRequestModel.setCoordinatorID("Chưa có điều phối viên xử lý!");
@@ -286,11 +286,11 @@ public class CustomerController {
                     detailRequestModel.setCoordinatorName(userRepository.findById(getListRequestAcceptedCoordinator.get(0).getUserID()).get().getName());
                 }
 
-                Request nowRequest = requestRepository.getOne(requestHistory.getRequestID());
-
+                //Request nowRequest = requestRepository.getOne(requestHistory.getRequestID());
+                Request nowRequest = requestService.getRequest(requestHistory.getRequestID());
                 //return detail request
                 detailRequestModel.setRequestStatus(requestHistory.getStatus());
-                detailRequestModel.setRequestID(String.valueOf(nowRequest.getRequestID()));
+                detailRequestModel.setRequestID(nowRequest.getRequestID());
                 detailRequestModel.setCustomerID(String.valueOf(nowRequest.getUserID()));
                 detailRequestModel.setCustomerName(userRepository.findById(nowRequest.getUserID()).get().getName());
                 detailRequestModel.setCustomerPhoneNumber(userRepository.findById(nowRequest.getUserID()).get().getPhoneNumber());
@@ -301,7 +301,7 @@ public class CustomerController {
                 detailRequestModel.setRequestTownID(nowRequest.getTownCode());
                 detailRequestModel.setRequestTownName(townRepository.findById(nowRequest.getTownCode()).get().getTownName());
                 detailRequestModel.setRequestMeetingTime(nowRequest.getMeetingTime());
-                detailRequestModel.setRequestCreatedTime(nowRequest.getCreatedDate());
+                detailRequestModel.setRequestCreatedTime(nowRequest.getCreatedTime());
                 // get list test
                 List<RequestTest> lsRequestTests = requestTestRepository.getAllByRequestID(nowRequest.getRequestID());
                 List<String> lsTestID = new ArrayList<>();

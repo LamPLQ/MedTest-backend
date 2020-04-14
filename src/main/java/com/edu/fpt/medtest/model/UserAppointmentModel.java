@@ -3,7 +3,7 @@ package com.edu.fpt.medtest.model;
 import java.util.Date;
 
 public class UserAppointmentModel {
-    private int appointment_id;
+    private String appointment_id;
 
     private String appointment_customerName;
 
@@ -29,11 +29,19 @@ public class UserAppointmentModel {
         this.appointment_coordinatorName = appointment_coordinatorName;
     }*/
 
-    public int getAppointment_id() {
+    /*public int getAppointment_id() {
         return appointment_id;
     }
 
     public void setAppointment_id(int appointment_id) {
+        this.appointment_id = appointment_id;
+    }*/
+
+    public String getAppointment_id() {
+        return appointment_id;
+    }
+
+    public void setAppointment_id(String appointment_id) {
         this.appointment_id = appointment_id;
     }
 

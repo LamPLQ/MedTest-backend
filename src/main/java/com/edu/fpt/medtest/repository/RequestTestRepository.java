@@ -9,5 +9,5 @@ import java.util.List;
 
 @Repository
 public interface RequestTestRepository extends CrudRepository<RequestTest, Integer> {
-    List<RequestTest> getAllByRequestID(int requestID);
+    List<RequestTest> getAllByRequestID(String requestID);
 }

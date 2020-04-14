@@ -8,7 +8,7 @@ import java.util.List;
 
 @Service
 public interface ResultService {
-    List<Result> lsResultByRequestID(int requestID);
+    List<Result> lsResultByRequestID(String requestID);
 
     void saveResult(Result result);
 }

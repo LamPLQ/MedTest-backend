@@ -4,16 +4,16 @@ import com.edu.fpt.medtest.entity.User;
 
 public class LoginAccountModel {
 
-    private User customerInfo;
+    private User userInfo;
 
     private String token;
 
-    public User getCustomerInfo() {
-        return customerInfo;
+    public User getUserInfo() {
+        return userInfo;
     }
 
-    public void setCustomerInfo(User customerInfo) {
-        this.customerInfo = customerInfo;
+    public void setUserInfo(User userInfo) {
+        this.userInfo = userInfo;
     }
 
     public String getToken() {

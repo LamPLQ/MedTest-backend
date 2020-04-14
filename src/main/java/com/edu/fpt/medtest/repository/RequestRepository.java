@@ -8,7 +8,9 @@ import java.util.List;
 
 @Repository
 public interface RequestRepository extends JpaRepository<Request, Integer> {
-    boolean existsByRequestID(int requestID);
+    boolean existsByRequestID(String requestID);
 
-    List<Request> getAllByUserIDOrderByCreatedDateDesc(int userID);
+    List<Request> getAllByUserIDOrderByCreatedTimeDesc(int userID);
+
+    Request getByRequestID(String requestID);
 }

@@ -12,18 +12,20 @@ import java.util.Set;
 @Entity
 @Table(name = "request")
 @EntityListeners(AuditingEntityListener.class)
-public class Request implements Serializable {
+public class Request{
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    /*@GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "RequestID")
-    private int requestID;
+    private int requestID;*/
+    @Column(columnDefinition = "text", name = "RequestID")
+    private String requestID;
 
     @Column(name = "UserID")
     private int userID;
 
     @CreatedDate
     @Column(name = "CreatedTime")
-    private Date createdDate;
+    private Date createdTime;
 
     @Column(name = "MeetingTime")
     private Date meetingTime;
@@ -54,6 +56,14 @@ public class Request implements Serializable {
         this.testsChosen = testsChoosen;
     }*/
 
+    public String getRequestID() {
+        return requestID;
+    }
+
+    public void setRequestID(String requestID) {
+        this.requestID = requestID;
+    }
+
     public String getTownCode() {
         return townCode;
     }
@@ -70,13 +80,13 @@ public class Request implements Serializable {
         this.districtCode = districtCode;
     }
 
-    public int getRequestID() {
+   /* public int getRequestID() {
         return requestID;
     }
 
     public void setRequestID(int requestID) {
         this.requestID = requestID;
-    }
+    }*/
 
     public int getUserID() {
         return userID;
@@ -86,12 +96,20 @@ public class Request implements Serializable {
         this.userID = userID;
     }
 
-    public Date getCreatedDate() {
+   /* public Date getCreatedDate() {
         return createdDate;
     }
 
     public void setCreatedDate(Date createdDate) {
         this.createdDate = createdDate;
+    }*/
+
+    public Date getCreatedTime() {
+        return createdTime;
+    }
+
+    public void setCreatedTime(Date createdTime) {
+        this.createdTime = createdTime;
     }
 
     public Date getMeetingTime() {

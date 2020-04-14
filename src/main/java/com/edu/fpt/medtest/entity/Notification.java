@@ -36,10 +36,10 @@ public class Notification implements Serializable {
     private int userID;
 
     @Column(name = "RequestID", nullable = true)
-    private int requestID;
+    private String requestID;
 
     @Column(name = "AppointmentID", nullable = true)
-    private int appointmentID;
+    private String appointmentID;
 
     public Notification() {
     }
@@ -92,19 +92,35 @@ public class Notification implements Serializable {
         this.userID = userID;
     }
 
-    public int getRequestID() {
+    /*public int getRequestID() {
         return requestID;
     }
 
     public void setRequestID(int requestID) {
         this.requestID = requestID;
+    }*/
+
+    public String getRequestID() {
+        return requestID;
     }
 
-    public int getAppointmentID() {
+    public void setRequestID(String requestID) {
+        this.requestID = requestID;
+    }
+
+    /*public int getAppointmentID() {
         return appointmentID;
     }
 
     public void setAppointmentID(int appointmentID) {
+        this.appointmentID = appointmentID;
+    }*/
+
+    public String getAppointmentID() {
+        return appointmentID;
+    }
+
+    public void setAppointmentID(String appointmentID) {
         this.appointmentID = appointmentID;
     }
 }

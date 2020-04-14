@@ -3,12 +3,16 @@ package com.edu.fpt.medtest.controller;
 import com.edu.fpt.medtest.entity.Appointment;
 import com.edu.fpt.medtest.entity.Notification;
 import com.edu.fpt.medtest.entity.User;
+import com.edu.fpt.medtest.model.AppointmentModelInput;
 import com.edu.fpt.medtest.model.UserAppointmentModel;
+import com.edu.fpt.medtest.repository.AppointmentModelRepository;
+import com.edu.fpt.medtest.repository.AppointmentRepository;
 import com.edu.fpt.medtest.repository.UserRepository;
 import com.edu.fpt.medtest.service.AppointmentService;
 import com.edu.fpt.medtest.service.NotificationService;
 import com.edu.fpt.medtest.service.UserService;
 import com.edu.fpt.medtest.utils.ApiResponse;
+import com.edu.fpt.medtest.utils.GetRandomString;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,10 +30,16 @@ public class AppointmentController {
     private AppointmentService appointmentService;
 
     @Autowired
+    private AppointmentRepository appointmentRepository;
+
+    @Autowired
     private UserRepository userRepository;
 
     @Autowired
     private NotificationService notificationService;
+
+    @Autowired
+    private AppointmentModelRepository appointmentModelRepository;
 
     //list appointment
     @GetMapping("/list")
@@ -40,17 +50,17 @@ public class AppointmentController {
         }
         List<UserAppointmentModel> returnAppointmentList = new ArrayList<>();
         for (Appointment appointment : listAppointment.subList(1, listAppointment.size())) {
-            int id = appointment.getID();
-            Optional<Appointment> getAppointment = appointmentService.getAppointmentByID(id);
+            String  id = appointment.getID();
+            Appointment appointmentExcuting = appointmentService.getAppointmentByID(id);
             UserAppointmentModel userAppointmentModel = new UserAppointmentModel();
-            userAppointmentModel.setAppointment_customerName(userRepository.findById(getAppointment.get().getCustomerID()).get().getName());
-            userAppointmentModel.setAppointment_phoneNumber(userRepository.findById(getAppointment.get().getCustomerID()).get().getPhoneNumber());
-            userAppointmentModel.setAppointment_DOB(userRepository.findById(getAppointment.get().getCustomerID()).get().getDob());
-            userAppointmentModel.setAppointment_id(getAppointment.get().getID());
-            userAppointmentModel.setAppointment_status(getAppointment.get().getStatus());
-            userAppointmentModel.setAppointment_note(getAppointment.get().getNote());
-            userAppointmentModel.setAppointment_meetingTime(getAppointment.get().getMeetingTime());
-            userAppointmentModel.setAppointment_createdTime(getAppointment.get().getCreatedTime());
+            userAppointmentModel.setAppointment_customerName(userRepository.findById(appointmentExcuting.getCustomerID()).get().getName());
+            userAppointmentModel.setAppointment_phoneNumber(userRepository.findById(appointmentExcuting.getCustomerID()).get().getPhoneNumber());
+            userAppointmentModel.setAppointment_DOB(userRepository.findById(appointmentExcuting.getCustomerID()).get().getDob());
+            userAppointmentModel.setAppointment_id(appointmentExcuting.getID());
+            userAppointmentModel.setAppointment_status(appointmentExcuting.getStatus());
+            userAppointmentModel.setAppointment_note(appointmentExcuting.getNote());
+            userAppointmentModel.setAppointment_meetingTime(appointmentExcuting.getMeetingTime());
+            userAppointmentModel.setAppointment_createdTime(appointmentExcuting.getCreatedTime());
             returnAppointmentList.add(userAppointmentModel);
         }
         if(returnAppointmentList.isEmpty()){
@@ -66,49 +76,72 @@ public class AppointmentController {
         if (!userCreateAppointment.isPresent()) {
             return new ResponseEntity<>(new ApiResponse(true, "Người dùng không được phép truy cập tính năng này"), HttpStatus.OK);
         }
+        //////////save temp Appointment
+        AppointmentModelInput appointmentModelInput = new AppointmentModelInput();
+        appointmentModelInput.setTemCustomerID(appointment.getCustomerID());
+        appointmentModelInput.setTemMeetingTime(appointment.getMeetingTime());
+        appointmentModelRepository.save(appointmentModelInput);
+        //////////
+        String appointmentID;
+        do {
+            appointmentID= GetRandomString.getAlphaNumericStringUpper(6);
+        }while (appointmentRepository.existsByID(appointmentID));
+        //
+        appointment.setID(appointmentID);
         appointment.setNote("");
         appointment.setStatus("pending");
         appointment.setCoordinatorID(1);
+        appointment.setCreatedTime(appointmentModelInput.getTempCreatedTime());
         appointmentService.saveAppointment(appointment);
-        return new ResponseEntity<>(new ApiResponse(true, "Tạo lịch hẹn thành công!"), HttpStatus.OK);
+        return new ResponseEntity<>(appointment, HttpStatus.OK);
+        //return new ResponseEntity<>(new ApiResponse(true, "Tạo lịch hẹn thành công!"), HttpStatus.OK);
     }
 
     //appointment detail
     @GetMapping("/detail/{id}")
-    public ResponseEntity<?> getAppointment(@PathVariable("id") int id) {
-        Optional<Appointment> getAppointment = appointmentService.getAppointmentByID(id);
+    public ResponseEntity<?> getAppointment(@PathVariable("id") String id) {
+        Appointment appointmentExecuting = appointmentService.getAppointmentByID(id);
         UserAppointmentModel userAppointmentModel = new UserAppointmentModel();
-        if (!getAppointment.isPresent()) {
+        /*if (!getAppointment.isPresent()) {
             return new ResponseEntity<>(new ApiResponse(true, "Lịch hẹn không tồn tại"), HttpStatus.OK);
-        } else {
-            userAppointmentModel.setAppointment_customerName(userRepository.findById(getAppointment.get().getCustomerID()).get().getName());
-            userAppointmentModel.setAppointment_phoneNumber(userRepository.findById(getAppointment.get().getCustomerID()).get().getPhoneNumber());
-            userAppointmentModel.setAppointment_DOB(userRepository.findById(getAppointment.get().getCustomerID()).get().getDob());
-            userAppointmentModel.setAppointment_id(getAppointment.get().getID());
-            userAppointmentModel.setAppointment_status(getAppointment.get().getStatus());
-            userAppointmentModel.setAppointment_note(getAppointment.get().getNote());
-            userAppointmentModel.setAppointment_meetingTime(getAppointment.get().getMeetingTime());
-            userAppointmentModel.setAppointment_createdTime(getAppointment.get().getCreatedTime());
+        }*/
+        if(appointmentExecuting  == null){
+            return new ResponseEntity<>(new ApiResponse(true, "Lịch hẹn không tồn tại"), HttpStatus.OK);
+        }
+        else {
+            userAppointmentModel.setAppointment_customerName(userRepository.findById(appointmentExecuting.getCustomerID()).get().getName());
+            userAppointmentModel.setAppointment_phoneNumber(userRepository.findById(appointmentExecuting.getCustomerID()).get().getPhoneNumber());
+            userAppointmentModel.setAppointment_DOB(userRepository.findById(appointmentExecuting.getCustomerID()).get().getDob());
+            userAppointmentModel.setAppointment_id(appointmentExecuting.getID());
+            userAppointmentModel.setAppointment_status(appointmentExecuting.getStatus());
+            userAppointmentModel.setAppointment_note(appointmentExecuting.getNote());
+            userAppointmentModel.setAppointment_meetingTime(appointmentExecuting.getMeetingTime());
+            userAppointmentModel.setAppointment_createdTime(appointmentExecuting.getCreatedTime());
         }
         return new ResponseEntity<>(userAppointmentModel, HttpStatus.OK);
     }
 
     //customer update appointment (canceled)
     @PutMapping(value = "/update/{id}")
-    public ResponseEntity<?> updateAppointment(@RequestBody Appointment appointment, @PathVariable("id") int id) {
-        Optional<Appointment> getAppointment = appointmentService.getAppointmentByID(id);
-        if (!getAppointment.isPresent()) {
+    public ResponseEntity<?> updateAppointment(@RequestBody Appointment appointment, @PathVariable("id") String id) {
+        //Optional<Appointment> getAppointment = appointmentService.getAppointmentByID(id);
+        Appointment appointmentExecuting = appointmentService.getAppointmentByID(id);
+       /* if (!getAppointment.isPresent()) {
             return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy cuộc hẹn!"), HttpStatus.OK);
-        }
+        }*/
+       if(appointmentExecuting == null){
+           return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy cuộc hẹn!"), HttpStatus.OK);
+       }
         appointment.setID(id);
         appointmentService.update(appointment);
         //Notification
-        Appointment notiAppointment = appointmentService.getAppointmentByID(id).get();
+        //Appointment notiAppointment = appointmentService.getAppointmentByID(id).get();
+        Appointment notiAppointment = appointmentExecuting;
         Notification notification = new Notification();
         notification.setAppointmentID(notiAppointment.getID());
         notification.setType("APPOINTMENT");
         notification.setIsRead(0);
-        notification.setRequestID(1);
+        notification.setRequestID("1");
         notification.setUserID(notiAppointment.getCustomerID());
         notification.setMessage("Khách hàng " + userRepository.findById(notiAppointment.getCustomerID()).get().getName()
                 + " đã huỷ cuộc hẹn tại phòng khám lúc " + notiAppointment.getMeetingTime());
@@ -118,23 +151,27 @@ public class AppointmentController {
 
     //coordinator accepted appointment
     @PutMapping(value = "/accept/{id}")
-    public ResponseEntity<?> updateAppointmentByCoordinator(@RequestBody Appointment appointment, @PathVariable("id") int id) {
-        Optional<Appointment> getAppointment = appointmentService.getAppointmentByID(id);
-        if (!getAppointment.isPresent()) {
+    public ResponseEntity<?> updateAppointmentByCoordinator(@RequestBody Appointment appointment, @PathVariable("id") String id) {
+        //Optional<Appointment> getAppointment = appointmentService.getAppointmentByID(id);
+        Appointment appointmentExecuting = appointmentService.getAppointmentByID(id);
+        /*if (!getAppointment.isPresent()) {
+            return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy cuộc hẹn!"), HttpStatus.OK);
+        }*/
+        if(appointmentExecuting == null){
             return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy cuộc hẹn!"), HttpStatus.OK);
         }
-        if (getAppointment.get().getStatus().equals("canceled")) {
+        if (appointmentExecuting.getStatus().equals("canceled")) {
             return new ResponseEntity<>(new ApiResponse(true, "Cuộc hẹn đã bị huỷ!"), HttpStatus.OK);
         }
         appointment.setID(id);
         appointmentService.acceptAppointment(appointment);
         //Notification
-        Appointment notiAppointment = appointmentService.getAppointmentByID(id).get();
+        Appointment notiAppointment = appointmentService.getAppointmentByID(id);
         Notification notification = new Notification();
         notification.setAppointmentID(notiAppointment.getID());
         notification.setType("APPOINTMENT");
         notification.setIsRead(0);
-        notification.setRequestID(1);
+        notification.setRequestID("1");
         notification.setUserID(notiAppointment.getCustomerID());
         notification.setMessage("Cuộc hẹn của bạn lúc " + notiAppointment.getMeetingTime() +
                 " đã được xác nhận bởi điểu phối viên " + userRepository.findById(notiAppointment.getCoordinatorID()).get().getName());
@@ -144,23 +181,24 @@ public class AppointmentController {
 
     //coordinator cancel appointment
     @PutMapping(value = "/cancel/{id}")
-    public ResponseEntity<?> cancelAppointmentByCoordinator(@RequestBody Appointment appointment, @PathVariable("id") int id) {
-        Optional<Appointment> getAppointment = appointmentService.getAppointmentByID(id);
-        if (!getAppointment.isPresent()) {
+    public ResponseEntity<?> cancelAppointmentByCoordinator(@RequestBody Appointment appointment, @PathVariable("id") String id) {
+        //Optional<Appointment> getAppointment = appointmentService.getAppointmentByID(id);
+        Appointment appointmentExecuting = appointmentService.getAppointmentByID(id);
+        if (appointmentExecuting == null) {
             return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy cuộc hẹn!"), HttpStatus.OK);
         }
-        if (getAppointment.get().getStatus().equals("canceled")) {
+        if (appointmentExecuting.getStatus().equals("canceled")) {
             return new ResponseEntity<>(new ApiResponse(true, "Cuộc hẹn đã bị huỷ!"), HttpStatus.OK);
         }
         appointment.setID(id);
         appointmentService.acceptAppointment(appointment);
         //Notification
-        Appointment notiAppointment = appointmentService.getAppointmentByID(id).get();
+        Appointment notiAppointment = appointmentService.getAppointmentByID(id);
         Notification notification = new Notification();
         notification.setAppointmentID(notiAppointment.getID());
         notification.setType("APPOINTMENT");
         notification.setIsRead(0);
-        notification.setRequestID(1);
+        notification.setRequestID("1");
         notification.setUserID(notiAppointment.getCustomerID());
         notification.setMessage("Cuộc hẹn của bạn lúc " + notiAppointment.getMeetingTime() +
                 " bị huỷ bởi điểu phối viên " + userRepository.findById(notiAppointment.getCoordinatorID()).get().getName());

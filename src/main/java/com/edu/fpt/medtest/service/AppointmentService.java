@@ -13,7 +13,7 @@ public interface AppointmentService {
 
     List<Appointment> listAppoinment();
 
-    Optional<Appointment> getAppointmentByID(int id);
+    Appointment getAppointmentByID(String id);
 
     void update(Appointment appointment);
 

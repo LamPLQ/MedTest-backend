@@ -3,6 +3,7 @@ package com.edu.fpt.medtest.controller;
 import com.edu.fpt.medtest.entity.*;
 import com.edu.fpt.medtest.model.DetailRequestModel;
 import com.edu.fpt.medtest.model.RequestModel;
+import com.edu.fpt.medtest.model.RequestModelInput;
 import com.edu.fpt.medtest.repository.*;
 import com.edu.fpt.medtest.service.FileStorageService;
 import com.edu.fpt.medtest.service.NotificationService;
@@ -11,6 +12,7 @@ import com.edu.fpt.medtest.service.Request.RequestService;
 import com.edu.fpt.medtest.service.Request.RequestTestService;
 import com.edu.fpt.medtest.service.Request.ResultService;
 import com.edu.fpt.medtest.utils.ApiResponse;
+import com.edu.fpt.medtest.utils.GetRandomString;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +23,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 
 @RestController
 @RequestMapping("/requests")
@@ -65,18 +68,36 @@ public class RequestController {
     @Autowired
     private FileStorageService fileStorageService;
 
+    @Autowired
+    private RequestModelRepository requestModelRepository;
+
     @PostMapping("/create")
-    public ResponseEntity<?> createNewRequest(@RequestBody RequestModel requestModel) {
+    public ResponseEntity<?> createNewRequest(@RequestBody RequestModelInput requestModelInput) {
+        //save request model
+        RequestModel requestModel = new RequestModel();
+        requestModel.setAddress(requestModelInput.getAddress());
+        requestModel.setMeetingTime(requestModelInput.getMeetingTime());
+        requestModel.setDistrictCode(requestModelInput.getDistrictCode());
+        requestModel.setTownCode(requestModelInput.getTownCode());
+        requestModel.setUserID(requestModelInput.getUserID());
+        requestModelRepository.save(requestModel);
+        ///===================
         Request request = new Request();
+        //boolean existRequestID = requestRepository.existsByRequestID(requestID);
+        String requestID;
+        do {
+            requestID= GetRandomString.getAlphaNumericStringUpper(6);
+        }while (requestRepository.existsByRequestID(requestID));
+        request.setRequestID(requestID);
         request.setUserID(requestModel.getUserID());
         request.setMeetingTime(requestModel.getMeetingTime());
-        request.setCreatedDate(requestModel.getCreatedTime());
+        request.setCreatedTime(requestModel.getCreatedTime());
         request.setAddress(requestModel.getAddress());
         request.setTownCode(requestModel.getTownCode());
         request.setDistrictCode(requestModel.getDistrictCode());
 
         //parse (String)testID into (Integer)testID and check if test available
-        List<String> selectedTests = requestModel.getSelectedTest();
+        List<String> selectedTests = requestModelInput.getSelectedTest();
         int selectedTestID;
         List<Integer> listSelectedTestID = new ArrayList<>();
         if (selectedTests.size() == 0) {
@@ -116,7 +137,7 @@ public class RequestController {
 
         //return detail
         DetailRequestModel detailRequestModel = new DetailRequestModel();
-        detailRequestModel.setRequestID(String.valueOf(request.getRequestID()));
+        detailRequestModel.setRequestID(request.getRequestID());
         detailRequestModel.setCustomerID(String.valueOf(userRepository.findById(request.getUserID()).get().getId()));
         detailRequestModel.setCustomerName(userRepository.findById(request.getUserID()).get().getName());
         detailRequestModel.setCustomerPhoneNumber(userRepository.findById(request.getUserID()).get().getPhoneNumber());
@@ -128,11 +149,12 @@ public class RequestController {
         detailRequestModel.setRequestDistrictID(request.getDistrictCode());
         detailRequestModel.setRequestDistrictName(districtRepository.getOne(request.getDistrictCode()).getDistrictName());
         detailRequestModel.setRequestMeetingTime(request.getMeetingTime());
-        detailRequestModel.setRequestCreatedTime(request.getCreatedDate());
+        detailRequestModel.setRequestCreatedTime(request.getCreatedTime());
         detailRequestModel.setRequestStatus("pending");
         detailRequestModel.setLsSelectedTest(lsChosenTest);
         detailRequestModel.setRequestAmount(String.valueOf(testAmount));
         detailRequestModel.setRequestNote("Just created!");
+        requestModelRepository.delete(requestModel);
         return new ResponseEntity<>(detailRequestModel, HttpStatus.OK);
     }
 
@@ -181,18 +203,24 @@ public class RequestController {
 
     //update status of 1 request - add into request_history table
     @PostMapping("/update/{id}")
-    public ResponseEntity<?> updateRequestStatus(@RequestBody RequestHistory requestHistory, @PathVariable("id") int ID) {
-        Optional<Request> getRequest = requestRepository.findById(ID);
-        if (!getRequest.isPresent()) {
+    public ResponseEntity<?> updateRequestStatus(@RequestBody RequestHistory requestHistory, @PathVariable("id") String ID) {
+        //Optional<Request> getRequest = requestRepository.findById(ID);
+        Request requestPresenting = requestService.getRequest(ID);
+        /*if (!getRequest.isPresent()) {
+            return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy yêu cầu mã ID = " + ID), HttpStatus.OK);
+        }*/
+        if(requestPresenting == null){
             return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy yêu cầu mã ID = " + ID), HttpStatus.OK);
         }
-        requestHistory.setRequestID(getRequest.get().getRequestID());
+        //requestHistory.setRequestID(getRequest.get().getRequestID());
+        requestHistory.setRequestID(requestPresenting.getRequestID());
         requestHistoryService.save(requestHistory);
 
         Notification notification = new Notification();
-        notification.setUserID(getRequest.get().getUserID());
+        //notification.setUserID(getRequest.get().getUserID());
+        notification.setUserID(requestPresenting.getUserID());
         notification.setRequestID(ID);
-        notification.setAppointmentID(1);
+        notification.setAppointmentID("1");
         notification.setIsRead(0);
         notification.setType("REQUEST");
         //set message of notification
@@ -210,7 +238,7 @@ public class RequestController {
                 RequestHistory requestOfNurse = requestHistoryRepository.findAllByRequestIDOrderByCreatedTimeDesc(ID).get(1);
                 notiForNurse.setUserID(requestOfNurse.getUserID());
                 notiForNurse.setRequestID(requestOfNurse.getRequestID());
-                notiForNurse.setAppointmentID(1);
+                notiForNurse.setAppointmentID("1");
                 notiForNurse.setIsRead(0);
                 notiForNurse.setType("REQUEST");
                 notiForNurse.setMessage("Điều phối viên " + userRepository.findById(requestHistory.getUserID()).get().getName() + " đã tiếp nhận mẫu xét nghiệm mã ID = " + ID + " từ y tá "
@@ -238,7 +266,7 @@ public class RequestController {
 
     //detail 1 request
     @GetMapping("/detail/{id}")
-    public ResponseEntity<?> getDetailRecentRequest(@PathVariable("id") int requestId) {
+    public ResponseEntity<?> getDetailRecentRequest(@PathVariable("id") String requestId) {
         //Object will return as a request detail
         DetailRequestModel detailRequestModel = new DetailRequestModel();
 
@@ -253,11 +281,12 @@ public class RequestController {
 
         //check if request has no update yet (status = pending) -> a recently created request
         if (lsStatusRequest.isEmpty()) {
-            Request newCreatedRequest = requestRepository.getOne(requestId);
+            //Request newCreatedRequest = requestRepository.getOne(requestId);
+            Request newCreatedRequest = requestService.getRequest(requestId);
             Optional<User> newCreatedRequestUser = userRepository.findById(newCreatedRequest.getUserID());
             Town newCreatedRequestTown = townRepository.getOne(newCreatedRequest.getTownCode());
             District newCreatedRequestDistrict = districtRepository.getOne(newCreatedRequest.getDistrictCode());
-            detailRequestModel.setRequestID(String.valueOf(requestId)); //requestID
+            detailRequestModel.setRequestID(requestId); //requestID
             detailRequestModel.setCustomerID(String.valueOf(newCreatedRequest.getUserID())); //customerID
             detailRequestModel.setCustomerName(newCreatedRequestUser.get().getName()); //customerName
             detailRequestModel.setCustomerPhoneNumber(newCreatedRequestUser.get().getPhoneNumber());//customerPhoneNumber
@@ -268,7 +297,7 @@ public class RequestController {
             detailRequestModel.setRequestTownID(newCreatedRequest.getTownCode());//town code
             detailRequestModel.setRequestTownName(newCreatedRequestTown.getTownName());//town name
             detailRequestModel.setRequestMeetingTime(newCreatedRequest.getMeetingTime()); //meeting time
-            detailRequestModel.setRequestCreatedTime(newCreatedRequest.getCreatedDate()); //created time
+            detailRequestModel.setRequestCreatedTime(newCreatedRequest.getCreatedTime()); //created time
             detailRequestModel.setNurseID("Chưa có y tá nhận!");
             detailRequestModel.setNurseName("Chưa có y tá nhận!");
             detailRequestModel.setCoordinatorID("Chưa có điều phối viên xử lý!");
@@ -321,11 +350,11 @@ public class RequestController {
                 detailRequestModel.setCoordinatorName(userRepository.findById(getListRequestAcceptedCoordinator.get(0).getUserID()).get().getName());
             }
 
-            Request nowRequest = requestRepository.getOne(requestHistory.getRequestID());
-
+            //Request nowRequest = requestRepository.getOne(requestHistory.getRequestID());
+            Request nowRequest = requestService.getRequest(requestHistory.getRequestID());
             //return detail request
             detailRequestModel.setRequestStatus(requestHistory.getStatus());
-            detailRequestModel.setRequestID(String.valueOf(nowRequest.getRequestID()));
+            detailRequestModel.setRequestID(nowRequest.getRequestID());
             detailRequestModel.setCustomerID(String.valueOf(nowRequest.getUserID()));
             detailRequestModel.setCustomerName(userRepository.findById(nowRequest.getUserID()).get().getName());
             detailRequestModel.setCustomerPhoneNumber(userRepository.findById(nowRequest.getUserID()).get().getPhoneNumber());
@@ -336,7 +365,7 @@ public class RequestController {
             detailRequestModel.setRequestTownID(nowRequest.getTownCode());
             detailRequestModel.setRequestTownName(townRepository.findById(nowRequest.getTownCode()).get().getTownName());
             detailRequestModel.setRequestMeetingTime(nowRequest.getMeetingTime());
-            detailRequestModel.setRequestCreatedTime(nowRequest.getCreatedDate());
+            detailRequestModel.setRequestCreatedTime(nowRequest.getCreatedTime());
             // get list test
             List<RequestTest> lsRequestTests = requestTestRepository.getAllByRequestID(nowRequest.getRequestID());
             List<String> lsTestID = new ArrayList<>();
@@ -366,7 +395,7 @@ public class RequestController {
         }
         List<DetailRequestModel> returnList = new ArrayList<>();
         for (Request request:lsAllRequest.subList(1, lsAllRequest.size())){
-            int requestId = request.getRequestID();
+            String requestId = request.getRequestID();
             //Object will return as a request detail
             DetailRequestModel detailRequestModel = new DetailRequestModel();
 
@@ -375,11 +404,12 @@ public class RequestController {
 
             //check if request has no update yet (status = pending) -> a recently created request
             if (lsStatusRequest.isEmpty()) {
-                Request newCreatedRequest = requestRepository.getOne(requestId);
+                //Request newCreatedRequest = requestRepository.getOne(requestId);
+                Request newCreatedRequest = requestService.getRequest(requestId);
                 Optional<User> newCreatedRequestUser = userRepository.findById(newCreatedRequest.getUserID());
                 Town newCreatedRequestTown = townRepository.getOne(newCreatedRequest.getTownCode());
                 District newCreatedRequestDistrict = districtRepository.getOne(newCreatedRequest.getDistrictCode());
-                detailRequestModel.setRequestID(String.valueOf(requestId)); //requestID
+                detailRequestModel.setRequestID(requestId); //requestID
                 detailRequestModel.setCustomerID(String.valueOf(newCreatedRequest.getUserID())); //customerID
                 detailRequestModel.setCustomerName(newCreatedRequestUser.get().getName()); //customerName
                 detailRequestModel.setCustomerPhoneNumber(newCreatedRequestUser.get().getPhoneNumber());//customerPhoneNumber
@@ -390,7 +420,7 @@ public class RequestController {
                 detailRequestModel.setRequestTownID(newCreatedRequest.getTownCode());//town code
                 detailRequestModel.setRequestTownName(newCreatedRequestTown.getTownName());//town name
                 detailRequestModel.setRequestMeetingTime(newCreatedRequest.getMeetingTime()); //meeting time
-                detailRequestModel.setRequestCreatedTime(newCreatedRequest.getCreatedDate()); //created time
+                detailRequestModel.setRequestCreatedTime(newCreatedRequest.getCreatedTime()); //created time
                 detailRequestModel.setNurseID("Chưa có y tá nhận!");
                 detailRequestModel.setNurseName("Chưa có y tá nhận!");
                 detailRequestModel.setCoordinatorID("Chưa có điều phối viên xử lý!");
@@ -443,11 +473,11 @@ public class RequestController {
                     detailRequestModel.setCoordinatorName(userRepository.findById(getListRequestAcceptedCoordinator.get(0).getUserID()).get().getName());
                 }
 
-                Request nowRequest = requestRepository.getOne(requestHistory.getRequestID());
-
+                //Request nowRequest = requestRepository.getOne(requestHistory.getRequestID());
+                Request nowRequest = requestService.getRequest(requestHistory.getRequestID());
                 //return detail request
                 detailRequestModel.setRequestStatus(requestHistory.getStatus());
-                detailRequestModel.setRequestID(String.valueOf(nowRequest.getRequestID()));
+                detailRequestModel.setRequestID(nowRequest.getRequestID());
                 detailRequestModel.setCustomerID(String.valueOf(nowRequest.getUserID()));
                 detailRequestModel.setCustomerName(userRepository.findById(nowRequest.getUserID()).get().getName());
                 detailRequestModel.setCustomerPhoneNumber(userRepository.findById(nowRequest.getUserID()).get().getPhoneNumber());
@@ -458,7 +488,7 @@ public class RequestController {
                 detailRequestModel.setRequestTownID(nowRequest.getTownCode());
                 detailRequestModel.setRequestTownName(townRepository.findById(nowRequest.getTownCode()).get().getTownName());
                 detailRequestModel.setRequestMeetingTime(nowRequest.getMeetingTime());
-                detailRequestModel.setRequestCreatedTime(nowRequest.getCreatedDate());
+                detailRequestModel.setRequestCreatedTime(nowRequest.getCreatedTime());
                 // get list test
                 List<RequestTest> lsRequestTests = requestTestRepository.getAllByRequestID(nowRequest.getRequestID());
                 List<String> lsTestID = new ArrayList<>();
@@ -485,9 +515,10 @@ public class RequestController {
 
     //get list result of a request
     @GetMapping("/detail/{id}/result")
-    public ResponseEntity<?> getListResult(@PathVariable("id") int requestID) {
-        Optional<Request> request = requestRepository.findById(requestID);
-        if (!request.isPresent()) {
+    public ResponseEntity<?> getListResult(@PathVariable("id") String requestID) {
+        //Optional<Request> request = requestRepository.findById(requestID);
+        Request request = requestService.getRequest(requestID);
+        if (request==null) {
             return new ResponseEntity<>(new ApiResponse(true, "Không tồn tại yêu cầu xét nghiệm với mã ID = " + requestID), HttpStatus.OK);
         }
         List<Result> lsResult = resultService.lsResultByRequestID(requestID);
@@ -500,7 +531,7 @@ public class RequestController {
     //save result 1 request
     //////////////////// get file?
     @PostMapping("/detail/{id}/save-result")
-    public ResponseEntity<?> saveResult(@RequestBody Result result, @PathVariable("id") int requestID, @RequestParam("file") MultipartFile file) {
+    public ResponseEntity<?> saveResult(@RequestBody Result result, @PathVariable("id") String requestID, @RequestParam("file") MultipartFile file) {
         result.setRequestID(requestID);
         String fileName = fileStorageService.storeFile(file);
         String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()

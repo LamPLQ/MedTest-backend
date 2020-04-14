@@ -9,6 +9,7 @@ import com.edu.fpt.medtest.service.Request.RequestHistoryService;
 import com.edu.fpt.medtest.service.Request.RequestService;
 import com.edu.fpt.medtest.service.UserService;
 import com.edu.fpt.medtest.utils.ApiResponse;
+import com.edu.fpt.medtest.utils.ComfirmResponse;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -82,7 +83,7 @@ public class NurseController {
         //return current user
         User successfulUser = (userRepository.getUserByPhoneNumberAndRole(loginUser.getPhoneNumber(), loginUser.getRole()));
         LoginAccountModel loginAccountModel = new LoginAccountModel();
-        loginAccountModel.setCustomerInfo(successfulUser);
+        loginAccountModel.setUserInfo(successfulUser);
         loginAccountModel.setToken(token);
         return new ResponseEntity<>(loginAccountModel, HttpStatus.OK);
     }
@@ -142,15 +143,15 @@ public class NurseController {
     public ResponseEntity<?> changePassword(@RequestBody ChangePasswordModel changePasswordModel, @PathVariable("id") int id) {
         Optional<User> getCustomer = userRepository.getUserByIdAndRole(id, "NURSE");
         if (!getCustomer.isPresent()) {
-            return new ResponseEntity<>(new ApiResponse(true, "Người dùng không tồn tại!"), HttpStatus.OK);
+            return new ResponseEntity<>(new ComfirmResponse(true, "Người dùng không tồn tại!", false), HttpStatus.OK);
         }
         if (!BCrypt.checkpw(changePasswordModel.getOldPassword(), getCustomer.get().getPassword())) {
-            return new ResponseEntity<>(new ApiResponse(true, "Mật khẩu hiện tại không đúng!"), HttpStatus.OK);
+            return new ResponseEntity<>(new ComfirmResponse(true, "Mật khẩu hiện tại không đúng!", false), HttpStatus.OK);
         }
         changePasswordModel.setID(id);
         getCustomer.get().setPassword(bCryptPasswordEncoder.encode(changePasswordModel.getNewPassword()));
         userService.saveUser(getCustomer.get());
-        return new ResponseEntity<>(new ApiResponse(true, "Thay đổi mật khẩu thành công!"), HttpStatus.OK);
+        return new ResponseEntity<>(new ComfirmResponse(true, "Thay đổi mật khẩu thành công!", true), HttpStatus.OK);
     }
 
     //Screen "Tìm đơn xét nghiệm"
@@ -169,18 +170,19 @@ public class NurseController {
         //with each request in list request
         for (Request requestPending : lsAllRequest.subList(1, lsAllRequest.size())) {
             DetailRequestModel detailRequestModel = new DetailRequestModel();
-            int requestId = requestPending.getRequestID();
+            String requestId = requestPending.getRequestID();
 
             //Get all status of the request with ID with descending created time
             List<RequestHistory> lsStatusRequest = requestHistoryService.listRecentStatus(requestId);
 
             //check if request has no update yet (status = pending) -> a recently created request
             if (lsStatusRequest.isEmpty()) {
-                Request newCreatedRequest = requestRepository.getOne(requestId);
+                //Request newCreatedRequest = requestRepository.getOne(requestId);
+                Request newCreatedRequest = requestService.getRequest(requestId);
                 Optional<User> newCreatedRequestUser = userRepository.findById(newCreatedRequest.getUserID());
                 Town newCreatedRequestTown = townRepository.getOne(newCreatedRequest.getTownCode());
                 District newCreatedRequestDistrict = districtRepository.getOne(newCreatedRequest.getDistrictCode());
-                detailRequestModel.setRequestID(String.valueOf(requestId)); //requestID
+                detailRequestModel.setRequestID(requestId); //requestID
                 detailRequestModel.setCustomerID(String.valueOf(newCreatedRequest.getUserID())); //customerID
                 detailRequestModel.setCustomerName(newCreatedRequestUser.get().getName()); //customerName
                 detailRequestModel.setCustomerPhoneNumber(newCreatedRequestUser.get().getPhoneNumber());//customerPhoneNumber
@@ -191,7 +193,7 @@ public class NurseController {
                 detailRequestModel.setRequestTownID(newCreatedRequest.getTownCode());//town code
                 detailRequestModel.setRequestTownName(newCreatedRequestTown.getTownName());//town name
                 detailRequestModel.setRequestMeetingTime(newCreatedRequest.getMeetingTime()); //meeting time
-                detailRequestModel.setRequestCreatedTime(newCreatedRequest.getCreatedDate()); //created time
+                detailRequestModel.setRequestCreatedTime(newCreatedRequest.getCreatedTime()); //created time
                 detailRequestModel.setNurseID("Chưa có y tá nhận!");
                 detailRequestModel.setNurseName("Chưa có y tá nhận!");
                 detailRequestModel.setCoordinatorID("Chưa có điều phối viên xử lý!");
@@ -229,11 +231,12 @@ public class NurseController {
                     detailRequestModel.setNurseName("Chưa có y tá nhận!");
                     detailRequestModel.setCoordinatorID("Chưa có điều phối viên xử lý!");
                     detailRequestModel.setCoordinatorName("Chưa có điều phối viên xử lý!");
-                    Request nowRequest = requestRepository.getOne(requestHistory.getRequestID());
+                    //Request nowRequest = requestRepository.getOne(requestHistory.getRequestID());
+                    Request nowRequest = requestService.getRequest(requestHistory.getRequestID());
 
                     //return detail request
                     detailRequestModel.setRequestStatus(requestHistory.getStatus());
-                    detailRequestModel.setRequestID(String.valueOf(nowRequest.getRequestID()));
+                    detailRequestModel.setRequestID(nowRequest.getRequestID());
                     detailRequestModel.setCustomerID(String.valueOf(nowRequest.getUserID()));
                     detailRequestModel.setCustomerName(userRepository.findById(nowRequest.getUserID()).get().getName());
                     detailRequestModel.setCustomerPhoneNumber(userRepository.findById(nowRequest.getUserID()).get().getPhoneNumber());
@@ -245,7 +248,7 @@ public class NurseController {
                     detailRequestModel.setRequestTownID(nowRequest.getTownCode());
                     detailRequestModel.setRequestTownName(townRepository.findById(nowRequest.getTownCode()).get().getTownName());
                     detailRequestModel.setRequestMeetingTime(nowRequest.getMeetingTime());
-                    detailRequestModel.setRequestCreatedTime(nowRequest.getCreatedDate());
+                    detailRequestModel.setRequestCreatedTime(nowRequest.getCreatedTime());
                     // get list test
                     List<RequestTest> lsRequestTests = requestTestRepository.getAllByRequestID(nowRequest.getRequestID());
                     List<String> lsTestID = new ArrayList<>();
@@ -272,24 +275,25 @@ public class NurseController {
                     detailRequestModel.setNurseID("Chưa có y tá nhận!");
                     detailRequestModel.setNurseName("Chưa có y tá nhận!");
 
-                    Request nowRequest = requestRepository.getOne(requestHistory.getRequestID());
+                    //Request nowRequest = requestRepository.getOne(requestHistory.getRequestID());
+                    Request nowRequest = requestService.getRequest(requestHistory.getRequestID());
 
                     //return detail request
                     detailRequestModel.setRequestStatus(requestHistory.getStatus());
-                    detailRequestModel.setRequestID(String.valueOf(nowRequest.getRequestID()));
+                    detailRequestModel.setRequestID(nowRequest.getRequestID());
                     detailRequestModel.setCustomerID(String.valueOf(nowRequest.getUserID()));
                     detailRequestModel.setCustomerName(userRepository.findById(nowRequest.getUserID()).get().getName());
                     detailRequestModel.setCustomerPhoneNumber(userRepository.findById(nowRequest.getUserID()).get().getPhoneNumber());
                     detailRequestModel.setCustomerDOB(userRepository.findById(nowRequest.getUserID()).get().getDob());
                     //detailRequestModel.setRequestAddress(nowRequest.getAddress() + " " + townRepository.findById(nowRequest.getTownCode()).get().getTownName()
-                     //       + " " + districtRepository.findById(nowRequest.getDistrictCode()).get().getDistrictName());
+                    //       + " " + districtRepository.findById(nowRequest.getDistrictCode()).get().getDistrictName());
                     detailRequestModel.setRequestAddress(nowRequest.getAddress());
                     detailRequestModel.setRequestDistrictID(nowRequest.getDistrictCode());
                     detailRequestModel.setRequestDistrictName(districtRepository.findById(nowRequest.getDistrictCode()).get().getDistrictName());
                     detailRequestModel.setRequestTownID(nowRequest.getTownCode());
                     detailRequestModel.setRequestTownName(townRepository.findById(nowRequest.getTownCode()).get().getTownName());
                     detailRequestModel.setRequestMeetingTime(nowRequest.getMeetingTime());
-                    detailRequestModel.setRequestCreatedTime(nowRequest.getCreatedDate());
+                    detailRequestModel.setRequestCreatedTime(nowRequest.getCreatedTime());
                     // get list test
                     List<RequestTest> lsRequestTests = requestTestRepository.getAllByRequestID(nowRequest.getRequestID());
                     List<String> lsTestID = new ArrayList<>();
@@ -327,7 +331,7 @@ public class NurseController {
         }
         //with each request in list request
         List<RequestHistory> lsLastStatus = new ArrayList<>();
-        for (Request requestPending : lsAllRequest.subList(1,lsAllRequest.size())) {
+        for (Request requestPending : lsAllRequest.subList(1, lsAllRequest.size())) {
             boolean existRequestID = requestHistoryRepository.existsByRequestID(requestPending.getRequestID());
             if (existRequestID == false) {
                 System.out.println("Don't have this requestID");
@@ -344,13 +348,14 @@ public class NurseController {
                     (request.getUserID() == nurseID && (request.getStatus().equals("transporting")))) {
                 DetailRequestModel detail = new DetailRequestModel();
                 //requestID
-                detail.setRequestID(String.valueOf(request.getRequestID()));
+                detail.setRequestID(request.getRequestID());
                 //nurseID
                 detail.setNurseID(String.valueOf(request.getUserID()));
                 //nurseName
                 detail.setNurseName(userRepository.findById(request.getUserID()).get().getName());
                 //request of request history
-                Request recentRequest = requestRepository.getOne(request.getRequestID());
+                //Request recentRequest = requestRepository.getOne(request.getRequestID());
+                Request recentRequest = requestService.getRequest(request.getRequestID());
                 ///////////////////////
                 //customerID
                 detail.setCustomerID(String.valueOf(recentRequest.getUserID()));//
@@ -373,7 +378,7 @@ public class NurseController {
                 //request status
                 detail.setRequestStatus(request.getStatus());
                 //request created time
-                detail.setRequestCreatedTime(recentRequest.getCreatedDate());
+                detail.setRequestCreatedTime(recentRequest.getCreatedTime());
                 //coordinator
                 detail.setCoordinatorID("Chưa có điều phối viên xử lý!");
                 detail.setCoordinatorName("Chưa có điều phối viên xử lý!");
@@ -413,7 +418,7 @@ public class NurseController {
         }
         //with each request in list request
         List<RequestHistory> lsLastStatus = new ArrayList<>();
-        for (Request requestPending : lsAllRequest.subList(1,lsAllRequest.size())) {
+        for (Request requestPending : lsAllRequest.subList(1, lsAllRequest.size())) {
             boolean existRequestID = requestHistoryRepository.existsByRequestID(requestPending.getRequestID());
             if (existRequestID == false) {
                 System.out.println("Don't have this requestID");
@@ -441,9 +446,10 @@ public class NurseController {
                         System.out.println("No request history with /transporting/ status");
                         //customer cancel when nurse accepted request
                         CompletedRequestModel cancelAfterAccept = new CompletedRequestModel();
-                        cancelAfterAccept.setRequestID(String.valueOf(request.getRequestID()));
+                        cancelAfterAccept.setRequestID(request.getRequestID());
                         ////////////////////Object Request
-                        Request cancelAfterAcceptRequest = requestRepository.getOne(request.getRequestID());
+                        //Request cancelAfterAcceptRequest = requestRepository.getOne(request.getRequestID());
+                        Request cancelAfterAcceptRequest = requestService.getRequest(request.getRequestID());
                         ////////////////////
                         cancelAfterAccept.setCustomerID(String.valueOf(cancelAfterAcceptRequest.getUserID()));
                         cancelAfterAccept.setCustomerName(userRepository.findById(cancelAfterAcceptRequest.getUserID()).get().getName());
@@ -455,7 +461,7 @@ public class NurseController {
                         cancelAfterAccept.setRequestTownID(cancelAfterAcceptRequest.getTownCode());
                         cancelAfterAccept.setRequestTownName(townRepository.findById(cancelAfterAcceptRequest.getTownCode()).get().getTownName());
                         cancelAfterAccept.setRequestMeetingTime(cancelAfterAcceptRequest.getMeetingTime());
-                        cancelAfterAccept.setRequestCreatedTime(cancelAfterAcceptRequest.getCreatedDate());
+                        cancelAfterAccept.setRequestCreatedTime(cancelAfterAcceptRequest.getCreatedTime());
                         cancelAfterAccept.setNurseID(String.valueOf(nurseID));
                         cancelAfterAccept.setNurseName(userRepository.findById(nurseID).get().getName());
                         cancelAfterAccept.setCoordinatorID("Chưa có điều phối viên nhận");
@@ -480,9 +486,10 @@ public class NurseController {
                         RequestHistory transportingStatusRequest = requestHistoryRepository.findAllByRequestIDAndStatusAndUserIDOrderByCreatedTimeDesc(request.getRequestID(), "transporting", nurseID).get(0);
                         //System.out.println(transportingStatusRequest.getRequestID() + transportingStatusRequest.getNote());
                         CompletedRequestModel completedRequestModel = new CompletedRequestModel();
-                        completedRequestModel.setRequestID(String.valueOf(request.getRequestID()));
+                        completedRequestModel.setRequestID(request.getRequestID());
                         ////////////////////Object Request
-                        Request workingRequest = requestRepository.getOne(request.getRequestID());
+                        //Request workingRequest = requestRepository.getOne(request.getRequestID());
+                        Request workingRequest = requestService.getRequest(request.getRequestID());
                         ////////////////////
                         completedRequestModel.setCustomerID(String.valueOf(workingRequest.getUserID()));
                         completedRequestModel.setCustomerName(userRepository.findById(workingRequest.getUserID()).get().getName());
@@ -494,7 +501,7 @@ public class NurseController {
                         completedRequestModel.setRequestTownID(workingRequest.getTownCode());
                         completedRequestModel.setRequestTownName(townRepository.findById(workingRequest.getTownCode()).get().getTownName());
                         completedRequestModel.setRequestMeetingTime(workingRequest.getMeetingTime());
-                        completedRequestModel.setRequestCreatedTime(workingRequest.getCreatedDate());
+                        completedRequestModel.setRequestCreatedTime(workingRequest.getCreatedTime());
                         completedRequestModel.setNurseID(String.valueOf(nurseID));
                         completedRequestModel.setNurseName(userRepository.findById(nurseID).get().getName());
                         completedRequestModel.setCoordinatorID(String.valueOf(request.getUserID()));

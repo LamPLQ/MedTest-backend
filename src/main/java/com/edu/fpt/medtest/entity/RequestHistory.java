@@ -23,7 +23,7 @@ public class RequestHistory implements Serializable {
 
 
     @Column(name = "RequestID")
-    private int requestID;
+    private String requestID;
 
     @Column(name = "Status")
     private String status;
@@ -62,11 +62,19 @@ public class RequestHistory implements Serializable {
         this.createdTime = createdTime;
     }
 
-    public int getRequestID() {
+    /*public int getRequestID() {
         return requestID;
     }
 
     public void setRequestID(int requestID) {
+        this.requestID = requestID;
+    }*/
+
+    public String getRequestID() {
+        return requestID;
+    }
+
+    public void setRequestID(String requestID) {
         this.requestID = requestID;
     }
 
