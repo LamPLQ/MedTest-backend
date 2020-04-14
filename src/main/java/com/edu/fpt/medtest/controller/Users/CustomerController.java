@@ -8,6 +8,7 @@ import com.edu.fpt.medtest.service.Request.RequestHistoryService;
 import com.edu.fpt.medtest.service.Request.RequestService;
 import com.edu.fpt.medtest.service.UserService;
 import com.edu.fpt.medtest.utils.ApiResponse;
+import com.edu.fpt.medtest.utils.ComfirmResponse;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -189,15 +190,15 @@ public class CustomerController {
         //Optional<User> getCustomer = userRepository.getUserByIdAndRole(id, "CUSTOMER");
         Optional<User> getCustomer = userService.getUserByID(id);
         if (!getCustomer.isPresent()) {
-            return new ResponseEntity<>(new ApiResponse(true, "Người dùng không tồn tại!"), HttpStatus.OK);
+            return new ResponseEntity<>(new ComfirmResponse(true, "Người dùng không tồn tại!",false), HttpStatus.OK);
         }
         if (!BCrypt.checkpw(changePasswordModel.getOldPassword(), getCustomer.get().getPassword())) {
-            return new ResponseEntity<>(new ApiResponse(true, "Mật khẩu hiện tại không đúng!"), HttpStatus.OK);
+            return new ResponseEntity<>(new ComfirmResponse(true, "Mật khẩu hiện tại không đúng!", false), HttpStatus.OK);
         }
         changePasswordModel.setID(id);
         getCustomer.get().setPassword(bCryptPasswordEncoder.encode(changePasswordModel.getNewPassword()));
         userService.saveUser(getCustomer.get());
-        return new ResponseEntity<>(new ApiResponse(true, "Thay đổi mật khẩu thành công!"), HttpStatus.OK);
+        return new ResponseEntity<>(new ComfirmResponse(true, "Thay đổi mật khẩu thành công!", true), HttpStatus.OK);
     }
 
     //list request of customer
