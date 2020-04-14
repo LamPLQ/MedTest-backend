@@ -1,13 +1,12 @@
 package com.edu.fpt.medtest.controller.Users;
 
-import com.edu.fpt.medtest.entity.District;
-import com.edu.fpt.medtest.entity.Notification;
-import com.edu.fpt.medtest.entity.Town;
-import com.edu.fpt.medtest.entity.User;
+import com.edu.fpt.medtest.entity.*;
+import com.edu.fpt.medtest.model.CheckOTPModel;
 import com.edu.fpt.medtest.model.ForgotPasswordModel;
 import com.edu.fpt.medtest.model.SentMailModel;
 import com.edu.fpt.medtest.model.SmsRequest;
 import com.edu.fpt.medtest.repository.DistrictRepository;
+import com.edu.fpt.medtest.repository.TokenRepository;
 import com.edu.fpt.medtest.repository.TownRepository;
 import com.edu.fpt.medtest.repository.UserRepository;
 import com.edu.fpt.medtest.service.MailService;
@@ -15,6 +14,8 @@ import com.edu.fpt.medtest.service.NotificationService;
 import com.edu.fpt.medtest.service.SmsService.SmsService;
 import com.edu.fpt.medtest.service.UserService;
 import com.edu.fpt.medtest.utils.ApiResponse;
+import com.edu.fpt.medtest.utils.CheckOTPResponse;
+import com.edu.fpt.medtest.utils.SendMessageResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -56,6 +57,12 @@ public class UserController {
 
     @Autowired
     private SmsService smsService;
+
+    @Autowired
+    private TokenRepository tokenRepository;
+
+    @Autowired
+    private BCryptPasswordEncoder bCryptPasswordEncoder;
 
     // List user with state ACTIVE
     @GetMapping("/list/active")
@@ -171,12 +178,53 @@ public class UserController {
         return new ResponseEntity(returnList,HttpStatus.OK) ;
     }
 
-    //sendMessage to phone
-    @PostMapping("/sms")
+    //send OTP to phone by messsing
+    //      to verify phone is true
+    @PostMapping("/check-phone-otp")
     public ResponseEntity<?> sendSmS(@Valid @RequestBody SmsRequest smsRequest) {
+        boolean existByPhoneAndRole = userRepository.existsByPhoneNumberAndRole(smsRequest.getPhoneNumber(), "CUSTOMER");
+        if (existByPhoneAndRole == true) {
+            return new ResponseEntity<>(new SendMessageResponse(true, "Số điện thoại đã tồn tại!",false), HttpStatus.OK);
+        }
         smsService.sendSms(smsRequest);
-        return new ResponseEntity<>(new ApiResponse(true,"Send success"), HttpStatus.OK);
+        return new ResponseEntity<>(new SendMessageResponse(true,"Gửi thành công tin nhắn đến số điện thoại.",true), HttpStatus.OK);
     }
+
+    //check OPT is valid
+    //              valid=true -> insert 1 object user -> message insert successful
+    //              valid=false -> return message
+    @PostMapping("/valid-phone-otp")
+    public ResponseEntity<?> isValidPhoneNumberOTP(@RequestBody CheckOTPModel checkOTPModel){
+        Optional<ValidPhoneToken> checkValidPhoneToken = tokenRepository.getByPhoneNumberAndToken(checkOTPModel.getPhoneNumber(),checkOTPModel.getToken());
+        if(!checkValidPhoneToken.isPresent()){
+            return new ResponseEntity<>(new CheckOTPResponse(true,"Mã OTP không hợp lệ!",false, false), HttpStatus.OK);
+        }
+        if(checkValidPhoneToken.get().getExpiredTime()<=System.currentTimeMillis()) {
+            tokenRepository.delete(tokenRepository.getOne(checkValidPhoneToken.get().getSessionID()));
+            return new ResponseEntity<>(new CheckOTPResponse(true, "Mã OTP hết hạn!", false, true), HttpStatus.OK);
+        }
+        //tokenRepository.delete(tokenRepository.getOne(checkValidPhoneToken.get().getSessionID()));
+        //System.out.println(tokenRepository.getOne(checkValidPhoneToken.get().getSessionID()));
+        String enCryptPassword = bCryptPasswordEncoder.encode(checkOTPModel.getPassword());
+        User registeredUser = new User();
+        registeredUser.setName(checkOTPModel.getName());
+        registeredUser.setPhoneNumber(checkOTPModel.getPhoneNumber());
+        registeredUser.setEmail(checkOTPModel.getEmail());
+        registeredUser.setDob(checkOTPModel.getDob());
+        registeredUser.setGender(checkOTPModel.getGender());
+        registeredUser.setPassword(checkOTPModel.getPassword());
+        registeredUser.setActive(1);
+        registeredUser.setAddress(null);
+        registeredUser.setRole("CUSTOMER");
+        registeredUser.setImage(registeredUser.getImage());
+        registeredUser.setTownCode(null);
+        registeredUser.setDistrictCode(null);
+        registeredUser.setPassword(enCryptPassword);
+        userService.saveUser(registeredUser);
+        tokenRepository.delete(tokenRepository.getOne(checkValidPhoneToken.get().getSessionID()));
+    return new ResponseEntity<>(new CheckOTPResponse(true,"Nhập mã OTP thành công",true,true), HttpStatus.OK);
+    }
+
 
 }
 

@@ -105,7 +105,6 @@ public class CustomerController {
         customer.setDistrictCode(null);
         customer.setPassword(enCryptPassword);
         userService.saveUser(customer);
-
         return new ResponseEntity<>(new ApiResponse(true, "Đã đăng kí thành công!"), HttpStatus.OK);
     }
 
@@ -115,7 +114,7 @@ public class CustomerController {
         List<User> users = userRepository.findAllByRole("CUSTOMER");
         System.out.println(users);
         if (users.isEmpty()) {
-            return new ResponseEntity<>(new ApiResponse(true, "No user is found"), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(new ApiResponse(true, "Không có người dùng nào trong danh sách hiện tại."), HttpStatus.OK);
         }
         return new ResponseEntity<>(users, HttpStatus.OK);
     }

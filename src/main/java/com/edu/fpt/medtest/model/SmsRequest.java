@@ -11,15 +11,19 @@ public class SmsRequest {
    /* @NotNull
     private final String message;*/
 
-    public SmsRequest(@JsonProperty("phoneNumber") String phoneNumber){
-                      //@JsonProperty("message") String message) {
+   /*public SmsRequest(@JsonProperty("phoneNumber") String phoneNumber){
+                      @JsonProperty("message") String message) {
         this.phoneNumber = phoneNumber;
-        //this.message = message;
-    }
+        this.message = message;
+    }*/
 
    /* public String getMessage() {
         return message;
     }*/
+
+   public SmsRequest(@JsonProperty("phoneNumber") String phoneNumber) {
+       this.phoneNumber = phoneNumber;
+   }
 
     public String getPhoneNumber() {
         return phoneNumber;

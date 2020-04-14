@@ -286,7 +286,7 @@ public class NurseController {
                     detailRequestModel.setCustomerPhoneNumber(userRepository.findById(nowRequest.getUserID()).get().getPhoneNumber());
                     detailRequestModel.setCustomerDOB(userRepository.findById(nowRequest.getUserID()).get().getDob());
                     //detailRequestModel.setRequestAddress(nowRequest.getAddress() + " " + townRepository.findById(nowRequest.getTownCode()).get().getTownName()
-                     //       + " " + districtRepository.findById(nowRequest.getDistrictCode()).get().getDistrictName());
+                    //       + " " + districtRepository.findById(nowRequest.getDistrictCode()).get().getDistrictName());
                     detailRequestModel.setRequestAddress(nowRequest.getAddress());
                     detailRequestModel.setRequestDistrictID(nowRequest.getDistrictCode());
                     detailRequestModel.setRequestDistrictName(districtRepository.findById(nowRequest.getDistrictCode()).get().getDistrictName());
@@ -331,7 +331,7 @@ public class NurseController {
         }
         //with each request in list request
         List<RequestHistory> lsLastStatus = new ArrayList<>();
-        for (Request requestPending : lsAllRequest.subList(1,lsAllRequest.size())) {
+        for (Request requestPending : lsAllRequest.subList(1, lsAllRequest.size())) {
             boolean existRequestID = requestHistoryRepository.existsByRequestID(requestPending.getRequestID());
             if (existRequestID == false) {
                 System.out.println("Don't have this requestID");
@@ -418,7 +418,7 @@ public class NurseController {
         }
         //with each request in list request
         List<RequestHistory> lsLastStatus = new ArrayList<>();
-        for (Request requestPending : lsAllRequest.subList(1,lsAllRequest.size())) {
+        for (Request requestPending : lsAllRequest.subList(1, lsAllRequest.size())) {
             boolean existRequestID = requestHistoryRepository.existsByRequestID(requestPending.getRequestID());
             if (existRequestID == false) {
                 System.out.println("Don't have this requestID");
