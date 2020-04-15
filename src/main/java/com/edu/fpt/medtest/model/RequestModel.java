@@ -8,7 +8,7 @@ import java.util.Date;
 import java.util.List;
 
 @Entity
-@Table(name = "temp_requestmodel")
+@Table(name = "temp_request_model")
 @EntityListeners(AuditingEntityListener.class)
 public class RequestModel {
 

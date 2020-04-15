@@ -21,6 +21,10 @@ public class Test implements Serializable {
     @Column(name = "testTypeID")
     private int testTypeID;
 
+    @Column(name = "VersionID")
+    private int versionID;
+
+
     public Test() {
     }
 
@@ -34,6 +38,15 @@ public class Test implements Serializable {
     public void setRequestsChosen(Set<Request> requestsChosen) {
         this.requestsChosen = requestsChosen;
     }*/
+
+    public int getVersionID() {
+        return versionID;
+    }
+
+    public void setVersionID(int versionID) {
+        this.versionID = versionID;
+    }
+
     public int getTestID() {
         return testID;
     }

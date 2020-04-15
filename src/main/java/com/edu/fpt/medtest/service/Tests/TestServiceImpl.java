@@ -30,4 +30,10 @@ public class TestServiceImpl implements TestService {
     public void saveTest(Test test) {
         testRepository.save(test);
     }
+
+    @Override
+    public List<Test> getTestsByVersion(int versionID) {
+        List<Test> lsTestsByVersion = testRepository.getAllByVersionID(versionID);
+        return lsTestsByVersion;
+    }
 }

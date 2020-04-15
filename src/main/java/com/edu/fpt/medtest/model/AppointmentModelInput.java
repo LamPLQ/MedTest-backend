@@ -7,7 +7,7 @@ import javax.persistence.*;
 import java.util.Date;
 
 @Entity
-@Table(name = "temp_appointmentmodel")
+@Table(name = "temp_appointment_model")
 @EntityListeners(AuditingEntityListener.class)
 public class AppointmentModelInput {
     @Id

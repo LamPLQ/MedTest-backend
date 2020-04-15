@@ -13,4 +13,6 @@ public interface TestService {
     Optional<Test> findTestByID(int testID);
 
     void saveTest(Test test);
+
+    List<Test> getTestsByVersion(int versionID);
 }

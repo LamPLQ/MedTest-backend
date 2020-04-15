@@ -12,4 +12,8 @@ public interface TestRepository extends JpaRepository<Test, Integer> {
     List<Test> getAllByTestTypeID(int testTypeID);
 
     boolean existsByTestID(int testID);
+
+    List<Test> getAllByVersionID(int versionID);
+
+    List<Test> getAllByVersionIDAndTestTypeID(int version, int testType);
 }
