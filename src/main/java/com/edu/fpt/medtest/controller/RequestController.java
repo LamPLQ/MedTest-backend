@@ -220,7 +220,7 @@ public class RequestController {
         //notification.setUserID(getRequest.get().getUserID());
         notification.setUserID(requestPresenting.getUserID());
         notification.setRequestID(ID);
-        notification.setAppointmentID("1");
+        notification.setAppointmentID("000001");
         notification.setIsRead(0);
         notification.setType("REQUEST");
         //set message of notification
@@ -238,7 +238,7 @@ public class RequestController {
                 RequestHistory requestOfNurse = requestHistoryRepository.findAllByRequestIDOrderByCreatedTimeDesc(ID).get(1);
                 notiForNurse.setUserID(requestOfNurse.getUserID());
                 notiForNurse.setRequestID(requestOfNurse.getRequestID());
-                notiForNurse.setAppointmentID("1");
+                notiForNurse.setAppointmentID("000001");
                 notiForNurse.setIsRead(0);
                 notiForNurse.setType("REQUEST");
                 notiForNurse.setMessage("Điều phối viên " + userRepository.findById(requestHistory.getUserID()).get().getName() + " đã tiếp nhận mẫu xét nghiệm mã ID = " + ID + " từ y tá "
@@ -247,6 +247,9 @@ public class RequestController {
                 break;
             case "closed":
                 notification.setMessage("Đã hoàn thành kết quả cho mẫu xét nghiệm ID = " + ID + ". Trạng thái đơn hiện tại: Đã xong.");
+                break;
+            case "canceled":
+                notification.setMessage("Khách hàng " + userRepository.findById(requestHistory.getUserID()).get().getName() + " đã huỷ đơn xét nghiệm có ID = " + ID + ". Trạng thái đơn hiện tại: Đã huỷ.");
                 break;
             case "pending":
                 notification.setMessage("Mẫu xét nghiệm mã ID = " + ID + " đang đợi y tá nhận đơn. Trạng thái đơn hiện tại: Đang đợi y tá nhận đơn.");

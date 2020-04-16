@@ -141,7 +141,7 @@ public class AppointmentController {
         notification.setAppointmentID(notiAppointment.getID());
         notification.setType("APPOINTMENT");
         notification.setIsRead(0);
-        notification.setRequestID("1");
+        notification.setRequestID("000001");
         notification.setUserID(notiAppointment.getCustomerID());
         notification.setMessage("Khách hàng " + userRepository.findById(notiAppointment.getCustomerID()).get().getName()
                 + " đã huỷ cuộc hẹn tại phòng khám lúc " + notiAppointment.getMeetingTime());
@@ -171,7 +171,7 @@ public class AppointmentController {
         notification.setAppointmentID(notiAppointment.getID());
         notification.setType("APPOINTMENT");
         notification.setIsRead(0);
-        notification.setRequestID("1");
+        notification.setRequestID("000001");
         notification.setUserID(notiAppointment.getCustomerID());
         notification.setMessage("Cuộc hẹn của bạn lúc " + notiAppointment.getMeetingTime() +
                 " đã được xác nhận bởi điểu phối viên " + userRepository.findById(notiAppointment.getCoordinatorID()).get().getName());
@@ -198,7 +198,7 @@ public class AppointmentController {
         notification.setAppointmentID(notiAppointment.getID());
         notification.setType("APPOINTMENT");
         notification.setIsRead(0);
-        notification.setRequestID("1");
+        notification.setRequestID("000001");
         notification.setUserID(notiAppointment.getCustomerID());
         notification.setMessage("Cuộc hẹn của bạn lúc " + notiAppointment.getMeetingTime() +
                 " bị huỷ bởi điểu phối viên " + userRepository.findById(notiAppointment.getCoordinatorID()).get().getName());
