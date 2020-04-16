@@ -56,26 +56,26 @@ public class TwilioSmsSender implements SmsSender {
             tokenRepository.save(validPhoneToken);
 
             //System.out.printf("valid Phone Token expire time after save:"+ validPhoneToken.getCreatedTime()+ "\n");
-            System.out.println("createdtime" + validPhoneToken.getCreatedTime());
-            System.out.println("expireTime" + validPhoneToken.getExpiredTime());
+            //System.out.println("createdtime" + validPhoneToken.getCreatedTime());
+            //System.out.println("expireTime" + validPhoneToken.getExpiredTime());
             SimpleDateFormat sdf = new SimpleDateFormat("MMM dd,yyyy HH:mm:ss");
             Date createdTime = new Date(validPhoneToken.getCreatedTime());
             Date expiredTime = new Date(validPhoneToken.getExpiredTime());
-            System.out.println("createdtime" + createdTime);
-            System.out.println("expireTime" + expiredTime);
+            //System.out.println("createdtime" + createdTime);
+            //System.out.println("expireTime" + expiredTime);
 
             //String CreatedTime
             String createdTimeRaw = createdTime.toString();
             String cutTime = createdTimeRaw.substring(createdTimeRaw.length() - 17);
             String messageTime = cutTime.substring(0, cutTime.length() - 9);
-            System.out.println("MessageTime '" + messageTime + "'");
+            //System.out.println("MessageTime '" + messageTime + "'");
 
             PhoneNumber phoneNumberTo = new PhoneNumber(validPhoneNumber);
             PhoneNumber phoneNumberfrom = new PhoneNumber(twilioConfiguration.getTrialNumber());
             String message = "[MEDTEST] Mã OTP xác nhận: " + token + ". Hãy nhập mã trong vòng 3 phút kể từ " + messageTime + ".";
             MessageCreator creator = Message.creator(phoneNumberTo, phoneNumberfrom, message);
             creator.create();
-            System.out.println(message);
+            //System.out.println(message);
             LOGGER.info("Send sms {}" + smsRequest);
         } else {
             throw new IllegalArgumentException("Phone number [" + smsRequest.getPhoneNumber() + "] is not a valid number");

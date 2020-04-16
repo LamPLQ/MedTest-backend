@@ -24,7 +24,7 @@ public class FileController {
     private FileStorageService fileStorageService;
 
     //upload 1 file
-    @PostMapping("/uploadFile")
+    @PostMapping(value = "/uploadFile")
     public UploadFileResponse uploadFile(@RequestParam("file") MultipartFile file) {
         String fileName = fileStorageService.storeFile(file);
 
@@ -35,6 +35,12 @@ public class FileController {
         return new UploadFileResponse(fileName, fileDownloadUri,
                 file.getContentType(), file.getSize());
     }
+
+    /*@PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity uploadFile(@RequestParam MultipartFile file) {
+        logger.info(String.format("File name '%s' uploaded successfully.", file.getOriginalFilename()));
+        return ResponseEntity.ok().build();
+    }*/
 
     //save 1 file
     @GetMapping("/saveFile/{fileName:.+}")

@@ -180,11 +180,15 @@ public class UserController {
 
     //send OTP to phone by messsing
     //      to verify phone is true
-    @PostMapping("/check-phone-otp")
+    @PostMapping("/send-otp")
     public ResponseEntity<?> sendSmS(@Valid @RequestBody SmsRequest smsRequest) {
         boolean existByPhoneAndRole = userRepository.existsByPhoneNumberAndRole(smsRequest.getPhoneNumber(), "CUSTOMER");
         if (existByPhoneAndRole == true) {
             return new ResponseEntity<>(new SendMessageResponse(true, "Số điện thoại đã tồn tại!",false), HttpStatus.OK);
+        }
+        List<ValidPhoneToken> lsAllTokenOfPhoneNumber = tokenRepository.getAllByPhoneNumber(smsRequest.getPhoneNumber());
+        for (ValidPhoneToken validPhoneToken:lsAllTokenOfPhoneNumber){
+            tokenRepository.delete(validPhoneToken);
         }
         smsService.sendSms(smsRequest);
         return new ResponseEntity<>(new SendMessageResponse(true,"Gửi thành công tin nhắn đến số điện thoại.",true), HttpStatus.OK);
@@ -195,7 +199,7 @@ public class UserController {
     //              valid=false -> return message
     @PostMapping("/valid-phone-otp")
     public ResponseEntity<?> isValidPhoneNumberOTP(@RequestBody CheckOTPModel checkOTPModel){
-        Optional<ValidPhoneToken> checkValidPhoneToken = tokenRepository.getByPhoneNumberAndToken(checkOTPModel.getPhoneNumber(),checkOTPModel.getToken());
+        Optional<ValidPhoneToken> checkValidPhoneToken = tokenRepository.getByPhoneNumberAndToken(checkOTPModel.getPhoneNumber(),checkOTPModel.getOtp());
         if(!checkValidPhoneToken.isPresent()){
             return new ResponseEntity<>(new CheckOTPResponse(true,"Mã OTP không hợp lệ!",false, false), HttpStatus.OK);
         }
@@ -223,6 +227,18 @@ public class UserController {
         userService.saveUser(registeredUser);
         tokenRepository.delete(tokenRepository.getOne(checkValidPhoneToken.get().getSessionID()));
     return new ResponseEntity<>(new CheckOTPResponse(true,"Nhập mã OTP thành công",true,true), HttpStatus.OK);
+    }
+
+    //resendOTP
+    @PostMapping("/resend-otp")
+    public ResponseEntity<?> resendOTP(@Valid @RequestBody SmsRequest smsRequest) {
+        Optional<ValidPhoneToken> validPhoneToken = tokenRepository.getByPhoneNumber(smsRequest.getPhoneNumber());
+        if (!validPhoneToken.isPresent()) {
+            return new ResponseEntity<>(new SendMessageResponse(true, "Số điện thoại không tồn tại!",false), HttpStatus.OK);
+        }
+        tokenRepository.delete(validPhoneToken.get());
+        smsService.sendSms(smsRequest);
+        return new ResponseEntity<>(new SendMessageResponse(true,"Đã gửi lại mã OTP tới đến số điện thoại.",true), HttpStatus.OK);
     }
 
 

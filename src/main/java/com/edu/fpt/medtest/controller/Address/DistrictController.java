@@ -111,5 +111,19 @@ public class DistrictController {
         return new ResponseEntity<>(lsResult, HttpStatus.OK);
     }
 
+    //get all town in 1 district
+    @GetMapping("/{districtCode}/list-town")
+    public ResponseEntity<?> lsTownByDistrict(@PathVariable("districtCode") String districtCode){
+        Optional<District> getDistrictByDistricCode = districtService.findDistrictByCode(districtCode);
+        if(!getDistrictByDistricCode.isPresent()){
+            return new ResponseEntity<>(new ApiResponse(true,"Không tồn tại mã quận " + districtCode), HttpStatus.OK);
+        }
+        List<Town> lsAllTownByDistrict = townService.getAllByDistrictCode(districtCode);
+        if(lsAllTownByDistrict.isEmpty()){
+            return new ResponseEntity<>(new ApiResponse(true,"Không có phường/xã nào thuộc quận này!"), HttpStatus.OK);
+        }
+        return new ResponseEntity<>(lsAllTownByDistrict,HttpStatus.OK);
+    }
+
 
 }

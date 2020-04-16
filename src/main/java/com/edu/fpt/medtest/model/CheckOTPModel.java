@@ -4,7 +4,7 @@ import java.util.Date;
 
 public class CheckOTPModel {
 
-    private String token;
+    private String otp;
 
     private String name;
 
@@ -79,11 +79,11 @@ public class CheckOTPModel {
         this.gender = gender;
     }
 
-    public String getToken() {
-        return token;
+    public String getOtp() {
+        return otp;
     }
 
-    public void setToken(String token) {
-        this.token = token;
+    public void setOtp(String otp) {
+        this.otp = otp;
     }
 }

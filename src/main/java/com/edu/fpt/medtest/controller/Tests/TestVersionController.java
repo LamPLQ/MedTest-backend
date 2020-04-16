@@ -47,7 +47,7 @@ public class TestVersionController {
     //list all version
     @GetMapping("/list")
     public ResponseEntity<?> lsVersions() {
-        List<TestVersion> lsVersions = testVersionService.listAllVersion();
+        List<TestVersion> lsVersions = testVersionService.lsTestVersionByCreatedTimeDesc();
         if (lsVersions.isEmpty()) {
             return new ResponseEntity<>(new ApiResponse(true, "Hiện tại không có version nào!"), HttpStatus.OK);
         }
@@ -78,6 +78,9 @@ public class TestVersionController {
         List<TestVersion> lsTestVersion = testVersionService.lsTestVersionByCreatedTimeDesc();
         int currentVersion = lsTestVersion.get(0).getVersionID();
         //System.out.println(lsTestVersion.get(0).getVersionID());
+        if(lsTestVersion.isEmpty()){
+            return new ResponseEntity<>(new ApiResponse(true,"Hệ thống không có xét nghiệm nào!"),HttpStatus.OK);
+        }
 
         //Add list tests input
         List<Test> lsInputTest = upgradeVersionModel.getLsInputTest();
@@ -130,6 +133,54 @@ public class TestVersionController {
     //list all test of 1 version
     @GetMapping("/list-all-test/{id}")
     public ResponseEntity<?> allTestOfVersion(@PathVariable("id") int versionID) {
+        List<Test> testsByVersion = testRepository.getAllByVersionID(versionID);
+        if (testsByVersion.isEmpty()) {
+            return new ResponseEntity<>(new ApiResponse(true, "Không có xét nghiệm nào tại version này!"), HttpStatus.OK);
+        }
+        Optional<TestVersion> currentTestVersion = testVersionService.testVersionByID(versionID);
+        //return
+        TestOfVersionModel returnAllTestOfThisVersion = new TestOfVersionModel();
+        // set current version
+        returnAllTestOfThisVersion.setVersionID(currentTestVersion.get().getVersionID());
+
+        //set creatorID
+        returnAllTestOfThisVersion.setCreatorID(currentTestVersion.get().getCreatorID());
+
+        //set createdName
+        returnAllTestOfThisVersion.setCreatorName(userRepository.findById(currentTestVersion.get().getCreatorID()).get().getName());
+
+        //set createdTime
+        returnAllTestOfThisVersion.setCreatedTime(currentTestVersion.get().getCreatedTime());
+
+        //list test
+        List<TestTypeListModel> apiResponse = new ArrayList<>();
+        ///
+        List<TestType> lsTestType = testTypeService.lsTestType();
+        for (TestType testType : lsTestType) {
+            TestTypeListModel model = new TestTypeListModel();
+            //set test type
+            model.setTestTypeID(testType.getTestTypeID());
+            //set test type name
+            model.setTestTypeName(testType.getTestTypeName());
+            //set list test
+            List<Test> testsByTestType = testRepository.getAllByVersionIDAndTestTypeID(currentTestVersion.get().getVersionID(), testType.getTestTypeID());
+            model.setListTest(testsByTestType);
+            apiResponse.add(model);
+        }
+        //set list test
+        returnAllTestOfThisVersion.setLsTests(apiResponse);
+        return new ResponseEntity<>(returnAllTestOfThisVersion, HttpStatus.OK);
+    }
+
+
+    //list all test of most recently version
+    @GetMapping("/lastest-version-test")
+    public ResponseEntity<?> lsTestLatestVersion() {
+        List<TestVersion> lsTestVersion = testVersionService.lsTestVersionByCreatedTimeDesc();
+        if(lsTestVersion.isEmpty()){
+            return new ResponseEntity<>(new ApiResponse(true,"Hệ thống không có xét nghiệm nào!"),HttpStatus.OK);
+        }
+        int versionID = lsTestVersion.get(0).getVersionID();
         List<Test> testsByVersion = testRepository.getAllByVersionID(versionID);
         if (testsByVersion.isEmpty()) {
             return new ResponseEntity<>(new ApiResponse(true, "Không có xét nghiệm nào tại version này!"), HttpStatus.OK);
