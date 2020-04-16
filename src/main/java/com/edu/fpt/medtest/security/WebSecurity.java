@@ -56,13 +56,17 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.GET, SecurityUtils.DETAIL_TEST).permitAll()
                 .antMatchers(HttpMethod.GET, SecurityUtils.LIST_TEST).permitAll()
                 .antMatchers(HttpMethod.GET, SecurityUtils.DETAIL_ARTICLE).permitAll()
+                .antMatchers(HttpMethod.GET, SecurityUtils.LIST_TEST_OF_LATEST_VERSION).permitAll()
+                .antMatchers(HttpMethod.POST, SecurityUtils.VERIFY_PHONE_BY_SEND_OTP).permitAll()
+                .antMatchers(HttpMethod.POST, SecurityUtils.VALID_PHONE_OTP).permitAll()
+                .antMatchers(HttpMethod.POST, SecurityUtils.RESEND_OTP).permitAll()
 
                 //////////////for test
                 .antMatchers(HttpMethod.POST, SecurityUtils.UPLOAD_FILE).permitAll()
                 .antMatchers(HttpMethod.GET, SecurityUtils.SAVE_FILE).permitAll()
 
-                //.anyRequest().authenticated()
-                .anyRequest().permitAll()
+                .anyRequest().authenticated()
+                //.anyRequest().permitAll()
                 .and()
                 //.addFilter(new JWTAuthenticationFilter(authenticationManager()))
                 .addFilter(new JWTAuthorizationFilter(authenticationManager()))

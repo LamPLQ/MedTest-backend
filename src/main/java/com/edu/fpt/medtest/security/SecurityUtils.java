@@ -30,6 +30,10 @@ public class SecurityUtils {
     public static final String DETAIL_TOWN = "/management/districts/towns/detail/{id}";
     public static final String DETAIL_TEST = "/test-types/tests/detail/{id}";
     public static final String LIST_TEST = "/test-types/tests/list";
+    public static final String VERIFY_PHONE_BY_SEND_OTP = "/users/send-otp";
+    public static final String VALID_PHONE_OTP = "/users/valid-phone-otp";
+    public static final String RESEND_OTP = "/users/resend-otp";
+    public static final String LIST_TEST_OF_LATEST_VERSION = "/tests/versions/lastest-version-test";
 //
     public static final String UPLOAD_FILE = "/uploadFile";
     public static final String SAVE_FILE = "/saveFile/{fileName:.+}";
