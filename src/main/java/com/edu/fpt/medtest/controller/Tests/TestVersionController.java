@@ -19,6 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -61,10 +62,10 @@ public class TestVersionController {
             versionResponseModel.setCreatorName(userRepository.findById(testVersion.getCreatorID()).get().getName());
             lsResponseVersion.add(versionResponseModel);
         }*/
-        Date createdTime = new Date(System.currentTimeMillis());
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         String x = sdf.format(System.currentTimeMillis());
-        return new ResponseEntity<>(x, HttpStatus.OK);
+        String result = x.substring(0,10) + "T"+x.substring(11)+".000+0000";
+        return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
     //create new version
@@ -80,11 +81,20 @@ public class TestVersionController {
         newVersion.setCreatorID(upgradeVersionModel.getCreatorID());
 
         //current system time
-        Date createdTime = new Date(System.currentTimeMillis());
-        System.out.println("date type: '" + createdTime + "'");
+        /*Date createdTime = new Date(System.currentTimeMillis());
+        System.out.println("date type: '" + createdTime + "'");*/
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String currentTime = sdf.format(System.currentTimeMillis());
+        //String createdTime = currentTime.substring(0,10) + "T"+x.substring(11)+".000+0000";
+        Date inputDatabaseTime = new Date();
+        try {
+            inputDatabaseTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(currentTime);
+        }catch (ParseException parseException){
+            System.out.println(parseException);
+        }
         //===================
 
-        newVersion.setCreatedTime(createdTime);
+        newVersion.setCreatedTime(inputDatabaseTime);
         testVersionService.saveATestVersion(newVersion);
 
         List<TestVersion> lsTestVersion = testVersionService.lsTestVersionByCreatedTimeDesc();
