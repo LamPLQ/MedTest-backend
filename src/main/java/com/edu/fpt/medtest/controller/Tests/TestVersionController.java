@@ -79,24 +79,7 @@ public class TestVersionController {
         //create a new version
         TestVersion newVersion = new TestVersion();
         newVersion.setCreatorID(upgradeVersionModel.getCreatorID());
-
-        //current system time
-        /*Date createdTime = new Date(System.currentTimeMillis());
-        System.out.println("date type: '" + createdTime + "'");*/
-        //SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        //String currentTime = sdf.format(System.currentTimeMillis());
-        //String createdTime = currentTime.substring(0,10) + "T"+currentTime.substring(11)+".000+0000";
-
-        /*Date inputDatabaseTime = new Date();
-        try {
-            inputDatabaseTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(currentTime);
-        }catch (ParseException parseException){
-            System.out.println(parseException);
-        }
-        //===================
-
-        newVersion.setCreatedTime(inputDatabaseTime);
-        testVersionService.saveATestVersion(newVersion);*/
+        testVersionService.saveATestVersion(newVersion);
 
         List<TestVersion> lsTestVersion = testVersionService.lsTestVersionByCreatedTimeDesc();
         int currentVersion = lsTestVersion.get(0).getVersionID();
@@ -122,9 +105,11 @@ public class TestVersionController {
         testsOfVersion.setVersionID(currentVersion);// set current version
         testsOfVersion.setCreatorID(lsTestVersion.get(0).getCreatorID());//set creatorID
         testsOfVersion.setCreatorName(userRepository.findById(lsTestVersion.get(0).getCreatorID()).get().getName());//set createdName
+        //=====================//
         SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         String displayCreatedTest =  sdf2.format(lsTestVersion.get(0).getCreatedTime());
         String createdTime = displayCreatedTest.substring(0,10) + "T"+displayCreatedTest.substring(11)+".000+0000";
+        //=====================//
         testsOfVersion.setCreatedTime(createdTime);//set createdTime
 
         //list test
@@ -160,7 +145,12 @@ public class TestVersionController {
         returnAllTestOfThisVersion.setVersionID(currentTestVersion.get().getVersionID());//set creatorID
         returnAllTestOfThisVersion.setCreatorID(currentTestVersion.get().getCreatorID());//set createdName
         returnAllTestOfThisVersion.setCreatorName(userRepository.findById(currentTestVersion.get().getCreatorID()).get().getName());
-        //returnAllTestOfThisVersion.setCreatedTime(currentTestVersion.get().getCreatedTime());//set createdTime
+        //=====================//
+        SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String displayCreatedTest =  sdf2.format(currentTestVersion.get().getCreatedTime());
+        String createdTime = displayCreatedTest.substring(0,10) + "T"+displayCreatedTest.substring(11)+".000+0000";
+        //=====================//
+        returnAllTestOfThisVersion.setCreatedTime(createdTime);//set createdTime
 
         //list test
         List<TestTypeListModel> apiResponse = new ArrayList<>();
@@ -201,7 +191,12 @@ public class TestVersionController {
         returnAllTestOfThisVersion.setVersionID(currentTestVersion.get().getVersionID());// set current version
         returnAllTestOfThisVersion.setCreatorID(currentTestVersion.get().getCreatorID()); //set creatorID
         returnAllTestOfThisVersion.setCreatorName(userRepository.findById(currentTestVersion.get().getCreatorID()).get().getName()); //set createdName
-        //returnAllTestOfThisVersion.setCreatedTime(currentTestVersion.get().getCreatedTime());//set createdTime
+        //=====================//
+        SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String displayCreatedTest =  sdf2.format(currentTestVersion.get().getCreatedTime());
+        String createdTime = displayCreatedTest.substring(0,10) + "T"+displayCreatedTest.substring(11)+".000+0000";
+        //=====================//
+        returnAllTestOfThisVersion.setCreatedTime(createdTime);//set createdTime
 
         //list test
         List<TestTypeListModel> apiResponse = new ArrayList<>();
