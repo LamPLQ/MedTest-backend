@@ -3,23 +3,23 @@ package com.edu.fpt.medtest.model;
 import java.util.Date;
 
 public class CompletedRequestModel extends DetailRequestModel {
-    private Date requestAcceptedTime;
+    private String requestAcceptedTime;
 
-    private Date requestTransportingTime;
+    private String requestTransportingTime;
 
-    public Date getRequestAcceptedTime() {
+    public String getRequestAcceptedTime() {
         return requestAcceptedTime;
     }
 
-    public void setRequestAcceptedTime(Date requestAcceptedTime) {
+    public void setRequestAcceptedTime(String requestAcceptedTime) {
         this.requestAcceptedTime = requestAcceptedTime;
     }
 
-    public Date getRequestTransportingTime() {
+    public String getRequestTransportingTime() {
         return requestTransportingTime;
     }
 
-    public void setRequestTransportingTime(Date requestTransportingTime) {
+    public void setRequestTransportingTime(String requestTransportingTime) {
         this.requestTransportingTime = requestTransportingTime;
     }
 }

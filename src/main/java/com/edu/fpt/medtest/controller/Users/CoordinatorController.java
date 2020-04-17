@@ -39,11 +39,11 @@ public class CoordinatorController {
     //Login
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginModel loginUser) {
-        boolean existByPhoneNumberAndRole = userRepository.existsByPhoneNumberAndRole(loginUser.getPhoneNumber(),loginUser.getRole());
+        boolean existByPhoneNumberAndRole = userRepository.existsByPhoneNumberAndRole(loginUser.getPhoneNumber(), loginUser.getRole());
         if (!existByPhoneNumberAndRole == true) {
-            return new ResponseEntity<>(new ApiResponse(true, "Người dùng không tồn tại!" ), HttpStatus.OK);
+            return new ResponseEntity<>(new ApiResponse(true, "Người dùng không tồn tại!"), HttpStatus.OK);
         }
-        User userLogin = userRepository.getUserByPhoneNumberAndRole(loginUser.getPhoneNumber(),loginUser.getRole());
+        User userLogin = userRepository.getUserByPhoneNumberAndRole(loginUser.getPhoneNumber(), loginUser.getRole());
         //check password
         if (!BCrypt.checkpw(loginUser.getPassword(), userLogin.getPassword())) {
             return new ResponseEntity<>(new ApiResponse(true, "Sai mật khẩu!"), HttpStatus.OK);
@@ -56,7 +56,7 @@ public class CoordinatorController {
                 .compact();
 
         //return current user
-        User successfulUser = (userRepository.getUserByPhoneNumberAndRole(loginUser.getPhoneNumber(),loginUser.getRole()));
+        User successfulUser = (userRepository.getUserByPhoneNumberAndRole(loginUser.getPhoneNumber(), loginUser.getRole()));
         LoginAccountModel loginAccountModel = new LoginAccountModel();
         loginAccountModel.setUserInfo(successfulUser);
         loginAccountModel.setToken(token);
@@ -89,11 +89,12 @@ public class CoordinatorController {
             return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy bất kì điều phối viên nào!"), HttpStatus.OK);
         }
         List<User> returnCoordinator = new ArrayList<>();
-        for (User user: users.subList(1,users.size())){
+        for (User user : users.subList(1, users.size())) {
             returnCoordinator.add(user);
         }
         return new ResponseEntity<>(returnCoordinator, HttpStatus.OK);
     }
+
     //get coordinators - view detail info
     @GetMapping("/detail/{id}")
     public ResponseEntity<?> getUser(@PathVariable("id") int id) {

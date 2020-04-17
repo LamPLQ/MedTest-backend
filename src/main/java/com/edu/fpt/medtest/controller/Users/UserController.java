@@ -70,7 +70,7 @@ public class UserController {
     public ResponseEntity<?> listActive() {
         List<User> lsUsersActive = userService.lsUserActive();
         if (lsUsersActive.isEmpty()) {
-            return new ResponseEntity<>(new ApiResponse(true, "There is no user active"), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(new ApiResponse(true, "Không có người dùng nào ở trạng thái đang hoạt động!"), HttpStatus.OK);
         }
         return new ResponseEntity<>(lsUsersActive, HttpStatus.OK);
     }
@@ -80,7 +80,7 @@ public class UserController {
     public ResponseEntity<?> listDeactive() {
         List<User> lsUsersDeactive = userService.lsUserNotActive();
         if (lsUsersDeactive.isEmpty()) {
-            return new ResponseEntity<>(new ApiResponse(true, "There is no user deactive"), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(new ApiResponse(true, "Không có người dùng nào ở trạng thái khoá!"), HttpStatus.OK);
         }
         return new ResponseEntity<>(lsUsersDeactive, HttpStatus.OK);
     }
@@ -91,7 +91,7 @@ public class UserController {
         List<User> lsByDistrict = userService.lsUserByDistrict(code);
         Optional<District> district = districtRepository.findById(code);
         if (lsByDistrict.isEmpty())
-            return new ResponseEntity<>(new ApiResponse(true, "There is no user in district " + district.get().getDistrictName()), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(new ApiResponse(true, "Không có người dùng tại quận/huyện " + district.get().getDistrictName()), HttpStatus.OK);
         return new ResponseEntity<>(lsByDistrict, HttpStatus.OK);
     }
 
@@ -101,7 +101,7 @@ public class UserController {
         List<User> lsByTown = userService.lsUserByTown(code);
         Optional<Town> town = townRepository.findById(code);
         if (lsByTown.isEmpty())
-            return new ResponseEntity<>(new ApiResponse(true, "There is no user in district " + town.get().getTownName()), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(new ApiResponse(true, "Không có người dùng nào ở phường/huyện " + town.get().getTownName()), HttpStatus.OK);
         return new ResponseEntity<>(lsByTown, HttpStatus.OK);
     }
 
@@ -131,7 +131,7 @@ public class UserController {
     public ResponseEntity<?> forgotPassword(@RequestBody ForgotPasswordModel forgotPasswordModel) {
         boolean existPhoneNumber = userRepository.existsByPhoneNumberAndRole(forgotPasswordModel.getPhoneNumber(), "CUSTOMER");
         if (!existPhoneNumber == true) {
-            return new ResponseEntity<>(new ComfirmResponse(true, "Không tìm thấy số điện thoại đã nhập!",false), HttpStatus.OK);
+            return new ResponseEntity<>(new ComfirmResponse(true, "Không tìm thấy số điện thoại đã nhập!", false), HttpStatus.OK);
         }
         User forgotPasswordUser = userService.getUserByPhoneNumberAndRole(forgotPasswordModel.getPhoneNumber(), "CUSTOMER");
         sentMailModel.setEmail(forgotPasswordUser.getEmail());
@@ -142,7 +142,7 @@ public class UserController {
         } catch (MailException mailException) {
             System.out.println(mailException);
         }
-        return new ResponseEntity<>(new ComfirmResponse(true, "Mật khẩu mới đã được gửi đến email bạn đã đăng kí!",true), HttpStatus.OK);
+        return new ResponseEntity<>(new ComfirmResponse(true, "Mật khẩu mới đã được gửi đến email bạn đã đăng kí!", true), HttpStatus.OK);
     }
 
     //list notification for user
@@ -150,16 +150,9 @@ public class UserController {
     public ResponseEntity<?> getLsNotification(@PathVariable("id") int userID) {
         List<Notification> lsNoti = notificationService.lsNotification(userID);
         if (lsNoti.isEmpty()) {
-            return new ResponseEntity<>(new ApiResponse(true, "Do not have any notification yet"), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(new ApiResponse(true, "Hiện tại không có thông báo mới!"), HttpStatus.OK);
         }
         return new ResponseEntity<>(lsNoti, HttpStatus.OK);
-    }
-
-    //create a new notification
-    @PostMapping("/notifications/create")
-    public ResponseEntity<?> createNoti(@RequestBody Notification notification) {
-        notificationService.saveNoti(notification);
-        return new ResponseEntity<>(new ApiResponse(true, "Created Notification successfully"), HttpStatus.OK);
     }
 
     //list all user
@@ -208,8 +201,6 @@ public class UserController {
             tokenRepository.delete(tokenRepository.getOne(checkValidPhoneToken.get().getSessionID()));
             return new ResponseEntity<>(new CheckOTPResponse(true, "Mã OTP hết hạn!", false, true), HttpStatus.OK);
         }
-        //tokenRepository.delete(tokenRepository.getOne(checkValidPhoneToken.get().getSessionID()));
-        //System.out.println(tokenRepository.getOne(checkValidPhoneToken.get().getSessionID()));
         String enCryptPassword = bCryptPasswordEncoder.encode(checkOTPModel.getPassword());
         User registeredUser = new User();
         registeredUser.setName(checkOTPModel.getName());
@@ -277,16 +268,16 @@ public class UserController {
         boolean isCoordinator = userRepository.existsByPhoneNumberAndRole(webUserLoginModel.getPhoneNumber(), "COORDINATOR");
         boolean isAdmin = userRepository.existsByPhoneNumberAndRole(webUserLoginModel.getPhoneNumber(), "ADMIN");
         if (isCoordinator == false && isAdmin == false) {
-            return new ResponseEntity<>(new LoginResponse(true, "Số điện thoại không tồn tại.",false), HttpStatus.OK);
+            return new ResponseEntity<>(new LoginResponse(true, "Số điện thoại không tồn tại.", false), HttpStatus.OK);
         }
         User userByPhone;
-        if(isAdmin == true){
-            userByPhone = userRepository.getUserByPhoneNumberAndRole(webUserLoginModel.getPhoneNumber(),"ADMIN");
-        }else {
-            userByPhone = userRepository.getUserByPhoneNumberAndRole(webUserLoginModel.getPhoneNumber(),"COORDINATOR");
+        if (isAdmin == true) {
+            userByPhone = userRepository.getUserByPhoneNumberAndRole(webUserLoginModel.getPhoneNumber(), "ADMIN");
+        } else {
+            userByPhone = userRepository.getUserByPhoneNumberAndRole(webUserLoginModel.getPhoneNumber(), "COORDINATOR");
         }
         if (!BCrypt.checkpw(webUserLoginModel.getPassword(), userByPhone.getPassword())) {
-            return new ResponseEntity<>(new LoginResponse(true, "Sai mật khẩu",false), HttpStatus.OK);
+            return new ResponseEntity<>(new LoginResponse(true, "Sai mật khẩu", false), HttpStatus.OK);
         }
         //create BEARER token
         String token = Jwts.builder()
@@ -295,7 +286,7 @@ public class UserController {
                 .signWith(SignatureAlgorithm.HS512, SecurityUtils.SECRET.getBytes())
                 .compact();
 
-        User successfulUser = (userRepository.getUserByPhoneNumberAndRole(userByPhone.getPhoneNumber(),userByPhone.getRole()));
+        User successfulUser = (userRepository.getUserByPhoneNumberAndRole(userByPhone.getPhoneNumber(), userByPhone.getRole()));
         LoginAccountModel loginAccountModel = new LoginAccountModel();
         loginAccountModel.setUserInfo(successfulUser);
         loginAccountModel.setToken(token);
@@ -304,20 +295,20 @@ public class UserController {
 
     //get 1 user
     @GetMapping("/detail/{id}")
-    public ResponseEntity<?> userInfo(@PathVariable("id") int userID){
+    public ResponseEntity<?> userInfo(@PathVariable("id") int userID) {
         Optional<User> getUserByID = userService.getUserByID(userID);
-        if(!getUserByID.isPresent()){
-            return new ResponseEntity<>(new ApiResponse(true,"Không tìm thấy người dùng"), HttpStatus.OK);
+        if (!getUserByID.isPresent()) {
+            return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy người dùng"), HttpStatus.OK);
         }
-        return new ResponseEntity<>(getUserByID,HttpStatus.OK);
+        return new ResponseEntity<>(getUserByID, HttpStatus.OK);
     }
 
     //update 1 user
     @PutMapping("/update-user/{id}")
-    public ResponseEntity<?> updateUserInfo(@RequestBody User user, @PathVariable("id") int userID){
+    public ResponseEntity<?> updateUserInfo(@RequestBody User user, @PathVariable("id") int userID) {
         Optional<User> getUserByID = userService.getUserByID(userID);
-        if(!getUserByID.isPresent()){
-            return new ResponseEntity<>(new ApiResponse(true,"Không tìm thấy người dùng"), HttpStatus.OK);
+        if (!getUserByID.isPresent()) {
+            return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy người dùng"), HttpStatus.OK);
         }
         user.setId(userID);
         userService.updateContainStatus(user);

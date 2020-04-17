@@ -20,10 +20,10 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Random;
 
 @RestController
 @RequestMapping("/requests")
@@ -83,11 +83,10 @@ public class RequestController {
         requestModelRepository.save(requestModel);
         ///===================
         Request request = new Request();
-        //boolean existRequestID = requestRepository.existsByRequestID(requestID);
         String requestID;
         do {
-            requestID= GetRandomString.getAlphaNumericStringUpper(6);
-        }while (requestRepository.existsByRequestID(requestID));
+            requestID = GetRandomString.getAlphaNumericStringUpper(6);
+        } while (requestRepository.existsByRequestID(requestID));
         request.setRequestID(requestID);
         request.setUserID(requestModel.getUserID());
         request.setMeetingTime(requestModel.getMeetingTime());
@@ -149,7 +148,13 @@ public class RequestController {
         detailRequestModel.setRequestDistrictID(request.getDistrictCode());
         detailRequestModel.setRequestDistrictName(districtRepository.getOne(request.getDistrictCode()).getDistrictName());
         detailRequestModel.setRequestMeetingTime(request.getMeetingTime());
-        detailRequestModel.setRequestCreatedTime(request.getCreatedTime());
+        //=====================//
+        SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String displayCreatedTest = sdf2.format(request.getCreatedTime());
+        String createdTime = displayCreatedTest.substring(0, 10) + "T" + displayCreatedTest.substring(11) + ".000+0000";
+        //=====================//
+
+        detailRequestModel.setRequestCreatedTime(createdTime);
         detailRequestModel.setRequestStatus("pending");
         detailRequestModel.setLsSelectedTest(lsChosenTest);
         detailRequestModel.setRequestAmount(String.valueOf(testAmount));
@@ -204,20 +209,14 @@ public class RequestController {
     //update status of 1 request - add into request_history table
     @PostMapping("/update/{id}")
     public ResponseEntity<?> updateRequestStatus(@RequestBody RequestHistory requestHistory, @PathVariable("id") String ID) {
-        //Optional<Request> getRequest = requestRepository.findById(ID);
         Request requestPresenting = requestService.getRequest(ID);
-        /*if (!getRequest.isPresent()) {
-            return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy yêu cầu mã ID = " + ID), HttpStatus.OK);
-        }*/
-        if(requestPresenting == null){
+        if (requestPresenting == null) {
             return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy yêu cầu mã ID = " + ID), HttpStatus.OK);
         }
-        //requestHistory.setRequestID(getRequest.get().getRequestID());
         requestHistory.setRequestID(requestPresenting.getRequestID());
         requestHistoryService.save(requestHistory);
 
         Notification notification = new Notification();
-        //notification.setUserID(getRequest.get().getUserID());
         notification.setUserID(requestPresenting.getUserID());
         notification.setRequestID(ID);
         notification.setAppointmentID("000001");
@@ -300,7 +299,13 @@ public class RequestController {
             detailRequestModel.setRequestTownID(newCreatedRequest.getTownCode());//town code
             detailRequestModel.setRequestTownName(newCreatedRequestTown.getTownName());//town name
             detailRequestModel.setRequestMeetingTime(newCreatedRequest.getMeetingTime()); //meeting time
-            detailRequestModel.setRequestCreatedTime(newCreatedRequest.getCreatedTime()); //created time
+            //=====================//
+            SimpleDateFormat sdf3 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            String displayCreatedTest = sdf3.format(newCreatedRequest.getCreatedTime());
+            String createdTime3 = displayCreatedTest.substring(0, 10) + "T" + displayCreatedTest.substring(11) + ".000+0000";
+            //=====================//
+
+            detailRequestModel.setRequestCreatedTime(createdTime3); //created time
             detailRequestModel.setNurseID("Chưa có y tá nhận!");
             detailRequestModel.setNurseName("Chưa có y tá nhận!");
             detailRequestModel.setCoordinatorID("Chưa có điều phối viên xử lý!");
@@ -368,7 +373,13 @@ public class RequestController {
             detailRequestModel.setRequestTownID(nowRequest.getTownCode());
             detailRequestModel.setRequestTownName(townRepository.findById(nowRequest.getTownCode()).get().getTownName());
             detailRequestModel.setRequestMeetingTime(nowRequest.getMeetingTime());
-            detailRequestModel.setRequestCreatedTime(nowRequest.getCreatedTime());
+            //=====================//
+            SimpleDateFormat sdf5 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            String displayCreatedTest = sdf5.format(nowRequest.getCreatedTime());
+            String createdTime5 = displayCreatedTest.substring(0, 10) + "T" + displayCreatedTest.substring(11) + ".000+0000";
+            //=====================//
+
+            detailRequestModel.setRequestCreatedTime(createdTime5);
             // get list test
             List<RequestTest> lsRequestTests = requestTestRepository.getAllByRequestID(nowRequest.getRequestID());
             List<String> lsTestID = new ArrayList<>();
@@ -391,13 +402,13 @@ public class RequestController {
 
     //list all request
     @GetMapping("/list-all-request")
-    public ResponseEntity<?> getAllRequest(){
+    public ResponseEntity<?> getAllRequest() {
         List<Request> lsAllRequest = requestService.lsRequest();
-        if (lsAllRequest.isEmpty()){
-            return new ResponseEntity<>(new ApiResponse(true,"Không có yêu cầu xét nghiệm!"), HttpStatus.OK);
+        if (lsAllRequest.isEmpty()) {
+            return new ResponseEntity<>(new ApiResponse(true, "Không có yêu cầu xét nghiệm!"), HttpStatus.OK);
         }
         List<DetailRequestModel> returnList = new ArrayList<>();
-        for (Request request:lsAllRequest.subList(1, lsAllRequest.size())){
+        for (Request request : lsAllRequest.subList(1, lsAllRequest.size())) {
             String requestId = request.getRequestID();
             //Object will return as a request detail
             DetailRequestModel detailRequestModel = new DetailRequestModel();
@@ -423,7 +434,13 @@ public class RequestController {
                 detailRequestModel.setRequestTownID(newCreatedRequest.getTownCode());//town code
                 detailRequestModel.setRequestTownName(newCreatedRequestTown.getTownName());//town name
                 detailRequestModel.setRequestMeetingTime(newCreatedRequest.getMeetingTime()); //meeting time
-                detailRequestModel.setRequestCreatedTime(newCreatedRequest.getCreatedTime()); //created time
+                //=====================//
+                SimpleDateFormat sdk = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                String displayCreatedTest = sdk.format(newCreatedRequest.getCreatedTime());
+                String createdTimesdk = displayCreatedTest.substring(0, 10) + "T" + displayCreatedTest.substring(11) + ".000+0000";
+                //=====================//
+
+                detailRequestModel.setRequestCreatedTime(createdTimesdk); //created time
                 detailRequestModel.setNurseID("Chưa có y tá nhận!");
                 detailRequestModel.setNurseName("Chưa có y tá nhận!");
                 detailRequestModel.setCoordinatorID("Chưa có điều phối viên xử lý!");
@@ -491,7 +508,12 @@ public class RequestController {
                 detailRequestModel.setRequestTownID(nowRequest.getTownCode());
                 detailRequestModel.setRequestTownName(townRepository.findById(nowRequest.getTownCode()).get().getTownName());
                 detailRequestModel.setRequestMeetingTime(nowRequest.getMeetingTime());
-                detailRequestModel.setRequestCreatedTime(nowRequest.getCreatedTime());
+                //=====================//
+                SimpleDateFormat sdf4 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                String displayCreatedTest = sdf4.format(nowRequest.getCreatedTime());
+                String createdTime4 = displayCreatedTest.substring(0, 10) + "T" + displayCreatedTest.substring(11) + ".000+0000";
+                //=====================//
+                detailRequestModel.setRequestCreatedTime(createdTime4);
                 // get list test
                 List<RequestTest> lsRequestTests = requestTestRepository.getAllByRequestID(nowRequest.getRequestID());
                 List<String> lsTestID = new ArrayList<>();
@@ -510,10 +532,10 @@ public class RequestController {
             }
             returnList.add(detailRequestModel);
         }
-        if(returnList.isEmpty()){
-            return new ResponseEntity<>(new ApiResponse(true,"Hiện tại chưa có đơn xét nghiệm nào!"), HttpStatus.OK);
+        if (returnList.isEmpty()) {
+            return new ResponseEntity<>(new ApiResponse(true, "Hiện tại chưa có đơn xét nghiệm nào!"), HttpStatus.OK);
         }
-        return new ResponseEntity<>(returnList,HttpStatus.OK);
+        return new ResponseEntity<>(returnList, HttpStatus.OK);
     }
 
     //get list result of a request
@@ -521,7 +543,7 @@ public class RequestController {
     public ResponseEntity<?> getListResult(@PathVariable("id") String requestID) {
         //Optional<Request> request = requestRepository.findById(requestID);
         Request request = requestService.getRequest(requestID);
-        if (request==null) {
+        if (request == null) {
             return new ResponseEntity<>(new ApiResponse(true, "Không tồn tại yêu cầu xét nghiệm với mã ID = " + requestID), HttpStatus.OK);
         }
         List<Result> lsResult = resultService.lsResultByRequestID(requestID);
@@ -532,7 +554,6 @@ public class RequestController {
     }
 
     //save result 1 request
-    //////////////////// get file?
     @PostMapping("/detail/{id}/save-result")
     public ResponseEntity<?> saveResult(@RequestBody Result result, @PathVariable("id") String requestID, @RequestParam("file") MultipartFile file) {
         result.setRequestID(requestID);

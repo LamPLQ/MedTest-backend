@@ -19,6 +19,7 @@ import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -39,9 +40,6 @@ public class NurseController {
 
     @Autowired
     private RequestHistoryService requestHistoryService;
-
-    @Autowired
-    private RequestRepository requestRepository;
 
     @Autowired
     private TownRepository townRepository;
@@ -111,7 +109,7 @@ public class NurseController {
     public ResponseEntity<?> list() {
         List<User> users = userRepository.findAllByRole("NURSE");
         if (users.isEmpty()) {
-            return new ResponseEntity<>(new ApiResponse(true, "No user is found"), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy người dùng!"), HttpStatus.OK);
         }
         return new ResponseEntity<>(users, HttpStatus.OK);
     }
@@ -193,7 +191,12 @@ public class NurseController {
                 detailRequestModel.setRequestTownID(newCreatedRequest.getTownCode());//town code
                 detailRequestModel.setRequestTownName(newCreatedRequestTown.getTownName());//town name
                 detailRequestModel.setRequestMeetingTime(newCreatedRequest.getMeetingTime()); //meeting time
-                detailRequestModel.setRequestCreatedTime(newCreatedRequest.getCreatedTime()); //created time
+                //=====================//
+                SimpleDateFormat sdf4 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                String displayCreatedTest =  sdf4.format(newCreatedRequest.getCreatedTime());
+                String createdTime4 = displayCreatedTest.substring(0,10) + "T"+displayCreatedTest.substring(11)+".000+0000";
+                //=====================//
+                detailRequestModel.setRequestCreatedTime(createdTime4); //created time
                 detailRequestModel.setNurseID("Chưa có y tá nhận!");
                 detailRequestModel.setNurseName("Chưa có y tá nhận!");
                 detailRequestModel.setCoordinatorID("Chưa có điều phối viên xử lý!");
@@ -248,7 +251,12 @@ public class NurseController {
                     detailRequestModel.setRequestTownID(nowRequest.getTownCode());
                     detailRequestModel.setRequestTownName(townRepository.findById(nowRequest.getTownCode()).get().getTownName());
                     detailRequestModel.setRequestMeetingTime(nowRequest.getMeetingTime());
-                    detailRequestModel.setRequestCreatedTime(nowRequest.getCreatedTime());
+                    //=====================//
+                    SimpleDateFormat sdf5 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                    String displayCreatedTest =  sdf5.format(nowRequest.getCreatedTime());
+                    String createdTime5 = displayCreatedTest.substring(0,10) + "T"+displayCreatedTest.substring(11)+".000+0000";
+                    //=====================//
+                    detailRequestModel.setRequestCreatedTime(createdTime5);
                     // get list test
                     List<RequestTest> lsRequestTests = requestTestRepository.getAllByRequestID(nowRequest.getRequestID());
                     List<String> lsTestID = new ArrayList<>();
@@ -285,15 +293,19 @@ public class NurseController {
                     detailRequestModel.setCustomerName(userRepository.findById(nowRequest.getUserID()).get().getName());
                     detailRequestModel.setCustomerPhoneNumber(userRepository.findById(nowRequest.getUserID()).get().getPhoneNumber());
                     detailRequestModel.setCustomerDOB(userRepository.findById(nowRequest.getUserID()).get().getDob());
-                    //detailRequestModel.setRequestAddress(nowRequest.getAddress() + " " + townRepository.findById(nowRequest.getTownCode()).get().getTownName()
-                    //       + " " + districtRepository.findById(nowRequest.getDistrictCode()).get().getDistrictName());
                     detailRequestModel.setRequestAddress(nowRequest.getAddress());
                     detailRequestModel.setRequestDistrictID(nowRequest.getDistrictCode());
                     detailRequestModel.setRequestDistrictName(districtRepository.findById(nowRequest.getDistrictCode()).get().getDistrictName());
                     detailRequestModel.setRequestTownID(nowRequest.getTownCode());
                     detailRequestModel.setRequestTownName(townRepository.findById(nowRequest.getTownCode()).get().getTownName());
                     detailRequestModel.setRequestMeetingTime(nowRequest.getMeetingTime());
-                    detailRequestModel.setRequestCreatedTime(nowRequest.getCreatedTime());
+                    //=====================//
+                    SimpleDateFormat sdf6 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                    String displayCreatedTest =  sdf6.format(nowRequest.getCreatedTime());
+                    String createdTime6 = displayCreatedTest.substring(0,10) + "T"+displayCreatedTest.substring(11)+".000+0000";
+                    //=====================//
+
+                    detailRequestModel.setRequestCreatedTime(createdTime6);
                     // get list test
                     List<RequestTest> lsRequestTests = requestTestRepository.getAllByRequestID(nowRequest.getRequestID());
                     List<String> lsTestID = new ArrayList<>();
@@ -378,7 +390,13 @@ public class NurseController {
                 //request status
                 detail.setRequestStatus(request.getStatus());
                 //request created time
-                detail.setRequestCreatedTime(recentRequest.getCreatedTime());
+                //=====================//
+                SimpleDateFormat sdf8 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                String displayCreatedTest =  sdf8.format(recentRequest.getCreatedTime());
+                String createdTime8 = displayCreatedTest.substring(0,10) + "T"+displayCreatedTest.substring(11)+".000+0000";
+                //=====================//
+
+                detail.setRequestCreatedTime(createdTime8);
                 //coordinator
                 detail.setCoordinatorID("Chưa có điều phối viên xử lý!");
                 detail.setCoordinatorName("Chưa có điều phối viên xử lý!");
@@ -461,14 +479,25 @@ public class NurseController {
                         cancelAfterAccept.setRequestTownID(cancelAfterAcceptRequest.getTownCode());
                         cancelAfterAccept.setRequestTownName(townRepository.findById(cancelAfterAcceptRequest.getTownCode()).get().getTownName());
                         cancelAfterAccept.setRequestMeetingTime(cancelAfterAcceptRequest.getMeetingTime());
-                        cancelAfterAccept.setRequestCreatedTime(cancelAfterAcceptRequest.getCreatedTime());
+                        //=====================//
+                        SimpleDateFormat sdf9 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                        String displayCreatedTest =  sdf9.format(cancelAfterAcceptRequest.getCreatedTime());
+                        String createdTime9 = displayCreatedTest.substring(0,10) + "T"+displayCreatedTest.substring(11)+".000+0000";
+                        //=====================//
+
+                        cancelAfterAccept.setRequestCreatedTime(createdTime9);
                         cancelAfterAccept.setNurseID(String.valueOf(nurseID));
                         cancelAfterAccept.setNurseName(userRepository.findById(nurseID).get().getName());
                         cancelAfterAccept.setCoordinatorID("Chưa có điều phối viên nhận");
                         cancelAfterAccept.setCoordinatorName("Chưa có điều phối viên nhận");
                         cancelAfterAccept.setRequestStatus(request.getStatus());
                         cancelAfterAccept.setRequestNote(request.getNote());
-                        cancelAfterAccept.setRequestAcceptedTime(acceptedStatusRequest.getCreatedTime());
+                        //=====================//
+                        SimpleDateFormat sdf4 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                        String displayCreatedTest4 =  sdf4.format(acceptedStatusRequest.getCreatedTime());
+                        String createdTime4 = displayCreatedTest4.substring(0,10) + "T"+displayCreatedTest.substring(11)+".000+0000";
+                        //=====================//
+                        cancelAfterAccept.setRequestAcceptedTime(createdTime4);
                         List<RequestTest> lsRequestTests1 = requestTestRepository.getAllByRequestID(cancelAfterAcceptRequest.getRequestID());
                         List<String> lsTestID1 = new ArrayList<>();
                         long testAmount1 = 0;
@@ -484,11 +513,9 @@ public class NurseController {
                         //////////////////////////////////////////////
                     } else {
                         RequestHistory transportingStatusRequest = requestHistoryRepository.findAllByRequestIDAndStatusAndUserIDOrderByCreatedTimeDesc(request.getRequestID(), "transporting", nurseID).get(0);
-                        //System.out.println(transportingStatusRequest.getRequestID() + transportingStatusRequest.getNote());
                         CompletedRequestModel completedRequestModel = new CompletedRequestModel();
                         completedRequestModel.setRequestID(request.getRequestID());
                         ////////////////////Object Request
-                        //Request workingRequest = requestRepository.getOne(request.getRequestID());
                         Request workingRequest = requestService.getRequest(request.getRequestID());
                         ////////////////////
                         completedRequestModel.setCustomerID(String.valueOf(workingRequest.getUserID()));
@@ -501,15 +528,30 @@ public class NurseController {
                         completedRequestModel.setRequestTownID(workingRequest.getTownCode());
                         completedRequestModel.setRequestTownName(townRepository.findById(workingRequest.getTownCode()).get().getTownName());
                         completedRequestModel.setRequestMeetingTime(workingRequest.getMeetingTime());
-                        completedRequestModel.setRequestCreatedTime(workingRequest.getCreatedTime());
+                        //=====================//
+                        SimpleDateFormat sdf10 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                        String displayCreatedTest =  sdf10.format(workingRequest.getCreatedTime());
+                        String createdTime10 = displayCreatedTest.substring(0,10) + "T"+displayCreatedTest.substring(11)+".000+0000";
+                        //=====================//
+                        completedRequestModel.setRequestCreatedTime(createdTime10);
                         completedRequestModel.setNurseID(String.valueOf(nurseID));
                         completedRequestModel.setNurseName(userRepository.findById(nurseID).get().getName());
                         completedRequestModel.setCoordinatorID(String.valueOf(request.getUserID()));
                         completedRequestModel.setCoordinatorName(userRepository.findById(request.getUserID()).get().getName());
                         completedRequestModel.setRequestStatus(request.getStatus());
                         completedRequestModel.setRequestNote(request.getNote());
-                        completedRequestModel.setRequestAcceptedTime(acceptedStatusRequest.getCreatedTime());
-                        completedRequestModel.setRequestTransportingTime(transportingStatusRequest.getCreatedTime());
+                        //=====================//
+                        SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                        String displayCreatedTest2 =  sdf2.format(acceptedStatusRequest.getCreatedTime());
+                        String createdTime2 = displayCreatedTest2.substring(0,10) + "T"+displayCreatedTest.substring(11)+".000+0000";
+                        //=====================//
+                        completedRequestModel.setRequestAcceptedTime(createdTime2);
+                        //=====================//
+                        SimpleDateFormat sdf3 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                        String displayCreatedTest3 =  sdf3.format(transportingStatusRequest.getCreatedTime());
+                        String createdTime3 = displayCreatedTest3.substring(0,10) + "T"+displayCreatedTest.substring(11)+".000+0000";
+                        //=====================//
+                        completedRequestModel.setRequestTransportingTime(createdTime3);
                         List<RequestTest> lsRequestTests = requestTestRepository.getAllByRequestID(workingRequest.getRequestID());
                         List<String> lsTestID = new ArrayList<>();
                         long testAmount = 0;

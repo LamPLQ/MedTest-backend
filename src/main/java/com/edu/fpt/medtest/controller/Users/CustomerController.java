@@ -18,6 +18,7 @@ import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -38,9 +39,6 @@ public class CustomerController {
 
     @Autowired
     private RequestService requestService;
-
-    @Autowired
-    private RequestRepository requestRepository;
 
     @Autowired
     private RequestHistoryService requestHistoryService;
@@ -66,11 +64,11 @@ public class CustomerController {
     //Login
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginModel loginUser) {
-        boolean existByPhoneNumberAndRole = userRepository.existsByPhoneNumberAndRole(loginUser.getPhoneNumber(),loginUser.getRole());
+        boolean existByPhoneNumberAndRole = userRepository.existsByPhoneNumberAndRole(loginUser.getPhoneNumber(), loginUser.getRole());
         if (!existByPhoneNumberAndRole == true) {
-            return new ResponseEntity<>(new ApiResponse(true, "Người dùng không tồn tại!" ), HttpStatus.OK);
+            return new ResponseEntity<>(new ApiResponse(true, "Người dùng không tồn tại!"), HttpStatus.OK);
         }
-        User userLogin = userRepository.getUserByPhoneNumberAndRole(loginUser.getPhoneNumber(),loginUser.getRole());
+        User userLogin = userRepository.getUserByPhoneNumberAndRole(loginUser.getPhoneNumber(), loginUser.getRole());
         //check password
         if (!BCrypt.checkpw(loginUser.getPassword(), userLogin.getPassword())) {
             return new ResponseEntity<>(new ApiResponse(true, "Sai mật khẩu!"), HttpStatus.OK);
@@ -83,7 +81,7 @@ public class CustomerController {
                 .compact();
 
         //return current user
-        User successfulUser = (userRepository.getUserByPhoneNumberAndRole(loginUser.getPhoneNumber(),loginUser.getRole()));
+        User successfulUser = (userRepository.getUserByPhoneNumberAndRole(loginUser.getPhoneNumber(), loginUser.getRole()));
         LoginAccountModel loginAccountModel = new LoginAccountModel();
         loginAccountModel.setUserInfo(successfulUser);
         loginAccountModel.setToken(token);
@@ -123,7 +121,6 @@ public class CustomerController {
     //get customer - view detail info
     @GetMapping("/detail/{id}")
     public ResponseEntity<?> getUser(@PathVariable("id") int id) {
-        //Optional<User> getCustomer = userRepository.getUserByIdAndRole(id, "CUSTOMER");
         Optional<User> getCustomer = userService.getUserByID(id);
         if (!getCustomer.isPresent()) {
             return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy người dùng!"), HttpStatus.OK);
@@ -134,7 +131,6 @@ public class CustomerController {
     //update customer info
     @PutMapping("/detail/update/{id}")
     public ResponseEntity<?> updateUser(@RequestBody User customer, @PathVariable("id") int id) {
-        //Optional<User> getCustomer = userRepository.getUserByIdAndRole(id, "CUSTOMER");
         Optional<User> getCustomer = userService.getUserByID(id);
         if (!getCustomer.isPresent()) {
             return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy người dùng!"), HttpStatus.OK);
@@ -146,8 +142,7 @@ public class CustomerController {
 
     //update customer address
     @PutMapping("/detail/address/update/{id}")
-    public ResponseEntity<?> updateAddressUser(@RequestBody User customer, @PathVariable("id") int id){
-        //Optional<User> getCustomer = userRepository.getUserByIdAndRole(id, "CUSTOMER");
+    public ResponseEntity<?> updateAddressUser(@RequestBody User customer, @PathVariable("id") int id) {
         Optional<User> getCustomer = userService.getUserByID(id);
         if (!getCustomer.isPresent()) {
             return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy người dùng!"), HttpStatus.OK);
@@ -161,7 +156,6 @@ public class CustomerController {
     @GetMapping("/{id}/appointments/list")
     public ResponseEntity<?> getListAppointment(@PathVariable("id") int id) {
         List<Appointment> lsAppointmentCustomer = appointmentRepository.findAllByCustomerID(id);
-//        UserAppointmentModel userAppointment = new UserAppointmentModel();
         User userAppoint = userService.findUserByID(id).get();
         if (lsAppointmentCustomer.isEmpty()) {
             return new ResponseEntity<>(new ApiResponse(true, "Người dùng hiện tại chưa có lịch hẹn!"), HttpStatus.OK);
@@ -170,7 +164,6 @@ public class CustomerController {
         List<UserAppointmentModel> listUserAppoinment = new ArrayList<>();
         for (Appointment appointment : lsAppointmentCustomer) {
             UserAppointmentModel userAppointmentModel = new UserAppointmentModel();
-            //userAppointmentModel.setAppointment_coordinatorName("" + appointments.getCoordinatorID());
             userAppointmentModel.setAppointment_id(appointment.getID());
             userAppointmentModel.setAppointment_customerName(userAppoint.getName());
             userAppointmentModel.setAppointment_phoneNumber(userAppoint.getPhoneNumber());
@@ -178,7 +171,12 @@ public class CustomerController {
             userAppointmentModel.setAppointment_status(appointment.getStatus());
             userAppointmentModel.setAppointment_note(appointment.getNote());
             userAppointmentModel.setAppointment_meetingTime(appointment.getMeetingTime());
-            userAppointmentModel.setAppointment_createdTime(appointment.getCreatedTime());
+            //=====================//
+            SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            String displayCreatedTest = sdf2.format(appointment.getCreatedTime());
+            String createdTime = displayCreatedTest.substring(0, 10) + "T" + displayCreatedTest.substring(11) + ".000+0000";
+            //=====================//
+            userAppointmentModel.setAppointment_createdTime(createdTime);
             listUserAppoinment.add(userAppointmentModel);
         }
         return new ResponseEntity<>(listUserAppoinment, HttpStatus.OK);
@@ -187,10 +185,9 @@ public class CustomerController {
     //change Password
     @PostMapping("/change-password/{id}")
     public ResponseEntity<?> changePassword(@RequestBody ChangePasswordModel changePasswordModel, @PathVariable("id") int id) {
-        //Optional<User> getCustomer = userRepository.getUserByIdAndRole(id, "CUSTOMER");
         Optional<User> getCustomer = userService.getUserByID(id);
         if (!getCustomer.isPresent()) {
-            return new ResponseEntity<>(new ComfirmResponse(true, "Người dùng không tồn tại!",false), HttpStatus.OK);
+            return new ResponseEntity<>(new ComfirmResponse(true, "Người dùng không tồn tại!", false), HttpStatus.OK);
         }
         if (!BCrypt.checkpw(changePasswordModel.getOldPassword(), getCustomer.get().getPassword())) {
             return new ResponseEntity<>(new ComfirmResponse(true, "Mật khẩu hiện tại không đúng!", false), HttpStatus.OK);
@@ -235,7 +232,12 @@ public class CustomerController {
                 detailRequestModel.setRequestTownID(newCreatedRequest.getTownCode());//town code
                 detailRequestModel.setRequestTownName(newCreatedRequestTown.getTownName());//town name
                 detailRequestModel.setRequestMeetingTime(newCreatedRequest.getMeetingTime()); //meeting time
-                detailRequestModel.setRequestCreatedTime(newCreatedRequest.getCreatedTime()); //created time
+                //=====================//
+                SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                String displayCreatedTest = sdf2.format(newCreatedRequest.getCreatedTime());
+                String createdTime = displayCreatedTest.substring(0, 10) + "T" + displayCreatedTest.substring(11) + ".000+0000";
+                //=====================//
+                detailRequestModel.setRequestCreatedTime(createdTime); //created time
                 detailRequestModel.setNurseID("Chưa có y tá nhận!");
                 detailRequestModel.setNurseName("Chưa có y tá nhận!");
                 detailRequestModel.setCoordinatorID("Chưa có điều phối viên xử lý!");
@@ -302,7 +304,12 @@ public class CustomerController {
                 detailRequestModel.setRequestTownID(nowRequest.getTownCode());
                 detailRequestModel.setRequestTownName(townRepository.findById(nowRequest.getTownCode()).get().getTownName());
                 detailRequestModel.setRequestMeetingTime(nowRequest.getMeetingTime());
-                detailRequestModel.setRequestCreatedTime(nowRequest.getCreatedTime());
+                //=====================//
+                SimpleDateFormat sdf3 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                String displayCreatedTest = sdf3.format(nowRequest.getCreatedTime());
+                String createdTime3 = displayCreatedTest.substring(0, 10) + "T" + displayCreatedTest.substring(11) + ".000+0000";
+                //=====================//
+                detailRequestModel.setRequestCreatedTime(createdTime3);
                 // get list test
                 List<RequestTest> lsRequestTests = requestTestRepository.getAllByRequestID(nowRequest.getRequestID());
                 List<String> lsTestID = new ArrayList<>();

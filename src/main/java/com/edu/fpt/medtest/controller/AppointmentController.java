@@ -18,6 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -60,7 +61,12 @@ public class AppointmentController {
             userAppointmentModel.setAppointment_status(appointmentExcuting.getStatus());
             userAppointmentModel.setAppointment_note(appointmentExcuting.getNote());
             userAppointmentModel.setAppointment_meetingTime(appointmentExcuting.getMeetingTime());
-            userAppointmentModel.setAppointment_createdTime(appointmentExcuting.getCreatedTime());
+            //=====================//
+            SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            String displayCreatedTest =  sdf2.format(appointmentExcuting.getCreatedTime());
+            String createdTime = displayCreatedTest.substring(0,10) + "T"+displayCreatedTest.substring(11)+".000+0000";
+            //=====================//
+            userAppointmentModel.setAppointment_createdTime(createdTime);
             returnAppointmentList.add(userAppointmentModel);
         }
         if(returnAppointmentList.isEmpty()){
@@ -93,8 +99,23 @@ public class AppointmentController {
         appointment.setCoordinatorID(1);
         appointment.setCreatedTime(appointmentModelInput.getTempCreatedTime());
         appointmentService.saveAppointment(appointment);
-        return new ResponseEntity<>(appointment, HttpStatus.OK);
-        //return new ResponseEntity<>(new ApiResponse(true, "Tạo lịch hẹn thành công!"), HttpStatus.OK);
+
+        UserAppointmentModel userAppointmentModel = new UserAppointmentModel();
+        userAppointmentModel.setAppointment_id(appointment.getID());
+        userAppointmentModel.setAppointment_customerName(userRepository.findById(appointment.getCustomerID()).get().getName());
+        userAppointmentModel.setAppointment_phoneNumber(userRepository.findById(appointment.getCustomerID()).get().getPhoneNumber());
+        userAppointmentModel.setAppointment_DOB(userRepository.findById(appointment.getCustomerID()).get().getDob());
+        userAppointmentModel.setAppointment_status(appointment.getStatus());
+        userAppointmentModel.setAppointment_note(appointment.getNote());
+        userAppointmentModel.setAppointment_meetingTime(appointment.getMeetingTime());
+        //=====================//
+        SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String displayCreatedTest =  sdf2.format(appointment.getCreatedTime());
+        String createdTime = displayCreatedTest.substring(0,10) + "T"+displayCreatedTest.substring(11)+".000+0000";
+        //=====================//
+        userAppointmentModel.setAppointment_createdTime(createdTime);
+        return new ResponseEntity<>(userAppointmentModel, HttpStatus.OK);
+
     }
 
     //appointment detail
@@ -102,9 +123,6 @@ public class AppointmentController {
     public ResponseEntity<?> getAppointment(@PathVariable("id") String id) {
         Appointment appointmentExecuting = appointmentService.getAppointmentByID(id);
         UserAppointmentModel userAppointmentModel = new UserAppointmentModel();
-        /*if (!getAppointment.isPresent()) {
-            return new ResponseEntity<>(new ApiResponse(true, "Lịch hẹn không tồn tại"), HttpStatus.OK);
-        }*/
         if(appointmentExecuting  == null){
             return new ResponseEntity<>(new ApiResponse(true, "Lịch hẹn không tồn tại"), HttpStatus.OK);
         }
@@ -116,7 +134,12 @@ public class AppointmentController {
             userAppointmentModel.setAppointment_status(appointmentExecuting.getStatus());
             userAppointmentModel.setAppointment_note(appointmentExecuting.getNote());
             userAppointmentModel.setAppointment_meetingTime(appointmentExecuting.getMeetingTime());
-            userAppointmentModel.setAppointment_createdTime(appointmentExecuting.getCreatedTime());
+            //=====================//
+            SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            String displayCreatedTest =  sdf2.format(appointmentExecuting.getCreatedTime());
+            String createdTime = displayCreatedTest.substring(0,10) + "T"+displayCreatedTest.substring(11)+".000+0000";
+            //=====================//
+            userAppointmentModel.setAppointment_createdTime(createdTime);
         }
         return new ResponseEntity<>(userAppointmentModel, HttpStatus.OK);
     }
@@ -124,11 +147,7 @@ public class AppointmentController {
     //customer update appointment (canceled)
     @PutMapping(value = "/update/{id}")
     public ResponseEntity<?> updateAppointment(@RequestBody Appointment appointment, @PathVariable("id") String id) {
-        //Optional<Appointment> getAppointment = appointmentService.getAppointmentByID(id);
         Appointment appointmentExecuting = appointmentService.getAppointmentByID(id);
-       /* if (!getAppointment.isPresent()) {
-            return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy cuộc hẹn!"), HttpStatus.OK);
-        }*/
        if(appointmentExecuting == null){
            return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy cuộc hẹn!"), HttpStatus.OK);
        }
@@ -152,11 +171,7 @@ public class AppointmentController {
     //coordinator accepted appointment
     @PutMapping(value = "/accept/{id}")
     public ResponseEntity<?> updateAppointmentByCoordinator(@RequestBody Appointment appointment, @PathVariable("id") String id) {
-        //Optional<Appointment> getAppointment = appointmentService.getAppointmentByID(id);
         Appointment appointmentExecuting = appointmentService.getAppointmentByID(id);
-        /*if (!getAppointment.isPresent()) {
-            return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy cuộc hẹn!"), HttpStatus.OK);
-        }*/
         if(appointmentExecuting == null){
             return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy cuộc hẹn!"), HttpStatus.OK);
         }
@@ -232,7 +247,12 @@ public class AppointmentController {
             userAppointmentModel.setAppointment_status(appointments.getStatus());
             userAppointmentModel.setAppointment_note(appointments.getNote());
             userAppointmentModel.setAppointment_meetingTime(appointments.getMeetingTime());
-            userAppointmentModel.setAppointment_createdTime(appointments.getCreatedTime());
+            //=====================//
+            SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            String displayCreatedTest =  sdf2.format(appointments.getCreatedTime());
+            String createdTime = displayCreatedTest.substring(0,10) + "T"+displayCreatedTest.substring(11)+".000+0000";
+            //=====================//
+            userAppointmentModel.setAppointment_createdTime(createdTime);
             listUserAppoinment.add(userAppointmentModel);
         }
         return new ResponseEntity<>(listUserAppoinment, HttpStatus.OK);

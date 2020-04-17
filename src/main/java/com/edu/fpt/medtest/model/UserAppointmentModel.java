@@ -19,7 +19,7 @@ public class UserAppointmentModel {
 
     private String appointment_note;
 
-    private Date appointment_createdTime;
+    private String appointment_createdTime;
 
     /*public String getAppointment_coordinatorName() {
         return appointment_coordinatorName;
@@ -45,11 +45,11 @@ public class UserAppointmentModel {
         this.appointment_id = appointment_id;
     }
 
-    public Date getAppointment_createdTime() {
+    public String getAppointment_createdTime() {
         return appointment_createdTime;
     }
 
-    public void setAppointment_createdTime(Date appointment_createdTime) {
+    public void setAppointment_createdTime(String appointment_createdTime) {
         this.appointment_createdTime = appointment_createdTime;
     }
 

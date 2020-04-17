@@ -36,12 +36,6 @@ public class FileController {
                 file.getContentType(), file.getSize());
     }
 
-    /*@PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity uploadFile(@RequestParam MultipartFile file) {
-        logger.info(String.format("File name '%s' uploaded successfully.", file.getOriginalFilename()));
-        return ResponseEntity.ok().build();
-    }*/
-
     //save 1 file
     @GetMapping("/saveFile/{fileName:.+}")
     public ResponseEntity<Resource> downloadFile(@PathVariable String fileName, HttpServletRequest request) {

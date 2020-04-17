@@ -16,7 +16,7 @@ public class DetailRequestModel {
     private String requestTownName;
     private Date requestMeetingTime;
     private String requestStatus;
-    private Date requestCreatedTime;
+    private String requestCreatedTime;
     private String nurseID;
     private String nurseName;
     private String coordinatorID;
@@ -73,14 +73,13 @@ public class DetailRequestModel {
         this.lsSelectedTest = lsSelectedTest;
     }
 
-    public Date getRequestCreatedTime() {
+    public String getRequestCreatedTime() {
         return requestCreatedTime;
     }
 
-    public void setRequestCreatedTime(Date requestCreatedTime) {
+    public void setRequestCreatedTime(String requestCreatedTime) {
         this.requestCreatedTime = requestCreatedTime;
     }
-
 
     public String getCustomerName() {
         return customerName;

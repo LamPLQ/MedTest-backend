@@ -19,10 +19,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -49,7 +47,7 @@ public class TestVersionController {
     //list all version
     @GetMapping("/list")
     public ResponseEntity<?> lsVersions() {
-       /* List<TestVersion> lsVersions = testVersionService.lsTestVersionByCreatedTimeDesc();
+        List<TestVersion> lsVersions = testVersionService.lsTestVersionByCreatedTimeDesc();
         if (lsVersions.isEmpty()) {
             return new ResponseEntity<>(new ApiResponse(true, "Hiện tại không có phiên bản nào!"), HttpStatus.OK);
         }
@@ -61,11 +59,8 @@ public class TestVersionController {
             versionResponseModel.setCreatorID(testVersion.getCreatorID());
             versionResponseModel.setCreatorName(userRepository.findById(testVersion.getCreatorID()).get().getName());
             lsResponseVersion.add(versionResponseModel);
-        }*/
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        String x = sdf.format(System.currentTimeMillis());
-        String result = x.substring(0,10) + "T"+x.substring(11)+".000+0000";
-        return new ResponseEntity<>(result, HttpStatus.OK);
+        }
+        return new ResponseEntity<>(lsResponseVersion, HttpStatus.OK);
     }
 
     //create new version
@@ -107,8 +102,8 @@ public class TestVersionController {
         testsOfVersion.setCreatorName(userRepository.findById(lsTestVersion.get(0).getCreatorID()).get().getName());//set createdName
         //=====================//
         SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        String displayCreatedTest =  sdf2.format(lsTestVersion.get(0).getCreatedTime());
-        String createdTime = displayCreatedTest.substring(0,10) + "T"+displayCreatedTest.substring(11)+".000+0000";
+        String displayCreatedTest = sdf2.format(lsTestVersion.get(0).getCreatedTime());
+        String createdTime = displayCreatedTest.substring(0, 10) + "T" + displayCreatedTest.substring(11) + ".000+0000";
         //=====================//
         testsOfVersion.setCreatedTime(createdTime);//set createdTime
 
@@ -140,6 +135,7 @@ public class TestVersionController {
             return new ResponseEntity<>(new ApiResponse(true, "Không có xét nghiệm nào tại phiên bản này!"), HttpStatus.OK);
         }
         Optional<TestVersion> currentTestVersion = testVersionService.testVersionByID(versionID);
+
         //return
         TestOfVersionModel returnAllTestOfThisVersion = new TestOfVersionModel();// set current version
         returnAllTestOfThisVersion.setVersionID(currentTestVersion.get().getVersionID());//set creatorID
@@ -147,8 +143,8 @@ public class TestVersionController {
         returnAllTestOfThisVersion.setCreatorName(userRepository.findById(currentTestVersion.get().getCreatorID()).get().getName());
         //=====================//
         SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        String displayCreatedTest =  sdf2.format(currentTestVersion.get().getCreatedTime());
-        String createdTime = displayCreatedTest.substring(0,10) + "T"+displayCreatedTest.substring(11)+".000+0000";
+        String displayCreatedTest = sdf2.format(currentTestVersion.get().getCreatedTime());
+        String createdTime = displayCreatedTest.substring(0, 10) + "T" + displayCreatedTest.substring(11) + ".000+0000";
         //=====================//
         returnAllTestOfThisVersion.setCreatedTime(createdTime);//set createdTime
 
@@ -193,8 +189,8 @@ public class TestVersionController {
         returnAllTestOfThisVersion.setCreatorName(userRepository.findById(currentTestVersion.get().getCreatorID()).get().getName()); //set createdName
         //=====================//
         SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        String displayCreatedTest =  sdf2.format(currentTestVersion.get().getCreatedTime());
-        String createdTime = displayCreatedTest.substring(0,10) + "T"+displayCreatedTest.substring(11)+".000+0000";
+        String displayCreatedTest = sdf2.format(currentTestVersion.get().getCreatedTime());
+        String createdTime = displayCreatedTest.substring(0, 10) + "T" + displayCreatedTest.substring(11) + ".000+0000";
         //=====================//
         returnAllTestOfThisVersion.setCreatedTime(createdTime);//set createdTime
 
