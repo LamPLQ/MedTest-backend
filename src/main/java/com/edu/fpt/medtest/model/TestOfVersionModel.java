@@ -7,18 +7,18 @@ public class TestOfVersionModel {
     private int versionID;
     private int creatorID;
     private String creatorName;
-    private Date createdTime;
+    private String createdTime;
     List<TestTypeListModel> lsTests;
 
     public TestOfVersionModel() {
     }
 
-    public Date getCreatedTime() {
-        return createdTime;
+    public void setCreatedTime(String createdTime) {
+        this.createdTime = createdTime;
     }
 
-    public void setCreatedTime(Date createdTime) {
-        this.createdTime = createdTime;
+    public String getCreatedTime() {
+        return createdTime;
     }
 
     public int getCreatorID() {

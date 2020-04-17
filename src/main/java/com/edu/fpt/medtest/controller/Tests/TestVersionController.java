@@ -85,7 +85,8 @@ public class TestVersionController {
         System.out.println("date type: '" + createdTime + "'");*/
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         String currentTime = sdf.format(System.currentTimeMillis());
-        //String createdTime = currentTime.substring(0,10) + "T"+x.substring(11)+".000+0000";
+        //String createdTime = currentTime.substring(0,10) + "T"+currentTime.substring(11)+".000+0000";
+
         Date inputDatabaseTime = new Date();
         try {
             inputDatabaseTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(currentTime);
@@ -121,7 +122,9 @@ public class TestVersionController {
         testsOfVersion.setVersionID(currentVersion);// set current version
         testsOfVersion.setCreatorID(lsTestVersion.get(0).getCreatorID());//set creatorID
         testsOfVersion.setCreatorName(userRepository.findById(lsTestVersion.get(0).getCreatorID()).get().getName());//set createdName
-        testsOfVersion.setCreatedTime(lsTestVersion.get(0).getCreatedTime());//set createdTime
+        SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String displayCreatedTest =  sdf2.format(lsTestVersion.get(0).getCreatedTime());
+        testsOfVersion.setCreatedTime(displayCreatedTest);//set createdTime
 
         //list test
         List<TestTypeListModel> apiResponse = new ArrayList<>();
@@ -156,7 +159,7 @@ public class TestVersionController {
         returnAllTestOfThisVersion.setVersionID(currentTestVersion.get().getVersionID());//set creatorID
         returnAllTestOfThisVersion.setCreatorID(currentTestVersion.get().getCreatorID());//set createdName
         returnAllTestOfThisVersion.setCreatorName(userRepository.findById(currentTestVersion.get().getCreatorID()).get().getName());
-        returnAllTestOfThisVersion.setCreatedTime(currentTestVersion.get().getCreatedTime());//set createdTime
+        //returnAllTestOfThisVersion.setCreatedTime(currentTestVersion.get().getCreatedTime());//set createdTime
 
         //list test
         List<TestTypeListModel> apiResponse = new ArrayList<>();
@@ -197,7 +200,7 @@ public class TestVersionController {
         returnAllTestOfThisVersion.setVersionID(currentTestVersion.get().getVersionID());// set current version
         returnAllTestOfThisVersion.setCreatorID(currentTestVersion.get().getCreatorID()); //set creatorID
         returnAllTestOfThisVersion.setCreatorName(userRepository.findById(currentTestVersion.get().getCreatorID()).get().getName()); //set createdName
-        returnAllTestOfThisVersion.setCreatedTime(currentTestVersion.get().getCreatedTime());//set createdTime
+        //returnAllTestOfThisVersion.setCreatedTime(currentTestVersion.get().getCreatedTime());//set createdTime
 
         //list test
         List<TestTypeListModel> apiResponse = new ArrayList<>();
