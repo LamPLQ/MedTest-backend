@@ -19,6 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -61,7 +62,9 @@ public class TestVersionController {
             lsResponseVersion.add(versionResponseModel);
         }*/
         Date createdTime = new Date(System.currentTimeMillis());
-        return new ResponseEntity<>(createdTime, HttpStatus.OK);
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String x = sdf.format(System.currentTimeMillis());
+        return new ResponseEntity<>(x, HttpStatus.OK);
     }
 
     //create new version
