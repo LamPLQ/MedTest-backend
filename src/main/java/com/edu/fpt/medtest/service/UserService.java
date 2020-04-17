@@ -18,6 +18,8 @@ public interface UserService {
 
     void update(User user);
 
+    void updateContainStatus(User user);
+
     List<User> lsUserActive();
 
     List<User> lsUserNotActive();

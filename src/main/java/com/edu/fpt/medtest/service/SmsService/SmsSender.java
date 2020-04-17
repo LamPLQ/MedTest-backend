@@ -6,4 +6,6 @@ import org.springframework.stereotype.Service;
 @Service
 public interface SmsSender {
     void  sendSms(SmsRequest smsRequest);
+
+    void verifySms(SmsRequest smsRequest);
 }

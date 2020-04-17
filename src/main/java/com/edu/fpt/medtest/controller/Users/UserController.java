@@ -1,31 +1,31 @@
 package com.edu.fpt.medtest.controller.Users;
 
 import com.edu.fpt.medtest.entity.*;
-import com.edu.fpt.medtest.model.CheckOTPModel;
-import com.edu.fpt.medtest.model.ForgotPasswordModel;
-import com.edu.fpt.medtest.model.SentMailModel;
-import com.edu.fpt.medtest.model.SmsRequest;
+import com.edu.fpt.medtest.model.*;
 import com.edu.fpt.medtest.repository.DistrictRepository;
 import com.edu.fpt.medtest.repository.TokenRepository;
 import com.edu.fpt.medtest.repository.TownRepository;
 import com.edu.fpt.medtest.repository.UserRepository;
+import com.edu.fpt.medtest.security.SecurityUtils;
 import com.edu.fpt.medtest.service.MailService;
 import com.edu.fpt.medtest.service.NotificationService;
 import com.edu.fpt.medtest.service.SmsService.SmsService;
 import com.edu.fpt.medtest.service.UserService;
-import com.edu.fpt.medtest.utils.ApiResponse;
-import com.edu.fpt.medtest.utils.CheckOTPResponse;
-import com.edu.fpt.medtest.utils.SendMessageResponse;
+import com.edu.fpt.medtest.utils.*;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.MailException;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -57,6 +57,7 @@ public class UserController {
 
     @Autowired
     private SmsService smsService;
+
 
     @Autowired
     private TokenRepository tokenRepository;
@@ -108,18 +109,18 @@ public class UserController {
     @PostMapping("/reset-password/{id}")
     public ResponseEntity<?> resetPassword(@PathVariable("id") int id) {
         Optional<User> userByID = userService.getUserByID(id);
-        if(!userByID.isPresent()){
-            return new ResponseEntity<>(new ApiResponse(true,"Không tồn tại người dùng này"), HttpStatus.OK);
+        if (!userByID.isPresent()) {
+            return new ResponseEntity<>(new ApiResponse(true, "Không tồn tại người dùng này"), HttpStatus.OK);
         }
-        if(userByID.get().getRole().equals("CUSTOMER")){
-            return new ResponseEntity<>(new ApiResponse(true,"Người dùng hiện tại không thực hiện được chức năng này"), HttpStatus.OK);
+        if (userByID.get().getRole().equals("CUSTOMER")) {
+            return new ResponseEntity<>(new ApiResponse(true, "Người dùng hiện tại không thực hiện được chức năng này"), HttpStatus.OK);
         }
         sentMailModel.setEmail(userByID.get().getEmail());
         sentMailModel.setPhoneNumber(userByID.get().getPhoneNumber());
         sentMailModel.setRole(userByID.get().getRole());
-        try{
+        try {
             mailService.sendEmail(sentMailModel);
-        }catch (MailException mailException){
+        } catch (MailException mailException) {
             System.out.println(mailException);
         }
         return new ResponseEntity<>(new ApiResponse(true, "Mật khẩu mới đã được gửi đến email " + userByID.get().getEmail() + "của userID = " + userByID.get().getEmail()), HttpStatus.OK);
@@ -163,19 +164,19 @@ public class UserController {
 
     //list all user
     @GetMapping("/list-all-user")
-    public ResponseEntity listAllUser(){
+    public ResponseEntity listAllUser() {
         List<User> lsAllUser = userService.getListUser();
-        if (lsAllUser.isEmpty()){
-            return new ResponseEntity(new ApiResponse(true,"Không có người dùng trong hệ thống!"), HttpStatus.OK);
+        if (lsAllUser.isEmpty()) {
+            return new ResponseEntity(new ApiResponse(true, "Không có người dùng trong hệ thống!"), HttpStatus.OK);
         }
         List<User> returnList = new ArrayList<>();
-        for (User user:lsAllUser.subList(1,lsAllUser.size())){
+        for (User user : lsAllUser.subList(1, lsAllUser.size())) {
             returnList.add(user);
         }
-        if (returnList.isEmpty()){
-            return new ResponseEntity(new ApiResponse(true,"Không có người dùng!"), HttpStatus.OK);
+        if (returnList.isEmpty()) {
+            return new ResponseEntity(new ApiResponse(true, "Không có người dùng!"), HttpStatus.OK);
         }
-        return new ResponseEntity(returnList,HttpStatus.OK) ;
+        return new ResponseEntity(returnList, HttpStatus.OK);
     }
 
     //send OTP to phone by messsing
@@ -184,26 +185,26 @@ public class UserController {
     public ResponseEntity<?> sendSmS(@Valid @RequestBody SmsRequest smsRequest) {
         boolean existByPhoneAndRole = userRepository.existsByPhoneNumberAndRole(smsRequest.getPhoneNumber(), "CUSTOMER");
         if (existByPhoneAndRole == true) {
-            return new ResponseEntity<>(new SendMessageResponse(true, "Số điện thoại đã tồn tại!",false), HttpStatus.OK);
+            return new ResponseEntity<>(new SendMessageResponse(true, "Số điện thoại đã tồn tại!", false), HttpStatus.OK);
         }
         List<ValidPhoneToken> lsAllTokenOfPhoneNumber = tokenRepository.getAllByPhoneNumber(smsRequest.getPhoneNumber());
-        for (ValidPhoneToken validPhoneToken:lsAllTokenOfPhoneNumber){
+        for (ValidPhoneToken validPhoneToken : lsAllTokenOfPhoneNumber) {
             tokenRepository.delete(validPhoneToken);
         }
         smsService.sendSms(smsRequest);
-        return new ResponseEntity<>(new SendMessageResponse(true,"Gửi thành công tin nhắn đến số điện thoại.",true), HttpStatus.OK);
+        return new ResponseEntity<>(new SendMessageResponse(true, "Gửi thành công tin nhắn đến số điện thoại.", true), HttpStatus.OK);
     }
 
     //check OPT is valid
     //              valid=true -> insert 1 object user -> message insert successful
     //              valid=false -> return message
     @PostMapping("/valid-phone-otp")
-    public ResponseEntity<?> isValidPhoneNumberOTP(@RequestBody CheckOTPModel checkOTPModel){
-        Optional<ValidPhoneToken> checkValidPhoneToken = tokenRepository.getByPhoneNumberAndToken(checkOTPModel.getPhoneNumber(),checkOTPModel.getOtp());
-        if(!checkValidPhoneToken.isPresent()){
-            return new ResponseEntity<>(new CheckOTPResponse(true,"Mã OTP không hợp lệ!",false, false), HttpStatus.OK);
+    public ResponseEntity<?> isValidPhoneNumberOTP(@RequestBody CheckOTPModel checkOTPModel) {
+        Optional<ValidPhoneToken> checkValidPhoneToken = tokenRepository.getByPhoneNumberAndToken(checkOTPModel.getPhoneNumber(), checkOTPModel.getOtp());
+        if (!checkValidPhoneToken.isPresent()) {
+            return new ResponseEntity<>(new CheckOTPResponse(true, "Mã OTP không hợp lệ!", false, false), HttpStatus.OK);
         }
-        if(checkValidPhoneToken.get().getExpiredTime()<=System.currentTimeMillis()) {
+        if (checkValidPhoneToken.get().getExpiredTime() <= System.currentTimeMillis()) {
             tokenRepository.delete(tokenRepository.getOne(checkValidPhoneToken.get().getSessionID()));
             return new ResponseEntity<>(new CheckOTPResponse(true, "Mã OTP hết hạn!", false, true), HttpStatus.OK);
         }
@@ -226,7 +227,7 @@ public class UserController {
         registeredUser.setPassword(enCryptPassword);
         userService.saveUser(registeredUser);
         tokenRepository.delete(tokenRepository.getOne(checkValidPhoneToken.get().getSessionID()));
-    return new ResponseEntity<>(new CheckOTPResponse(true,"Nhập mã OTP thành công",true,true), HttpStatus.OK);
+        return new ResponseEntity<>(new CheckOTPResponse(true, "Nhập mã OTP thành công", true, true), HttpStatus.OK);
     }
 
     //resendOTP
@@ -234,11 +235,93 @@ public class UserController {
     public ResponseEntity<?> resendOTP(@Valid @RequestBody SmsRequest smsRequest) {
         Optional<ValidPhoneToken> validPhoneToken = tokenRepository.getByPhoneNumber(smsRequest.getPhoneNumber());
         if (!validPhoneToken.isPresent()) {
-            return new ResponseEntity<>(new SendMessageResponse(true, "Số điện thoại không tồn tại!",false), HttpStatus.OK);
+            return new ResponseEntity<>(new SendMessageResponse(true, "Số điện thoại không tồn tại!", false), HttpStatus.OK);
         }
         tokenRepository.delete(validPhoneToken.get());
         smsService.sendSms(smsRequest);
-        return new ResponseEntity<>(new SendMessageResponse(true,"Đã gửi lại mã OTP tới đến số điện thoại.",true), HttpStatus.OK);
+        return new ResponseEntity<>(new SendMessageResponse(true, "Đã gửi lại mã OTP tới đến số điện thoại.", true), HttpStatus.OK);
+    }
+
+    //create user
+    @PostMapping("/create-employee")
+    public ResponseEntity<?> createEmployee(@RequestBody User employeeCreatedUser) {
+        boolean isExistByPhoneNumberAndRole = userRepository.existsByPhoneNumberAndRole(employeeCreatedUser.getPhoneNumber(), employeeCreatedUser.getRole());
+        if (isExistByPhoneNumberAndRole == true) {
+            return new ResponseEntity<>(new CreatedSuccessApi(true, "Số điện thoại đã được đăng kí.", false), HttpStatus.OK);
+        }
+        if (employeeCreatedUser.getRole().equals("ADMIN")) {
+            boolean isCoordinator = userRepository.existsByPhoneNumberAndRole(employeeCreatedUser.getPhoneNumber(), "COORDINATOR");
+            if (isCoordinator == true) {
+                return new ResponseEntity<>(new CreatedSuccessApi(true, "Số điện thoại không được đăng ký với vị trí này.", false), HttpStatus.OK);
+            }
+        }
+        if (employeeCreatedUser.getRole().equals("COORDINATOR")) {
+            boolean isCoordinator = userRepository.existsByPhoneNumberAndRole(employeeCreatedUser.getPhoneNumber(), "ADMIN");
+            if (isCoordinator == true) {
+                return new ResponseEntity<>(new CreatedSuccessApi(true, "Số điện thoại này không được thực hiện đăng kí.", false), HttpStatus.OK);
+            }
+        }
+        String enCryptPassword = bCryptPasswordEncoder.encode(employeeCreatedUser.getPassword());
+        employeeCreatedUser.setActive(1);
+        employeeCreatedUser.setImage(employeeCreatedUser.getImage());
+        employeeCreatedUser.setPassword(enCryptPassword);
+        userService.saveUser(employeeCreatedUser);
+        SmsRequest smsRequest = new SmsRequest(employeeCreatedUser.getPhoneNumber());
+        smsService.verifySms(smsRequest);
+        return new ResponseEntity<>(employeeCreatedUser, HttpStatus.OK);
+    }
+
+    //login in web (for coordinator/admin)
+    @PostMapping("/login")
+    public ResponseEntity<?> webLogin(@RequestBody WebUserLoginModel webUserLoginModel) {
+        boolean isCoordinator = userRepository.existsByPhoneNumberAndRole(webUserLoginModel.getPhoneNumber(), "COORDINATOR");
+        boolean isAdmin = userRepository.existsByPhoneNumberAndRole(webUserLoginModel.getPhoneNumber(), "ADMIN");
+        if (isCoordinator == false && isAdmin == false) {
+            return new ResponseEntity<>(new LoginResponse(true, "Số điện thoại không tồn tại.",false), HttpStatus.OK);
+        }
+        User userByPhone;
+        if(isAdmin == true){
+            userByPhone = userRepository.getUserByPhoneNumberAndRole(webUserLoginModel.getPhoneNumber(),"ADMIN");
+        }else {
+            userByPhone = userRepository.getUserByPhoneNumberAndRole(webUserLoginModel.getPhoneNumber(),"COORDINATOR");
+        }
+        if (!BCrypt.checkpw(webUserLoginModel.getPassword(), userByPhone.getPassword())) {
+            return new ResponseEntity<>(new LoginResponse(true, "Sai mật khẩu",false), HttpStatus.OK);
+        }
+        //create BEARER token
+        String token = Jwts.builder()
+                .setSubject(webUserLoginModel.getPhoneNumber())
+                .setExpiration(new Date(System.currentTimeMillis() + SecurityUtils.EXPIRATION_TIME))
+                .signWith(SignatureAlgorithm.HS512, SecurityUtils.SECRET.getBytes())
+                .compact();
+
+        User successfulUser = (userRepository.getUserByPhoneNumberAndRole(userByPhone.getPhoneNumber(),userByPhone.getRole()));
+        LoginAccountModel loginAccountModel = new LoginAccountModel();
+        loginAccountModel.setUserInfo(successfulUser);
+        loginAccountModel.setToken(token);
+        return new ResponseEntity<>(loginAccountModel, HttpStatus.OK);
+    }
+
+    //get 1 user
+    @GetMapping("/detail/{id}")
+    public ResponseEntity<?> userInfo(@PathVariable("id") int userID){
+        Optional<User> getUserByID = userService.getUserByID(userID);
+        if(!getUserByID.isPresent()){
+            return new ResponseEntity<>(new ApiResponse(true,"Không tìm thấy người dùng"), HttpStatus.OK);
+        }
+        return new ResponseEntity<>(getUserByID,HttpStatus.OK);
+    }
+
+    //update 1 user
+    @PutMapping("/update-user/{id}")
+    public ResponseEntity<?> updateUserInfo(@RequestBody User user, @PathVariable("id") int userID){
+        Optional<User> getUserByID = userService.getUserByID(userID);
+        if(!getUserByID.isPresent()){
+            return new ResponseEntity<>(new ApiResponse(true,"Không tìm thấy người dùng"), HttpStatus.OK);
+        }
+        user.setId(userID);
+        userService.updateContainStatus(user);
+        return new ResponseEntity<>(getUserByID, HttpStatus.OK);
     }
 
 

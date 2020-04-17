@@ -82,9 +82,31 @@ public class TwilioSmsSender implements SmsSender {
         }
     }
 
+    @Override
+    public void verifySms(SmsRequest smsRequest) {
+        if (isPhoneNumberValid(smsRequest.getPhoneNumber())) {
+            //phoneNumber format 0xxxxxxxxx (input type)
+            String phoneNumberInput = smsRequest.getPhoneNumber();
+
+            //phoneNumber format +84xxxxxxxxxx (valid type)
+            String mainNumberInput = phoneNumberInput.substring(1);
+            String validPhoneNumber = "+84".concat(mainNumberInput);
+
+            PhoneNumber phoneNumberTo = new PhoneNumber(validPhoneNumber);
+            PhoneNumber phoneNumberfrom = new PhoneNumber(twilioConfiguration.getTrialNumber());
+            String message = "Bạn vừa được đăng kí thành công với hệ thống MedTest. Vui lòng liên hệ với phòng khám để lấy thông tin tài khoản. ";
+            MessageCreator creator = Message.creator(phoneNumberTo, phoneNumberfrom, message);
+            creator.create();
+            //System.out.println(message);
+            LOGGER.info("Send sms {}" + smsRequest);
+
+        } else {
+            throw new IllegalArgumentException("Phone number [" + smsRequest.getPhoneNumber() + "] is not a valid number");
+        }
+    }
+
     private boolean isPhoneNumberValid(String phoneNumber) {
         //TODO: Implement phone number validator
         return true;
     }
 }
-

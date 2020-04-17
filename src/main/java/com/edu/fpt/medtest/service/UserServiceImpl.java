@@ -48,6 +48,20 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public void updateContainStatus(User user) {
+        User userByID = userRepository.findById(user.getId()).get();
+        userByID.setName(user.getName());
+        userByID.setDob(user.getDob());
+        userByID.setAddress(user.getAddress());
+        userByID.setEmail(user.getEmail());
+        userByID.setGender(user.getGender());
+        userByID.setTownCode(user.getTownCode());
+        userByID.setDistrictCode(user.getDistrictCode());
+        userByID.setActive(user.getActive());
+        userRepository.save(userByID);
+    }
+
+    @Override
     public List<User> lsUserActive() {
         List<User> lsUserActive = userRepository.findAllByActive(1);
         return lsUserActive;

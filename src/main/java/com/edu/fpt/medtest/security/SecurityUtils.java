@@ -14,6 +14,7 @@ public class SecurityUtils {
     public static final String TOKEN_PREFIX = "Bearer ";
     public static final String HEADER_STRING = "Authorization";
     public static final String CUSTOMER_REGISTER = "/users/customers/register";
+    public static final String WEB_LOGIN = "/users/login";
     public static final String NURSE_REGISTER = "/users/nurses/register";
     public static final String COORDINATOR_REGISTER = "/users/coordinators/register";
     public static final String CUSTOMER_LOGIN = "/users/customers/login";

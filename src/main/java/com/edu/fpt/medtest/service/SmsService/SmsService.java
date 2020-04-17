@@ -10,13 +10,20 @@ public class SmsService {
 
     private final  SmsSender smsSender;
 
+
     @Autowired
     public SmsService(@Qualifier("twilio") TwilioSmsSender smsSender) {
         this.smsSender = smsSender;
     }
 
+
     public  void  sendSms(SmsRequest smsRequest){
         smsSender.sendSms(smsRequest);
     }
+
+    public void verifySms(SmsRequest smsRequest){
+        smsSender.verifySms(smsRequest);
+    }
+
 
 }

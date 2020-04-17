@@ -60,6 +60,7 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.POST, SecurityUtils.VERIFY_PHONE_BY_SEND_OTP).permitAll()
                 .antMatchers(HttpMethod.POST, SecurityUtils.VALID_PHONE_OTP).permitAll()
                 .antMatchers(HttpMethod.POST, SecurityUtils.RESEND_OTP).permitAll()
+                .antMatchers(HttpMethod.POST, SecurityUtils.WEB_LOGIN).permitAll()
 
                 //////////////for test
                 .antMatchers(HttpMethod.POST, SecurityUtils.UPLOAD_FILE).permitAll()
