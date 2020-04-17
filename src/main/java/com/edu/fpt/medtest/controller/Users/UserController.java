@@ -142,7 +142,7 @@ public class UserController {
         } catch (MailException mailException) {
             System.out.println(mailException);
         }
-        return new ResponseEntity<>(new ComfirmResponse(true, "Mật khẩu mới đã được gửi đến email bạn đã đăng kí!",false), HttpStatus.OK);
+        return new ResponseEntity<>(new ComfirmResponse(true, "Mật khẩu mới đã được gửi đến email bạn đã đăng kí!",true), HttpStatus.OK);
     }
 
     //list notification for user
