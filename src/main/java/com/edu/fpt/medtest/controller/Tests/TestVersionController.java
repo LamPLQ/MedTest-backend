@@ -47,7 +47,7 @@ public class TestVersionController {
     //list all version
     @GetMapping("/list")
     public ResponseEntity<?> lsVersions() {
-        List<TestVersion> lsVersions = testVersionService.lsTestVersionByCreatedTimeDesc();
+       /* List<TestVersion> lsVersions = testVersionService.lsTestVersionByCreatedTimeDesc();
         if (lsVersions.isEmpty()) {
             return new ResponseEntity<>(new ApiResponse(true, "Hiện tại không có phiên bản nào!"), HttpStatus.OK);
         }
@@ -59,8 +59,9 @@ public class TestVersionController {
             versionResponseModel.setCreatorID(testVersion.getCreatorID());
             versionResponseModel.setCreatorName(userRepository.findById(testVersion.getCreatorID()).get().getName());
             lsResponseVersion.add(versionResponseModel);
-        }
-        return new ResponseEntity<>(lsResponseVersion, HttpStatus.OK);
+        }*/
+        Date createdTime = new Date(System.currentTimeMillis());
+        return new ResponseEntity<>(createdTime, HttpStatus.OK);
     }
 
     //create new version
