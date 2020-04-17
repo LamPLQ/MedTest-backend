@@ -1,9 +1,8 @@
 package com.edu.fpt.medtest.controller.Tests;
 
-import com.edu.fpt.medtest.utils.ApiResponse;
 import com.edu.fpt.medtest.entity.Test;
-import com.edu.fpt.medtest.exception.ResourceNotFoundException;
 import com.edu.fpt.medtest.service.Tests.TestService;
+import com.edu.fpt.medtest.utils.ApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +23,7 @@ public class TestController {
     public ResponseEntity<?> lsTest() {
         List<Test> lsTest = testService.lsTest();
         if (lsTest.isEmpty()) {
-            return new ResponseEntity<>(new ApiResponse(true, "No test available"), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(new ApiResponse(true, "Không có xét nghiệm nào hiện tại!"), HttpStatus.OK);
         }
         return new ResponseEntity<>(lsTest, HttpStatus.OK);
     }
@@ -34,7 +33,7 @@ public class TestController {
     public ResponseEntity<?> getTest(@PathVariable("id") int id) {
         Optional<Test> getTest = testService.findTestByID(id);
         if (!getTest.isPresent()) {
-            return new ResponseEntity<>(new ApiResponse(true, "Test not available"), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(new ApiResponse(true, "Không có xét nghiệm nào"), HttpStatus.OK);
         }
         return new ResponseEntity<>(getTest, HttpStatus.OK);
     }
@@ -45,19 +44,10 @@ public class TestController {
         List<Test> lsTest = testService.lsTest();
         for (Test testTrack : lsTest) {
             if (test.getTestID() == testTrack.getTestID())
-                return new ResponseEntity<>(new ApiResponse(false, "Already have this test ID"), HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<>(new ApiResponse(false, "Mã xét nghiệm đã tồn tại!"), HttpStatus.OK);
         }
         testService.saveTest(test);
-        return new ResponseEntity<>(new ApiResponse(true, "Successfully create test"), HttpStatus.OK);
+        return new ResponseEntity<>(new ApiResponse(true, "Tạo thành công một mẫu xét nghiệm mới!"), HttpStatus.OK);
     }
 
-    //edit a test type
-    @PutMapping(value = "/detail/edit/{id}")
-    public ResponseEntity<?> editTest(@RequestBody Test test, @PathVariable("id") int id) {
-        Optional<Test> getTest = Optional.ofNullable(testService.findTestByID(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Test", "testID", id)));
-        test.setTestID(id);
-        testService.saveTest(test);
-        return new ResponseEntity<>(new ApiResponse(true, "Update Test successfully"), HttpStatus.OK);
-    }
 }

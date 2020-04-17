@@ -1,12 +1,11 @@
 package com.edu.fpt.medtest.controller.Tests;
 
-import com.edu.fpt.medtest.utils.ApiResponse;
 import com.edu.fpt.medtest.entity.Test;
 import com.edu.fpt.medtest.entity.TestType;
-import com.edu.fpt.medtest.exception.ResourceNotFoundException;
 import com.edu.fpt.medtest.model.TestTypeListModel;
 import com.edu.fpt.medtest.repository.TestRepository;
 import com.edu.fpt.medtest.service.Tests.TestTypeService;
+import com.edu.fpt.medtest.utils.ApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,7 +30,7 @@ public class TestTypeController {
     public ResponseEntity<?> lsTestType() {
         List<TestType> lsTestType = testTypeService.lsTestType();
         if (lsTestType.isEmpty()) {
-            return new ResponseEntity<>(new ApiResponse(true, "No test type available"), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(new ApiResponse(true, "Không có loại xét nghiệm nào hiện tại!"), HttpStatus.OK);
         }
         return new ResponseEntity<>(lsTestType, HttpStatus.OK);
     }
@@ -41,7 +40,7 @@ public class TestTypeController {
     public ResponseEntity<?> getTestType(@PathVariable("id") int testType) {
         Optional<TestType> getTestType = testTypeService.findTestTypeByID(testType);
         if (!getTestType.isPresent()) {
-            return new ResponseEntity<>(new ApiResponse(true, "Test type not available"), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(new ApiResponse(true, "Mã loại xét nghiệm không tồn tại!"), HttpStatus.OK);
         }
         return new ResponseEntity<>(getTestType, HttpStatus.OK);
     }
@@ -52,20 +51,22 @@ public class TestTypeController {
         List<TestType> lsTestType = testTypeService.lsTestType();
         for (TestType typeTrack : lsTestType) {
             if (testType.getTestTypeID() == typeTrack.getTestTypeID())
-                return new ResponseEntity<>(new ApiResponse(false, "Already have this test type ID"), HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<>(new ApiResponse(false, "Đã tồn tại mã loại xét nghiệm!"), HttpStatus.OK);
         }
         testTypeService.saveTestType(testType);
-        return new ResponseEntity<>(new ApiResponse(true, "Successfully create test type"), HttpStatus.OK);
+        return new ResponseEntity<>(new ApiResponse(true, "Tạo mã loại xét nghiệm thành công!"), HttpStatus.OK);
     }
 
     //edit a test type
     @PutMapping(value = "/detail/edit/{id}")
     public ResponseEntity<?> editTestType(@RequestBody TestType testType, @PathVariable("id") int id) {
-        Optional<TestType> getTestType = Optional.ofNullable(testTypeService.findTestTypeByID(id)
-                .orElseThrow(() -> new ResourceNotFoundException("TestType", "testTypeID", id)));
+        Optional<TestType> getTestType = testTypeService.findTestTypeByID(id);
+        if (!getTestType.isPresent()) {
+            return new ResponseEntity<>(new ApiResponse(true, "Không tồn tại mã loại xét nghiệm"), HttpStatus.OK);
+        }
         testType.setTestTypeID(id);
         testTypeService.saveTestType(testType);
-        return new ResponseEntity<>(new ApiResponse(true, "Update Test Type successfully"), HttpStatus.OK);
+        return new ResponseEntity<>(getTestType, HttpStatus.OK);
     }
 
     //get List testType-test by testTypeID

@@ -1,7 +1,6 @@
 package com.edu.fpt.medtest.controller.Address;
 
 import com.edu.fpt.medtest.entity.Town;
-import com.edu.fpt.medtest.exception.ResourceNotFoundException;
 import com.edu.fpt.medtest.service.Address.TownService;
 import com.edu.fpt.medtest.utils.ApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +30,7 @@ public class TownController {
         for (Town town : townList.subList(1, townList.size())) {
             returnTown.add(town);
         }
-        if (returnTown.isEmpty()){
+        if (returnTown.isEmpty()) {
             return new ResponseEntity<>(new ApiResponse(true, "Không có phường/xã nào!"), HttpStatus.OK);
         }
         return new ResponseEntity<>(returnTown, HttpStatus.OK);
@@ -53,11 +52,9 @@ public class TownController {
     //View detail of 1 town
     @GetMapping(value = "/detail/{code}")
     public ResponseEntity<?> getTown(@PathVariable("code") String code) {
-        /*Optional<Town> getTown = Optional.ofNullable(townService.getTownByCode(code)
-                .orElseThrow(() -> new ResourceNotFoundException("Town", "townCode", code)));*/
         Optional<Town> getTown = townService.getTownByCode(code);
-        if (!getTown.isPresent()){
-            return new ResponseEntity<>(new ApiResponse(true,"Không tồn tại code phường/xã"),HttpStatus.OK);
+        if (!getTown.isPresent()) {
+            return new ResponseEntity<>(new ApiResponse(true, "Không tồn tại code phường/xã"), HttpStatus.OK);
         }
         return new ResponseEntity<>(getTown, HttpStatus.OK);
     }
@@ -65,11 +62,9 @@ public class TownController {
     //update 1 town detail
     @PutMapping(value = "/detail/update/{code}")
     public ResponseEntity<?> updateTown(@RequestBody Town town, @PathVariable("code") String code) {
-        /*Optional<Town> getTown = Optional.ofNullable(townService.getTownByCode(code)
-                .orElseThrow(() -> new ResourceNotFoundException("Town", "TownCode", code)));*/
         Optional<Town> getTown = townService.getTownByCode(code);
-        if (!getTown.isPresent()){
-            return new ResponseEntity<>(new ApiResponse(true,"Không tồn tại code phường/xã"),HttpStatus.OK);
+        if (!getTown.isPresent()) {
+            return new ResponseEntity<>(new ApiResponse(true, "Không tồn tại code phường/xã"), HttpStatus.OK);
         }
         town.setTownCode(code);
         townService.saveTown(town);
