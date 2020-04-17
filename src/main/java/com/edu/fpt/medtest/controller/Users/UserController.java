@@ -131,7 +131,7 @@ public class UserController {
     public ResponseEntity<?> forgotPassword(@RequestBody ForgotPasswordModel forgotPasswordModel) {
         boolean existPhoneNumber = userRepository.existsByPhoneNumberAndRole(forgotPasswordModel.getPhoneNumber(), "CUSTOMER");
         if (!existPhoneNumber == true) {
-            return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy số điện thoại đã nhập!"), HttpStatus.OK);
+            return new ResponseEntity<>(new ComfirmResponse(true, "Không tìm thấy số điện thoại đã nhập!",false), HttpStatus.OK);
         }
         User forgotPasswordUser = userService.getUserByPhoneNumberAndRole(forgotPasswordModel.getPhoneNumber(), "CUSTOMER");
         sentMailModel.setEmail(forgotPasswordUser.getEmail());
@@ -142,7 +142,7 @@ public class UserController {
         } catch (MailException mailException) {
             System.out.println(mailException);
         }
-        return new ResponseEntity<>(new ApiResponse(true, "Mật khẩu mới đã được gửi đến email bạn đã đăng kí!"), HttpStatus.OK);
+        return new ResponseEntity<>(new ComfirmResponse(true, "Mật khẩu mới đã được gửi đến email bạn đã đăng kí!",false), HttpStatus.OK);
     }
 
     //list notification for user
