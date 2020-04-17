@@ -83,11 +83,11 @@ public class TestVersionController {
         //current system time
         /*Date createdTime = new Date(System.currentTimeMillis());
         System.out.println("date type: '" + createdTime + "'");*/
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        String currentTime = sdf.format(System.currentTimeMillis());
+        //SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        //String currentTime = sdf.format(System.currentTimeMillis());
         //String createdTime = currentTime.substring(0,10) + "T"+currentTime.substring(11)+".000+0000";
 
-        Date inputDatabaseTime = new Date();
+        /*Date inputDatabaseTime = new Date();
         try {
             inputDatabaseTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(currentTime);
         }catch (ParseException parseException){
@@ -96,7 +96,7 @@ public class TestVersionController {
         //===================
 
         newVersion.setCreatedTime(inputDatabaseTime);
-        testVersionService.saveATestVersion(newVersion);
+        testVersionService.saveATestVersion(newVersion);*/
 
         List<TestVersion> lsTestVersion = testVersionService.lsTestVersionByCreatedTimeDesc();
         int currentVersion = lsTestVersion.get(0).getVersionID();
@@ -124,7 +124,8 @@ public class TestVersionController {
         testsOfVersion.setCreatorName(userRepository.findById(lsTestVersion.get(0).getCreatorID()).get().getName());//set createdName
         SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         String displayCreatedTest =  sdf2.format(lsTestVersion.get(0).getCreatedTime());
-        testsOfVersion.setCreatedTime(displayCreatedTest);//set createdTime
+        String createdTime = displayCreatedTest.substring(0,10) + "T"+displayCreatedTest.substring(11)+".000+0000";
+        testsOfVersion.setCreatedTime(createdTime);//set createdTime
 
         //list test
         List<TestTypeListModel> apiResponse = new ArrayList<>();
