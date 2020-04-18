@@ -1,24 +1,20 @@
 package com.edu.fpt.medtest.controller;
 
 import com.edu.fpt.medtest.entity.*;
-import com.edu.fpt.medtest.model.DetailRequestModel;
-import com.edu.fpt.medtest.model.RequestModel;
-import com.edu.fpt.medtest.model.RequestModelInput;
+import com.edu.fpt.medtest.model.*;
 import com.edu.fpt.medtest.repository.*;
-import com.edu.fpt.medtest.service.FileStorageService;
 import com.edu.fpt.medtest.service.NotificationService;
 import com.edu.fpt.medtest.service.Request.RequestHistoryService;
 import com.edu.fpt.medtest.service.Request.RequestService;
 import com.edu.fpt.medtest.service.Request.RequestTestService;
 import com.edu.fpt.medtest.service.Request.ResultService;
+import com.edu.fpt.medtest.service.Tests.TestTypeService;
 import com.edu.fpt.medtest.utils.ApiResponse;
 import com.edu.fpt.medtest.utils.GetRandomString;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -65,11 +61,12 @@ public class RequestController {
     @Autowired
     private NotificationService notificationService;
 
-    @Autowired
-    private FileStorageService fileStorageService;
 
     @Autowired
     private RequestModelRepository requestModelRepository;
+
+    @Autowired
+    private TestTypeService testTypeService;
 
     @PostMapping("/create")
     public ResponseEntity<?> createNewRequest(@RequestBody RequestModelInput requestModelInput) {
@@ -270,7 +267,7 @@ public class RequestController {
     @GetMapping("/detail/{id}")
     public ResponseEntity<?> getDetailRecentRequest(@PathVariable("id") String requestId) {
         //Object will return as a request detail
-        DetailRequestModel detailRequestModel = new DetailRequestModel();
+        DetailRequestTestVersionModel detailRequestModel = new DetailRequestTestVersionModel();
 
         //Check if request existed
         boolean existedRequest = requestRepository.existsByRequestID(requestId);
@@ -314,16 +311,56 @@ public class RequestController {
             //set list selected test
             List<RequestTest> lsRequestTests = requestTestRepository.getAllByRequestID(requestId);
             List<String> lsTestID = new ArrayList<>();
+            List<Test> lsTestOfRequest = new ArrayList<>();
             long testAmount = 0;
             for (RequestTest tracking : lsRequestTests) {
-                System.out.println(tracking.getTestID());
                 String testID = String.valueOf(tracking.getTestID());
                 testAmount += testRepository.findById(tracking.getTestID()).get().getPrice();
                 lsTestID.add(testID);
+                lsTestOfRequest.add(testRepository.getOne(tracking.getTestID()));
             }
+            //list test (String)
             detailRequestModel.setLsSelectedTest(lsTestID);
             //set amount of test
             detailRequestModel.setRequestAmount(String.valueOf(testAmount));
+
+            ///*************List test**************//
+            List<Integer> lsTestTypeID = new ArrayList<>();
+            List<Integer> lsVersionID = new ArrayList<>();
+            for (Test testOfRequest_TO_GET_LIST : lsTestOfRequest) {
+                lsTestTypeID.add(testOfRequest_TO_GET_LIST.getTestTypeID());
+                lsVersionID.add(testOfRequest_TO_GET_LIST.getVersionID());
+            }
+            /*System.out.println("LsTestTypeID" + lsTestTypeID);
+            System.out.println("LsVersionID" + lsVersionID);*/
+
+            ///get list test distinct
+            List<Integer> lsTestTypeIdDistinct = new ArrayList<>();
+            for (Integer testType : lsTestTypeID) {
+                if (!lsTestTypeIdDistinct.contains(testType)) {
+                    lsTestTypeIdDistinct.add(testType);
+                }
+            }
+            //System.out.println("LsDistinct" + lsTestTypeIdDistinct);
+            ///////////////////////////
+
+            List<TestTypeListModel> lsResult = new ArrayList<>();
+            for (Integer testTypeID : lsTestTypeIdDistinct) {
+                TestTypeListModel testTypeListModel = new TestTypeListModel();
+                testTypeListModel.setTestTypeID(testTypeID);
+                testTypeListModel.setTestTypeName(testTypeService.findTestTypeByID(testTypeID).get().getTestTypeName());
+                List<Test> chosenTest = new ArrayList<>();
+                for (Test test : lsTestOfRequest) {
+                    if (test.getTestTypeID() == testTypeID) {
+                        chosenTest.add(test);
+                    }
+                }
+                testTypeListModel.setListTest(chosenTest);
+                lsResult.add(testTypeListModel);
+            }
+            detailRequestModel.setDetailListTest(lsResult);
+            ///***************************//
+
             //set note
             detailRequestModel.setRequestNote("Yêu cầu xét nghiệm mới tạo.");
         }
@@ -384,18 +421,57 @@ public class RequestController {
             List<RequestTest> lsRequestTests = requestTestRepository.getAllByRequestID(nowRequest.getRequestID());
             List<String> lsTestID = new ArrayList<>();
             long testAmount = 0;
+            List<Test> lsTestOfRequest = new ArrayList<>();
             for (RequestTest tracking : lsRequestTests) {
-                System.out.println(tracking.getTestID());
                 String testID = String.valueOf(tracking.getTestID());
                 testAmount += testRepository.findById(tracking.getTestID()).get().getPrice();
                 lsTestID.add(testID);
+                lsTestOfRequest.add(testRepository.getOne(tracking.getTestID()));
             }
             detailRequestModel.setLsSelectedTest(lsTestID);
             //set amount of test
             detailRequestModel.setRequestAmount(String.valueOf(testAmount));
+
+
+            ///*************List test**************//
+            List<Integer> lsTestTypeID = new ArrayList<>();
+            List<Integer> lsVersionID = new ArrayList<>();
+            for (Test testOfRequest_TO_GET_LIST : lsTestOfRequest) {
+                lsTestTypeID.add(testOfRequest_TO_GET_LIST.getTestTypeID());
+                lsVersionID.add(testOfRequest_TO_GET_LIST.getVersionID());
+            }
+           /* System.out.println("LsTestTypeID" + lsTestTypeID);
+            System.out.println("LsVersionID" + lsVersionID);*/
+
+            ///get list test distinct
+            List<Integer> lsTestTypeIdDistinct = new ArrayList<>();
+            for (Integer testType : lsTestTypeID) {
+                if (!lsTestTypeIdDistinct.contains(testType)) {
+                    lsTestTypeIdDistinct.add(testType);
+                }
+            }
+            //System.out.println("LsDistinct" + lsTestTypeIdDistinct);
+            ///////////////////////////
+
+            List<TestTypeListModel> lsResult = new ArrayList<>();
+            for (Integer testTypeID : lsTestTypeIdDistinct) {
+                TestTypeListModel testTypeListModel = new TestTypeListModel();
+                testTypeListModel.setTestTypeID(testTypeID);
+                testTypeListModel.setTestTypeName(testTypeService.findTestTypeByID(testTypeID).get().getTestTypeName());
+                List<Test> chosenTest = new ArrayList<>();
+                for (Test test : lsTestOfRequest) {
+                    if (test.getTestTypeID() == testTypeID) {
+                        chosenTest.add(test);
+                    }
+                }
+                testTypeListModel.setListTest(chosenTest);
+                lsResult.add(testTypeListModel);
+            }
+            detailRequestModel.setDetailListTest(lsResult);
+            ///***************************//
+
             //setNote
             detailRequestModel.setRequestNote(requestHistory.getNote());
-
         }
         return new ResponseEntity<>(detailRequestModel, HttpStatus.OK);
     }
@@ -553,19 +629,22 @@ public class RequestController {
         return new ResponseEntity<>(lsResult, HttpStatus.OK);
     }
 
-    //save result 1 request
-    @PostMapping("/detail/{id}/save-result")
-    public ResponseEntity<?> saveResult(@RequestBody Result result, @PathVariable("id") String requestID, @RequestParam("file") MultipartFile file) {
-        result.setRequestID(requestID);
-        String fileName = fileStorageService.storeFile(file);
-        String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
-                .path("/saveFile/")
-                .path(fileName)
-                .toUriString();
-        result.setImage(fileDownloadUri);
+    //update result for a request
+    @PostMapping("/detail/results/add")
+    public ResponseEntity updateResultOfRequest(@RequestBody Result result) {
         resultService.saveResult(result);
-        return new ResponseEntity<>(result, HttpStatus.OK);
+        ReturnResult returnResult = new ReturnResult();
+        returnResult.setResultID(result.getResultID());
+        returnResult.setImage(result.getImage());
+        //=====================//
+        SimpleDateFormat sdf3 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String displayCreatedTest = sdf3.format(result.getCreatedTime());
+        String createdTime3 = displayCreatedTest.substring(0, 10) + "T" + displayCreatedTest.substring(11) + ".000+0000";
+        //=====================//
+        returnResult.setCreatedTime(createdTime3);
+        returnResult.setUserID(result.getUserID());
+        returnResult.setRequestID(result.getRequestID());
+        return new ResponseEntity(returnResult, HttpStatus.OK);
     }
-
 
 }

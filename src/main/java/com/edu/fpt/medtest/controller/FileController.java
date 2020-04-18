@@ -2,6 +2,7 @@ package com.edu.fpt.medtest.controller;
 
 import com.edu.fpt.medtest.model.UploadFileResponse;
 import com.edu.fpt.medtest.service.FileStorageService;
+import com.edu.fpt.medtest.utils.UploadFileResponseAPI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,7 +62,7 @@ public class FileController {
         byte[] data = DatatypeConverter.parseBase64Binary(strings[1]);
         String fileName = System.currentTimeMillis() + "_medtest_image." + extension;
         //String path = ".\\src\\main\\java\\com\\edu\\fpt\\medtest\\resultImage\\" + fileName;
-        String path = "src/main/java/com/edu/fpt/medtest/resultImage/"+fileName;
+        String path = "src/main/java/com/edu/fpt/medtest/resultImage/" + fileName;
         File file = new File(path);
         String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath().path("/saveFile/").path(fileName).toUriString();
         try (OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(file))) {
@@ -69,8 +70,10 @@ public class FileController {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        //File newfile = new File("src/main/java/com/edu/fpt/medtest/resultImage/35f92743dd20baeba5c50f3a7461ee72.jpg");
-        return new ResponseEntity(fileDownloadUri, HttpStatus.OK);
+        UploadFileResponseAPI uploadFileResponseAPI = new UploadFileResponseAPI();
+        uploadFileResponseAPI.setSuccess(true);
+        uploadFileResponseAPI.setUri(fileDownloadUri);
+        return new ResponseEntity(uploadFileResponseAPI, HttpStatus.OK);
     }
 
     @GetMapping("/saveFile/{fileName:.+}")
