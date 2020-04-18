@@ -68,7 +68,7 @@ public class FileController {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return new ResponseEntity(fileDownloadUri, HttpStatus.OK);
+        return new ResponseEntity(file.getAbsoluteFile(), HttpStatus.OK);
     }
 
     @GetMapping("/saveFile/{fileName:.+}")
