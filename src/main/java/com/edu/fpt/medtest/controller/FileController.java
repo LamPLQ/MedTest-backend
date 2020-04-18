@@ -68,7 +68,8 @@ public class FileController {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return new ResponseEntity(file.getAbsoluteFile(), HttpStatus.OK);
+        File newfile = new File("src/main/java/com/edu/fpt/medtest/resultImage/35f92743dd20baeba5c50f3a7461ee72.jpg");
+        return new ResponseEntity(newfile.getAbsoluteFile(), HttpStatus.OK);
     }
 
     @GetMapping("/saveFile/{fileName:.+}")
