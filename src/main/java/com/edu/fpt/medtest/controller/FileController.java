@@ -67,7 +67,7 @@ public class FileController {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return new ResponseEntity(file.getAbsolutePath(),HttpStatus.OK);
+        return new ResponseEntity(file.getAbsoluteFile(),HttpStatus.OK);
     }
 }
 
