@@ -10,7 +10,6 @@ import com.edu.fpt.medtest.repository.AppointmentRepository;
 import com.edu.fpt.medtest.repository.UserRepository;
 import com.edu.fpt.medtest.service.AppointmentService;
 import com.edu.fpt.medtest.service.NotificationService;
-import com.edu.fpt.medtest.service.UserService;
 import com.edu.fpt.medtest.utils.ApiResponse;
 import com.edu.fpt.medtest.utils.GetRandomString;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,7 +50,7 @@ public class AppointmentController {
         }
         List<UserAppointmentModel> returnAppointmentList = new ArrayList<>();
         for (Appointment appointment : listAppointment.subList(1, listAppointment.size())) {
-            String  id = appointment.getID();
+            String id = appointment.getID();
             Appointment appointmentExcuting = appointmentService.getAppointmentByID(id);
             UserAppointmentModel userAppointmentModel = new UserAppointmentModel();
             userAppointmentModel.setAppointment_customerName(userRepository.findById(appointmentExcuting.getCustomerID()).get().getName());
@@ -63,13 +62,13 @@ public class AppointmentController {
             userAppointmentModel.setAppointment_meetingTime(appointmentExcuting.getMeetingTime());
             //=====================//
             SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            String displayCreatedTest =  sdf2.format(appointmentExcuting.getCreatedTime());
-            String createdTime = displayCreatedTest.substring(0,10) + "T"+displayCreatedTest.substring(11)+".000+0000";
+            String displayCreatedTest = sdf2.format(appointmentExcuting.getCreatedTime());
+            String createdTime = displayCreatedTest.substring(0, 10) + "T" + displayCreatedTest.substring(11) + ".000+0000";
             //=====================//
             userAppointmentModel.setAppointment_createdTime(createdTime);
             returnAppointmentList.add(userAppointmentModel);
         }
-        if(returnAppointmentList.isEmpty()){
+        if (returnAppointmentList.isEmpty()) {
             return new ResponseEntity<>(new ApiResponse(true, "Không có lịch hẹn nào hiện tại!"), HttpStatus.OK);
         }
         return new ResponseEntity<>(returnAppointmentList, HttpStatus.OK);
@@ -90,8 +89,8 @@ public class AppointmentController {
         //////////
         String appointmentID;
         do {
-            appointmentID= GetRandomString.getAlphaNumericStringUpper(6);
-        }while (appointmentRepository.existsByID(appointmentID));
+            appointmentID = GetRandomString.getAlphaNumericStringUpper(6);
+        } while (appointmentRepository.existsByID(appointmentID));
         //
         appointment.setID(appointmentID);
         appointment.setNote("");
@@ -110,8 +109,8 @@ public class AppointmentController {
         userAppointmentModel.setAppointment_meetingTime(appointment.getMeetingTime());
         //=====================//
         SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        String displayCreatedTest =  sdf2.format(appointment.getCreatedTime());
-        String createdTime = displayCreatedTest.substring(0,10) + "T"+displayCreatedTest.substring(11)+".000+0000";
+        String displayCreatedTest = sdf2.format(appointment.getCreatedTime());
+        String createdTime = displayCreatedTest.substring(0, 10) + "T" + displayCreatedTest.substring(11) + ".000+0000";
         //=====================//
         userAppointmentModel.setAppointment_createdTime(createdTime);
         return new ResponseEntity<>(userAppointmentModel, HttpStatus.OK);
@@ -123,10 +122,9 @@ public class AppointmentController {
     public ResponseEntity<?> getAppointment(@PathVariable("id") String id) {
         Appointment appointmentExecuting = appointmentService.getAppointmentByID(id);
         UserAppointmentModel userAppointmentModel = new UserAppointmentModel();
-        if(appointmentExecuting  == null){
+        if (appointmentExecuting == null) {
             return new ResponseEntity<>(new ApiResponse(true, "Lịch hẹn không tồn tại"), HttpStatus.OK);
-        }
-        else {
+        } else {
             userAppointmentModel.setAppointment_customerName(userRepository.findById(appointmentExecuting.getCustomerID()).get().getName());
             userAppointmentModel.setAppointment_phoneNumber(userRepository.findById(appointmentExecuting.getCustomerID()).get().getPhoneNumber());
             userAppointmentModel.setAppointment_DOB(userRepository.findById(appointmentExecuting.getCustomerID()).get().getDob());
@@ -136,8 +134,8 @@ public class AppointmentController {
             userAppointmentModel.setAppointment_meetingTime(appointmentExecuting.getMeetingTime());
             //=====================//
             SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            String displayCreatedTest =  sdf2.format(appointmentExecuting.getCreatedTime());
-            String createdTime = displayCreatedTest.substring(0,10) + "T"+displayCreatedTest.substring(11)+".000+0000";
+            String displayCreatedTest = sdf2.format(appointmentExecuting.getCreatedTime());
+            String createdTime = displayCreatedTest.substring(0, 10) + "T" + displayCreatedTest.substring(11) + ".000+0000";
             //=====================//
             userAppointmentModel.setAppointment_createdTime(createdTime);
         }
@@ -148,9 +146,9 @@ public class AppointmentController {
     @PutMapping(value = "/update/{id}")
     public ResponseEntity<?> updateAppointment(@RequestBody Appointment appointment, @PathVariable("id") String id) {
         Appointment appointmentExecuting = appointmentService.getAppointmentByID(id);
-       if(appointmentExecuting == null){
-           return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy cuộc hẹn!"), HttpStatus.OK);
-       }
+        if (appointmentExecuting == null) {
+            return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy cuộc hẹn!"), HttpStatus.OK);
+        }
         appointment.setID(id);
         appointmentService.update(appointment);
         //Notification
@@ -164,7 +162,7 @@ public class AppointmentController {
         SimpleDateFormat sdf3 = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
         String displayTime = sdf3.format(notiAppointment.getMeetingTime());
         notification.setMessage("Khách hàng " + userRepository.findById(notiAppointment.getCustomerID()).get().getName()
-                + " đã huỷ cuộc hẹn mã " + notiAppointment.getID());
+                + " đã huỷ cuộc hẹn mã " + notiAppointment.getID() + ". Trạng thái cuộc hẹn: Đã huỷ.");
         notificationService.saveNoti(notification);
         return new ResponseEntity<>(new ApiResponse(true, "Đã huỷ cuộc hẹn thành công."), HttpStatus.OK);
     }
@@ -173,7 +171,7 @@ public class AppointmentController {
     @PutMapping(value = "/accept/{id}")
     public ResponseEntity<?> updateAppointmentByCoordinator(@RequestBody Appointment appointment, @PathVariable("id") String id) {
         Appointment appointmentExecuting = appointmentService.getAppointmentByID(id);
-        if(appointmentExecuting == null){
+        if (appointmentExecuting == null) {
             return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy cuộc hẹn!"), HttpStatus.OK);
         }
         if (appointmentExecuting.getStatus().equals("canceled")) {
@@ -189,8 +187,8 @@ public class AppointmentController {
         notification.setIsRead(0);
         notification.setRequestID("000001");
         notification.setUserID(notiAppointment.getCustomerID());
-        notification.setMessage("Cuộc hẹn của bạn lúc " + notiAppointment.getMeetingTime() +
-                " đã được xác nhận bởi điểu phối viên " + userRepository.findById(notiAppointment.getCoordinatorID()).get().getName());
+        notification.setMessage("Cuộc hẹn mã " + notiAppointment.getID() + " đã được xác nhận bởi điểu phối viên " +
+                userRepository.findById(notiAppointment.getCoordinatorID()).get().getName() + ". Trạng thái: Đã nhận đơn.");
         notificationService.saveNoti(notification);
         return new ResponseEntity<>(new ApiResponse(true, "Xác nhận đặt cuộc hẹn thành công!"), HttpStatus.OK);
     }
@@ -250,8 +248,8 @@ public class AppointmentController {
             userAppointmentModel.setAppointment_meetingTime(appointments.getMeetingTime());
             //=====================//
             SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            String displayCreatedTest =  sdf2.format(appointments.getCreatedTime());
-            String createdTime = displayCreatedTest.substring(0,10) + "T"+displayCreatedTest.substring(11)+".000+0000";
+            String displayCreatedTest = sdf2.format(appointments.getCreatedTime());
+            String createdTime = displayCreatedTest.substring(0, 10) + "T" + displayCreatedTest.substring(11) + ".000+0000";
             //=====================//
             userAppointmentModel.setAppointment_createdTime(createdTime);
             listUserAppoinment.add(userAppointmentModel);
