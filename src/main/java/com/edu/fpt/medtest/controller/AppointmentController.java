@@ -154,7 +154,6 @@ public class AppointmentController {
         appointment.setID(id);
         appointmentService.update(appointment);
         //Notification
-        //Appointment notiAppointment = appointmentService.getAppointmentByID(id).get();
         Appointment notiAppointment = appointmentExecuting;
         Notification notification = new Notification();
         notification.setAppointmentID(notiAppointment.getID());
@@ -162,8 +161,10 @@ public class AppointmentController {
         notification.setIsRead(0);
         notification.setRequestID("000001");
         notification.setUserID(notiAppointment.getCustomerID());
+        SimpleDateFormat sdf3 = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+        String displayTime = sdf3.format(notiAppointment.getMeetingTime());
         notification.setMessage("Khách hàng " + userRepository.findById(notiAppointment.getCustomerID()).get().getName()
-                + " đã huỷ cuộc hẹn tại phòng khám lúc " + notiAppointment.getMeetingTime());
+                + " đã huỷ cuộc hẹn tại phòng khám lúc " + displayTime);
         notificationService.saveNoti(notification);
         return new ResponseEntity<>(new ApiResponse(true, "Đã huỷ cuộc hẹn thành công."), HttpStatus.OK);
     }

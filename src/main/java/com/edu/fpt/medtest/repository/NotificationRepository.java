@@ -8,5 +8,5 @@ import java.util.List;
 
 @Repository
 public interface NotificationRepository extends CrudRepository<Notification, Integer> {
-    List<Notification> getAllByUserID(int userID);
+    List<Notification> getAllByUserIDOrderByCreatedTimeDesc(int userID);
 }

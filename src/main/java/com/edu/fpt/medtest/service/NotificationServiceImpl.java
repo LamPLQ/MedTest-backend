@@ -15,7 +15,7 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public List<Notification> lsNotification(int userID) {
-        List<Notification> lsNoti = notificationRepository.getAllByUserID(userID);
+        List<Notification> lsNoti = notificationRepository.getAllByUserIDOrderByCreatedTimeDesc(userID);
         return lsNoti;
     }
 
