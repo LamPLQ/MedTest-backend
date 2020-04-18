@@ -164,7 +164,7 @@ public class AppointmentController {
         SimpleDateFormat sdf3 = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
         String displayTime = sdf3.format(notiAppointment.getMeetingTime());
         notification.setMessage("Khách hàng " + userRepository.findById(notiAppointment.getCustomerID()).get().getName()
-                + " đã huỷ cuộc hẹn tại phòng khám lúc " + displayTime);
+                + " đã huỷ cuộc hẹn mã " + notiAppointment.getID());
         notificationService.saveNoti(notification);
         return new ResponseEntity<>(new ApiResponse(true, "Đã huỷ cuộc hẹn thành công."), HttpStatus.OK);
     }
