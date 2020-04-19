@@ -78,7 +78,7 @@ public class TwilioSmsSender implements SmsSender {
             //System.out.println(message);
             LOGGER.info("Send sms {}" + smsRequest);
         } else {
-            throw new IllegalArgumentException("Phone number [" + smsRequest.getPhoneNumber() + "] is not a valid number");
+            throw new IllegalArgumentException("Số điện thoại [" + smsRequest.getPhoneNumber() + "] không tồn tại!");
         }
     }
 
