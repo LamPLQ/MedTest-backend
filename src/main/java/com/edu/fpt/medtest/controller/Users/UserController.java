@@ -304,7 +304,7 @@ public class UserController {
     }
 
     //update 1 user
-    @PutMapping("/update-user/{id}")
+    @PostMapping("/update-user/{id}")
     public ResponseEntity<?> updateUserInfo(@RequestBody User user, @PathVariable("id") int userID) {
         Optional<User> getUserByID = userService.getUserByID(userID);
         if (!getUserByID.isPresent()) {
