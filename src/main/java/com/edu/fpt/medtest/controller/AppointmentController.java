@@ -168,7 +168,7 @@ public class AppointmentController {
     }
 
     //coordinator accepted appointment
-    @PutMapping(value = "/accept/{id}")
+    @PostMapping(value = "/accept/{id}")
     public ResponseEntity<?> updateAppointmentByCoordinator(@RequestBody Appointment appointment, @PathVariable("id") String id) {
         Appointment appointmentExecuting = appointmentService.getAppointmentByID(id);
         if (appointmentExecuting == null) {
@@ -194,7 +194,7 @@ public class AppointmentController {
     }
 
     //coordinator cancel appointment
-    @PutMapping(value = "/cancel/{id}")
+    @PostMapping(value = "/cancel/{id}")
     public ResponseEntity<?> cancelAppointmentByCoordinator(@RequestBody Appointment appointment, @PathVariable("id") String id) {
         //Optional<Appointment> getAppointment = appointmentService.getAppointmentByID(id);
         Appointment appointmentExecuting = appointmentService.getAppointmentByID(id);
