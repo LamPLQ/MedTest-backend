@@ -15,7 +15,7 @@ public class RequestServiceImpl implements RequestService {
 
     @Override
     public List<Request> lsRequest() {
-        List<Request> lsRequest = requestRepository.getAllByOrOrderByCreatedTimeDesc();
+        List<Request> lsRequest = requestRepository.getAllByOrderByCreatedTimeDesc();
         return lsRequest;
     }
 
