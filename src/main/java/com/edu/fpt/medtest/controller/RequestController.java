@@ -226,7 +226,7 @@ public class RequestController {
                 notification.setMessage("Y tá " + userRepository.findById(requestHistory.getUserID()).get().getName() + " đã nhận đơn xét nghiệm mã ID = " + ID + ". Trạng thái đơn hiện tại: Đang đợi lấy mẫu.");
                 break;
             case "transporting":
-                notification.setMessage("Y tá" + userRepository.findById(requestHistory.getUserID()).get().getName() + " đã hoàn thành lấy mẫu xét nghiệm mã ID = " + ID + ". Trạng thái đơn hiện tại: Đang vận chuyển.");
+                notification.setMessage("Y tá " + userRepository.findById(requestHistory.getUserID()).get().getName() + " đã hoàn thành lấy mẫu xét nghiệm mã ID = " + ID + ". Trạng thái đơn hiện tại: Đang vận chuyển.");
                 break;
             case "waitingforresult":
                 notification.setMessage("Điều phối viên " + userRepository.findById(requestHistory.getUserID()).get().getName() + " đã tiếp nhận mẫu xét nghiệm mã ID = " + ID + ". Trạng thái đơn hiện tại: Đang đợi kết quả");
