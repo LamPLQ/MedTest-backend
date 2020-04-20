@@ -111,14 +111,14 @@ public class UserController {
     public ResponseEntity<?> resetPassword(@RequestBody UserProcessingModel userProcessingModel, @PathVariable("id") int id) {
         Optional<User> processingUser = userService.getUserByID(userProcessingModel.getUserProcessingID());
         if (!processingUser.isPresent()) {
-            return new ResponseEntity<>(new ApiResponse(false, "Không tồn tại tài khoản!"), HttpStatus.OK);
+            return new ResponseEntity<>(new ComfirmResponse(false, "Không tồn tại tài khoản!",false), HttpStatus.OK);
         }
         if (!processingUser.get().getRole().equals("ADMIN")) {
-            return new ResponseEntity<>(new ApiResponse(false, "Người dùng hiện tại không được thực hiện được chức năng này!"), HttpStatus.OK);
+            return new ResponseEntity<>(new ComfirmResponse(false, "Người dùng hiện tại không được thực hiện được chức năng này!",false), HttpStatus.OK);
         }
         Optional<User> userByID = userService.getUserByID(id);
         if (!userByID.isPresent()) {
-            return new ResponseEntity<>(new ApiResponse(false, "Không tồn tại người dùng này!"), HttpStatus.OK);
+            return new ResponseEntity<>(new ComfirmResponse(false, "Không tồn tại người dùng này!",false), HttpStatus.OK);
         }
         /*if (userByID.get().getRole().equals("CUSTOMER")) {
             return new ResponseEntity<>(new ApiResponse(false, "Người dùng hiện tại không thực hiện được chức năng này!"), HttpStatus.OK);
@@ -131,8 +131,8 @@ public class UserController {
             System.out.println(mailException);
         }*/
         SmsRequest smsRequest = new SmsRequest(userByID.get().getPhoneNumber(), userByID.get().getRole());
-        smsService.resetPassword(smsRequest);
-        return new ResponseEntity<>(new ApiResponse(true, "Mật khẩu mới đã được gửi đến số điện thoại " + userByID.get().getPhoneNumber()), HttpStatus.OK);
+        //smsService.resetPassword(smsRequest);
+        return new ResponseEntity<>(new ComfirmResponse(true, "Mật khẩu mới đã được gửi đến số điện thoại " + userByID.get().getPhoneNumber(),true), HttpStatus.OK);
     }
 
     //forgotPassword for customer
@@ -153,7 +153,7 @@ public class UserController {
         }*/
         SmsRequest smsRequest = new SmsRequest(forgotPasswordUser.getPhoneNumber(), forgotPasswordUser.getRole());
         smsService.resetPassword(smsRequest);
-        return new ResponseEntity<>(new ApiResponse(true, "Mật khẩu mới đã được gửi đến số điện thoại " + forgotPasswordUser.getPhoneNumber()), HttpStatus.OK);
+        return new ResponseEntity<>(new ComfirmResponse(true, "Mật khẩu mới đã được gửi đến số điện thoại " + forgotPasswordUser.getPhoneNumber(), true), HttpStatus.OK);
     }
 
     //list notification for user
