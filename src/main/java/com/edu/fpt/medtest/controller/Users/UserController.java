@@ -133,7 +133,7 @@ public class UserController {
         return new ResponseEntity<>(new ApiResponse(true, "Mật khẩu mới đã được gửi đến email " + userByID.get().getEmail() + "của userID = " + userByID.get().getId()), HttpStatus.OK);
     }
 
-    //forgotPassword
+    //forgotPassword for customer
     @PostMapping("/forgot-password")
     public ResponseEntity<?> forgotPassword(@RequestBody ForgotPasswordModel forgotPasswordModel) {
         boolean existPhoneNumber = userRepository.existsByPhoneNumberAndRole(forgotPasswordModel.getPhoneNumber(), "CUSTOMER");
@@ -149,7 +149,7 @@ public class UserController {
         } catch (MailException mailException) {
             System.out.println(mailException);
         }
-        return new ResponseEntity<>(new ComfirmResponse(true, "Mật khẩu mới đã được gửi đến email bạn đã đăng kí!", true), HttpStatus.OK);
+        return new ResponseEntity<>(new ComfirmResponse(true, "Mật khẩu mới đã được gửi đến email " + forgotPasswordUser.getEmail() , true), HttpStatus.OK);
     }
 
     //list notification for user
