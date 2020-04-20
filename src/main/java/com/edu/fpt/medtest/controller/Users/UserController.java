@@ -150,7 +150,7 @@ public class UserController {
     public ResponseEntity<?> getLsNotification(@PathVariable("id") int userID) {
         List<Notification> lsNoti = notificationService.lsNotification(userID);
         if (lsNoti.isEmpty()) {
-            return new ResponseEntity<>(new ApiResponse(true, "Hiện tại không có thông báo mới!"), HttpStatus.OK);
+            return new ResponseEntity<>(new ApiResponse(true, "Hiện tại không có thông báo nào!"), HttpStatus.OK);
         }
         return new ResponseEntity<>(lsNoti, HttpStatus.OK);
     }
