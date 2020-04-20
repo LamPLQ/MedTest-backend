@@ -107,13 +107,20 @@ public class UserController {
 
     //Reset password for user
     @PostMapping("/reset-password/{id}")
-    public ResponseEntity<?> resetPassword(@PathVariable("id") int id) {
+    public ResponseEntity<?> resetPassword(@RequestBody UserProcessingModel userProcessingModel, @PathVariable("id") int id) {
+        Optional<User> processingUser = userService.getUserByID(userProcessingModel.getUserProcessingID());
+        if (!processingUser.isPresent()) {
+            return new ResponseEntity<>(new ApiResponse(false, "Không tồn tại tài khoản!"), HttpStatus.OK);
+        }
+        if (!processingUser.get().getRole().equals("ADMIN")) {
+            return new ResponseEntity<>(new ApiResponse(false, "Người dùng hiện tại không được thực hiện được chức năng này!"), HttpStatus.OK);
+        }
         Optional<User> userByID = userService.getUserByID(id);
         if (!userByID.isPresent()) {
-            return new ResponseEntity<>(new ApiResponse(true, "Không tồn tại người dùng này"), HttpStatus.OK);
+            return new ResponseEntity<>(new ApiResponse(false, "Không tồn tại người dùng này!"), HttpStatus.OK);
         }
         if (userByID.get().getRole().equals("CUSTOMER")) {
-            return new ResponseEntity<>(new ApiResponse(true, "Người dùng hiện tại không thực hiện được chức năng này"), HttpStatus.OK);
+            return new ResponseEntity<>(new ApiResponse(false, "Người dùng hiện tại không thực hiện được chức năng này!"), HttpStatus.OK);
         }
         sentMailModel.setEmail(userByID.get().getEmail());
         sentMailModel.setPhoneNumber(userByID.get().getPhoneNumber());
@@ -123,7 +130,7 @@ public class UserController {
         } catch (MailException mailException) {
             System.out.println(mailException);
         }
-        return new ResponseEntity<>(new ApiResponse(true, "Mật khẩu mới đã được gửi đến email " + userByID.get().getEmail() + "của userID = " + userByID.get().getEmail()), HttpStatus.OK);
+        return new ResponseEntity<>(new ApiResponse(true, "Mật khẩu mới đã được gửi đến email " + userByID.get().getEmail() + "của userID = " + userByID.get().getId()), HttpStatus.OK);
     }
 
     //forgotPassword
