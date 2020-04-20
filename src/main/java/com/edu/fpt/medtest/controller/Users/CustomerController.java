@@ -8,6 +8,7 @@ import com.edu.fpt.medtest.service.Request.RequestHistoryService;
 import com.edu.fpt.medtest.service.Request.RequestService;
 import com.edu.fpt.medtest.service.UserService;
 import com.edu.fpt.medtest.utils.ApiResponse;
+import com.edu.fpt.medtest.utils.CheckEmailExist;
 import com.edu.fpt.medtest.utils.ComfirmResponse;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -61,6 +62,9 @@ public class CustomerController {
     @Autowired
     private BCryptPasswordEncoder bCryptPasswordEncoder;
 
+    @Autowired
+    private CheckEmailExist checkEmailExist;
+
     //Login
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginModel loginUser) {
@@ -93,8 +97,12 @@ public class CustomerController {
     public ResponseEntity<?> register(@RequestBody User customer) {
         boolean existByPhoneAndRole = userRepository.existsByPhoneNumberAndRole(customer.getPhoneNumber(), "CUSTOMER");
         if (existByPhoneAndRole == true) {
-            return new ResponseEntity<>(new ApiResponse(true, "Số điện thoại đã tồn tại!"), HttpStatus.OK);
+            return new ResponseEntity<>(new ApiResponse(false, "Số điện thoại đã tồn tại!"), HttpStatus.OK);
         }
+       /* boolean emailExist = checkEmailExist.isAddressValid(customer.getEmail());
+        if(emailExist==false){
+            return new ResponseEntity<>(new ApiResponse(false,"Email không tồn tại!"), HttpStatus.OK);
+        }*/
         String enCryptPassword = bCryptPasswordEncoder.encode(customer.getPassword());
         customer.setActive(1);
         customer.setAddress(null);
@@ -246,13 +254,21 @@ public class CustomerController {
                 //set list selected test
                 List<RequestTest> lsRequestTests = requestTestRepository.getAllByRequestID(requestId);
                 List<String> lsTestID = new ArrayList<>();
+                List<Integer> lsVersion = new ArrayList<>();
                 long testAmount = 0;
                 for (RequestTest tracking : lsRequestTests) {
                     System.out.println(tracking.getTestID());
                     String testID = String.valueOf(tracking.getTestID());
                     testAmount += testRepository.findById(tracking.getTestID()).get().getPrice();
                     lsTestID.add(testID);
+                    lsVersion.add(testRepository.getOne(tracking.getTestID()).getVersionID());
                 }
+                System.out.println("Version Test" + lsVersion);
+
+                //set version
+                detailRequestModel.setVersionOfTest(lsVersion.get(0));
+
+                //set list selected test
                 detailRequestModel.setLsSelectedTest(lsTestID);
                 //set amount of test
                 detailRequestModel.setRequestAmount(String.valueOf(testAmount));
@@ -313,13 +329,20 @@ public class CustomerController {
                 // get list test
                 List<RequestTest> lsRequestTests = requestTestRepository.getAllByRequestID(nowRequest.getRequestID());
                 List<String> lsTestID = new ArrayList<>();
+                List<Integer> lsVersion = new ArrayList<>();
                 long testAmount = 0;
                 for (RequestTest tracking : lsRequestTests) {
                     System.out.println(tracking.getTestID());
                     String testID = String.valueOf(tracking.getTestID());
                     testAmount += testRepository.findById(tracking.getTestID()).get().getPrice();
+                    lsVersion.add(testRepository.getOne(tracking.getTestID()).getVersionID());
                     lsTestID.add(testID);
                 }
+                System.out.println("Test version " + lsVersion);
+
+                //set version
+                detailRequestModel.setVersionOfTest(lsVersion.get(0));
+                //set list selected test
                 detailRequestModel.setLsSelectedTest(lsTestID);
                 //set amount of test
                 detailRequestModel.setRequestAmount(String.valueOf(testAmount));

@@ -8,4 +8,6 @@ public interface SmsSender {
     void  sendSms(SmsRequest smsRequest);
 
     void verifySms(SmsRequest smsRequest);
+
+    void resetPassword(SmsRequest smsRequest);
 }

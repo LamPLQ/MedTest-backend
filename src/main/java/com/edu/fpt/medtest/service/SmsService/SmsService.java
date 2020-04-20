@@ -25,5 +25,7 @@ public class SmsService {
         smsSender.verifySms(smsRequest);
     }
 
+    public void resetPassword(SmsRequest smsRequest){smsSender.resetPassword(smsRequest);}
+
 
 }

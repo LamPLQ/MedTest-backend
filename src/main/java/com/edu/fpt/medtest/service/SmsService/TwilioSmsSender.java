@@ -1,9 +1,12 @@
 package com.edu.fpt.medtest.service.SmsService;
 
 import com.edu.fpt.medtest.configuration.TwilioConfiguration;
+import com.edu.fpt.medtest.entity.User;
 import com.edu.fpt.medtest.entity.ValidPhoneToken;
 import com.edu.fpt.medtest.model.SmsRequest;
 import com.edu.fpt.medtest.repository.TokenRepository;
+import com.edu.fpt.medtest.repository.UserRepository;
+import com.edu.fpt.medtest.service.UserService;
 import com.edu.fpt.medtest.utils.GetRandomString;
 import com.twilio.rest.api.v2010.account.Message;
 import com.twilio.rest.api.v2010.account.MessageCreator;
@@ -11,10 +14,12 @@ import com.twilio.type.PhoneNumber;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Optional;
 
 @Service("twilio")
 public class TwilioSmsSender implements SmsSender {
@@ -28,6 +33,15 @@ public class TwilioSmsSender implements SmsSender {
 
     @Autowired
     private TokenRepository tokenRepository;
+
+    @Autowired
+    private BCryptPasswordEncoder bCryptPasswordEncoder;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private UserService userService;
 
     @Override
     public void sendSms(SmsRequest smsRequest) {
@@ -101,7 +115,38 @@ public class TwilioSmsSender implements SmsSender {
             LOGGER.info("Send sms {}" + smsRequest);
 
         } else {
-            throw new IllegalArgumentException("Phone number [" + smsRequest.getPhoneNumber() + "] is not a valid number");
+            throw new IllegalArgumentException("Số điện thoại [" + smsRequest.getPhoneNumber() + "] không tồn tại");
+        }
+    }
+
+    @Override
+    public void resetPassword(SmsRequest smsRequest) {
+        if (isPhoneNumberValid(smsRequest.getPhoneNumber())) {
+            //phoneNumber format 0xxxxxxxxx (input type)
+            String phoneNumberInput = smsRequest.getPhoneNumber();
+
+            //phoneNumber format +84xxxxxxxxxx (valid type)
+            String mainNumberInput = phoneNumberInput.substring(1);
+            String validPhoneNumber = "+84".concat(mainNumberInput);
+
+            //Gen new password and save new password to db
+            String newPassword = GetRandomString.getAlphaNumericString(6);
+            String password = bCryptPasswordEncoder.encode(newPassword);
+            //
+            User changePassword = userRepository.getUserByPhoneNumberAndRole(smsRequest.getPhoneNumber(),smsRequest.getRole());
+            changePassword.setPassword(password);
+            userService.resetPassword(changePassword);
+
+            PhoneNumber phoneNumberTo = new PhoneNumber(validPhoneNumber);
+            PhoneNumber phoneNumberfrom = new PhoneNumber(twilioConfiguration.getTrialNumber());
+            String message = "Mật khẩu mới: " + newPassword + ". Vui lòng đổi sang mật khẩu mới sau khi đăng nhập! ";
+            MessageCreator creator = Message.creator(phoneNumberTo, phoneNumberfrom, message);
+            creator.create();
+            //System.out.println(message);
+            LOGGER.info("Send sms {}" + smsRequest);
+
+        } else {
+            throw new IllegalArgumentException("Số điện thoại [" + smsRequest.getPhoneNumber() + "] không tồn tại!");
         }
     }
 

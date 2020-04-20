@@ -124,12 +124,15 @@ public class RequestController {
         //get list chosen test
         long testAmount = 0;
         List<String> lsChosenTest = new ArrayList<>();
+        List<Integer> lsVersionOfTest = new ArrayList<>();
         for (RequestTest requestTest : lsRequestTest) {
             String chosenTest = String.valueOf(testRepository.findById(requestTest.getTestID()).get().getTestID());
             testAmount += testRepository.findById(requestTest.getTestID()).get().getPrice();
             lsChosenTest.add(chosenTest);
+            lsVersionOfTest.add(testRepository.getOne(requestTest.getTestID()).getVersionID());
         }
         //System.out.println(lsChosenTest);
+        System.out.println("ls Test Version " + lsVersionOfTest);
 
         //return detail
         DetailRequestModel detailRequestModel = new DetailRequestModel();
@@ -156,6 +159,7 @@ public class RequestController {
         detailRequestModel.setLsSelectedTest(lsChosenTest);
         detailRequestModel.setRequestAmount(String.valueOf(testAmount));
         detailRequestModel.setRequestNote("Just created!");
+        detailRequestModel.setVersionOfTest(lsVersionOfTest.get(0));
         requestModelRepository.delete(requestModel);
         return new ResponseEntity<>(detailRequestModel, HttpStatus.OK);
     }
@@ -312,13 +316,17 @@ public class RequestController {
             List<RequestTest> lsRequestTests = requestTestRepository.getAllByRequestID(requestId);
             List<String> lsTestID = new ArrayList<>();
             List<Test> lsTestOfRequest = new ArrayList<>();
+            List<Integer> testVersionList = new ArrayList<>();
             long testAmount = 0;
             for (RequestTest tracking : lsRequestTests) {
                 String testID = String.valueOf(tracking.getTestID());
                 testAmount += testRepository.findById(tracking.getTestID()).get().getPrice();
                 lsTestID.add(testID);
                 lsTestOfRequest.add(testRepository.getOne(tracking.getTestID()));
+                testVersionList.add(testRepository.getOne(tracking.getTestID()).getVersionID());
             }
+            System.out.println("Test version "+ testVersionList);
+            detailRequestModel.setVersionOfTest(testVersionList.get(0));
             //list test (String)
             detailRequestModel.setLsSelectedTest(lsTestID);
             //set amount of test
@@ -422,12 +430,16 @@ public class RequestController {
             List<String> lsTestID = new ArrayList<>();
             long testAmount = 0;
             List<Test> lsTestOfRequest = new ArrayList<>();
+            List<Integer> testVersion = new ArrayList<>();
             for (RequestTest tracking : lsRequestTests) {
                 String testID = String.valueOf(tracking.getTestID());
                 testAmount += testRepository.findById(tracking.getTestID()).get().getPrice();
                 lsTestID.add(testID);
                 lsTestOfRequest.add(testRepository.getOne(tracking.getTestID()));
+                testVersion.add(testRepository.getOne(tracking.getTestID()).getVersionID());
             }
+            System.out.println("Test version "+ testVersion);
+            detailRequestModel.setVersionOfTest(testVersion.get(0));
             detailRequestModel.setLsSelectedTest(lsTestID);
             //set amount of test
             detailRequestModel.setRequestAmount(String.valueOf(testAmount));
@@ -525,18 +537,21 @@ public class RequestController {
                 //set list selected test
                 List<RequestTest> lsRequestTests = requestTestRepository.getAllByRequestID(requestId);
                 List<String> lsTestID = new ArrayList<>();
+                List<Integer> lsVersionTest = new ArrayList<>();
                 long testAmount = 0;
                 for (RequestTest tracking : lsRequestTests) {
                     System.out.println(tracking.getTestID());
                     String testID = String.valueOf(tracking.getTestID());
                     testAmount += testRepository.findById(tracking.getTestID()).get().getPrice();
                     lsTestID.add(testID);
+                    lsVersionTest.add(testRepository.getOne(tracking.getTestID()).getVersionID());
                 }
                 detailRequestModel.setLsSelectedTest(lsTestID);
                 //set amount of test
                 detailRequestModel.setRequestAmount(String.valueOf(testAmount));
                 //set note
                 detailRequestModel.setRequestNote("Yêu cầu xét nghiệm mới tạo.");
+                detailRequestModel.setVersionOfTest(lsVersionTest.get(0));
             }
             ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             else {
@@ -593,11 +608,13 @@ public class RequestController {
                 // get list test
                 List<RequestTest> lsRequestTests = requestTestRepository.getAllByRequestID(nowRequest.getRequestID());
                 List<String> lsTestID = new ArrayList<>();
+                List<Integer> lsVersionOfTest = new ArrayList<>();
                 long testAmount = 0;
                 for (RequestTest tracking : lsRequestTests) {
                     System.out.println(tracking.getTestID());
                     String testID = String.valueOf(tracking.getTestID());
                     testAmount += testRepository.findById(tracking.getTestID()).get().getPrice();
+                    lsVersionOfTest.add(testRepository.getOne(tracking.getTestID()).getVersionID());
                     lsTestID.add(testID);
                 }
                 detailRequestModel.setLsSelectedTest(lsTestID);
@@ -605,6 +622,8 @@ public class RequestController {
                 detailRequestModel.setRequestAmount(String.valueOf(testAmount));
                 //setNote
                 detailRequestModel.setRequestNote(requestHistory.getNote());
+                //set version
+                detailRequestModel.setVersionOfTest(lsVersionOfTest.get(0));
             }
             returnList.add(detailRequestModel);
         }

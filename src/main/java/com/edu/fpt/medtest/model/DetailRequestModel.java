@@ -23,7 +23,12 @@ public class DetailRequestModel {
     private String coordinatorName;
     private String requestAmount;
     private String requestNote;
+    private int versionOfTest;
     private List<String> lsSelectedTest;
+
+    public int getVersionOfTest() { return versionOfTest;}
+
+    public void setVersionOfTest(int versionOfTest) { this.versionOfTest = versionOfTest;}
 
     public String getRequestDistrictID() {
         return requestDistrictID;

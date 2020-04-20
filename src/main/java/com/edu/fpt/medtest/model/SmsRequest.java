@@ -8,22 +8,22 @@ public class SmsRequest {
     @NotNull
     private final String phoneNumber;
 
-   /* @NotNull
-    private final String message;*/
+    @NotNull
+    private final String role;
 
-   /*public SmsRequest(@JsonProperty("phoneNumber") String phoneNumber){
-                      @JsonProperty("message") String message) {
+   public SmsRequest(@JsonProperty("phoneNumber") String phoneNumber,
+                      @JsonProperty("role") String role) {
         this.phoneNumber = phoneNumber;
-        this.message = message;
-    }*/
+        this.role = role;
+    }
 
-   /* public String getMessage() {
-        return message;
-    }*/
+    public String getRole() {
+        return role;
+    }
 
-   public SmsRequest(@JsonProperty("phoneNumber") String phoneNumber) {
+  /* public SmsRequest(@JsonProperty("phoneNumber") String phoneNumber) {
        this.phoneNumber = phoneNumber;
-   }
+   }*/
 
     public String getPhoneNumber() {
         return phoneNumber;

@@ -205,12 +205,19 @@ public class NurseController {
                 //set list selected test
                 List<RequestTest> lsRequestTests = requestTestRepository.getAllByRequestID(requestId);
                 List<String> lsTestID = new ArrayList<>();
+                List<Integer> lsVersion = new ArrayList<>();
                 long testAmount = 0;
                 for (RequestTest tracking : lsRequestTests) {
                     String testID = String.valueOf(tracking.getTestID());
                     testAmount += testRepository.findById(tracking.getTestID()).get().getPrice();
                     lsTestID.add(testID);
+                    lsVersion.add(testRepository.getOne(tracking.getTestID()).getVersionID());
                 }
+                System.out.println("Test version " + lsVersion);
+
+                //test version
+                detailRequestModel.setVersionOfTest(lsVersion.get(0));
+                //list selected test
                 detailRequestModel.setLsSelectedTest(lsTestID);
                 //set amount of test
                 detailRequestModel.setRequestAmount(String.valueOf(testAmount));
@@ -260,12 +267,20 @@ public class NurseController {
                     // get list test
                     List<RequestTest> lsRequestTests = requestTestRepository.getAllByRequestID(nowRequest.getRequestID());
                     List<String> lsTestID = new ArrayList<>();
+                    List<Integer> lsVersion = new ArrayList<>();
                     long testAmount = 0;
                     for (RequestTest tracking : lsRequestTests) {
                         String testID = String.valueOf(tracking.getTestID());
                         testAmount += testRepository.findById(tracking.getTestID()).get().getPrice();
                         lsTestID.add(testID);
+                        lsVersion.add(testRepository.getOne(tracking.getTestID()).getVersionID());
                     }
+                    System.out.println("lsTestVersion" + lsVersion);
+
+                    //test version
+                    detailRequestModel.setVersionOfTest(lsVersion.get(0));
+
+                    //list seletect test
                     detailRequestModel.setLsSelectedTest(lsTestID);
                     //set amount of test
                     detailRequestModel.setRequestAmount(String.valueOf(testAmount));
@@ -309,12 +324,19 @@ public class NurseController {
                     // get list test
                     List<RequestTest> lsRequestTests = requestTestRepository.getAllByRequestID(nowRequest.getRequestID());
                     List<String> lsTestID = new ArrayList<>();
+                    List<Integer> lsVersionTest = new ArrayList<>();
                     long testAmount = 0;
                     for (RequestTest tracking : lsRequestTests) {
                         String testID = String.valueOf(tracking.getTestID());
                         testAmount += testRepository.findById(tracking.getTestID()).get().getPrice();
                         lsTestID.add(testID);
+                        lsVersionTest.add(testRepository.getOne(tracking.getTestID()).getVersionID());
                     }
+                    System.out.println("List test version " + lsVersionTest);
+
+                    //verrsion
+                    detailRequestModel.setVersionOfTest(lsVersionTest.get(0));
+                    //list selected test
                     detailRequestModel.setLsSelectedTest(lsTestID);
                     //set amount of test
                     detailRequestModel.setRequestAmount(String.valueOf(testAmount));
@@ -404,12 +426,15 @@ public class NurseController {
                 detail.setRequestNote(request.getNote());
                 List<RequestTest> lsRequestTests = requestTestRepository.getAllByRequestID(recentRequest.getRequestID());
                 List<String> lsTestID = new ArrayList<>();
+                List<Integer> lsVersion = new ArrayList<>();
                 long testAmount = 0;
                 for (RequestTest tracking : lsRequestTests) {
                     String testID = String.valueOf(tracking.getTestID());
                     testAmount += testRepository.findById(tracking.getTestID()).get().getPrice();
                     lsTestID.add(testID);
+                    lsVersion.add(testRepository.getOne(tracking.getTestID()).getVersionID());
                 }
+                detail.setVersionOfTest(lsVersion.get(0));
                 detail.setLsSelectedTest(lsTestID);
                 //set amount of test
                 detail.setRequestAmount(String.valueOf(testAmount));
@@ -500,12 +525,17 @@ public class NurseController {
                         cancelAfterAccept.setRequestAcceptedTime(createdTime4);
                         List<RequestTest> lsRequestTests1 = requestTestRepository.getAllByRequestID(cancelAfterAcceptRequest.getRequestID());
                         List<String> lsTestID1 = new ArrayList<>();
+                        List<Integer> lsVersion = new ArrayList<>();
                         long testAmount1 = 0;
                         for (RequestTest tracking : lsRequestTests1) {
                             String testID = String.valueOf(tracking.getTestID());
                             testAmount1 += testRepository.findById(tracking.getTestID()).get().getPrice();
                             lsTestID1.add(testID);
+                            lsVersion.add(testRepository.getOne(tracking.getTestID()).getVersionID());
                         }
+                        //version
+                        cancelAfterAccept.setVersionOfTest(lsVersion.get(0));
+                        //list selected test
                         cancelAfterAccept.setLsSelectedTest(lsTestID1);
                         //set amount of test
                         cancelAfterAccept.setRequestAmount(String.valueOf(testAmount1));
@@ -554,12 +584,17 @@ public class NurseController {
                         completedRequestModel.setRequestTransportingTime(createdTime3);
                         List<RequestTest> lsRequestTests = requestTestRepository.getAllByRequestID(workingRequest.getRequestID());
                         List<String> lsTestID = new ArrayList<>();
+                        List<Integer> lsVersion = new ArrayList<>();
                         long testAmount = 0;
                         for (RequestTest tracking : lsRequestTests) {
                             String testID = String.valueOf(tracking.getTestID());
                             testAmount += testRepository.findById(tracking.getTestID()).get().getPrice();
                             lsTestID.add(testID);
+                            lsVersion.add(testRepository.getOne(tracking.getTestID()).getVersionID());
                         }
+                        //version
+                        completedRequestModel.setVersionOfTest(lsVersion.get(0));
+                        //list handling
                         completedRequestModel.setLsSelectedTest(lsTestID);
                         //set amount of test
                         completedRequestModel.setRequestAmount(String.valueOf(testAmount));

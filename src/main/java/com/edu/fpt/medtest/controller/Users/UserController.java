@@ -7,7 +7,6 @@ import com.edu.fpt.medtest.repository.TokenRepository;
 import com.edu.fpt.medtest.repository.TownRepository;
 import com.edu.fpt.medtest.repository.UserRepository;
 import com.edu.fpt.medtest.security.SecurityUtils;
-import com.edu.fpt.medtest.service.MailService;
 import com.edu.fpt.medtest.service.NotificationService;
 import com.edu.fpt.medtest.service.SmsService.SmsService;
 import com.edu.fpt.medtest.service.UserService;
@@ -17,7 +16,6 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.mail.MailException;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -46,11 +44,11 @@ public class UserController {
     @Autowired
     private TownRepository townRepository;
 
-    @Autowired
+    /*@Autowired
     private SentMailModel sentMailModel;
 
     @Autowired
-    private MailService mailService;
+    private MailService mailService;*/
 
     @Autowired
     private NotificationService notificationService;
@@ -64,6 +62,9 @@ public class UserController {
 
     @Autowired
     private BCryptPasswordEncoder bCryptPasswordEncoder;
+
+    @Autowired
+    private CheckEmailExist checkEmailExist;
 
     // List user with state ACTIVE
     @GetMapping("/list/active")
@@ -119,9 +120,8 @@ public class UserController {
         if (!userByID.isPresent()) {
             return new ResponseEntity<>(new ApiResponse(false, "Không tồn tại người dùng này!"), HttpStatus.OK);
         }
-        if (userByID.get().getRole().equals("CUSTOMER")) {
+        /*if (userByID.get().getRole().equals("CUSTOMER")) {
             return new ResponseEntity<>(new ApiResponse(false, "Người dùng hiện tại không thực hiện được chức năng này!"), HttpStatus.OK);
-        }
         sentMailModel.setEmail(userByID.get().getEmail());
         sentMailModel.setPhoneNumber(userByID.get().getPhoneNumber());
         sentMailModel.setRole(userByID.get().getRole());
@@ -129,8 +129,10 @@ public class UserController {
             mailService.sendEmail(sentMailModel);
         } catch (MailException mailException) {
             System.out.println(mailException);
-        }
-        return new ResponseEntity<>(new ApiResponse(true, "Mật khẩu mới đã được gửi đến email " + userByID.get().getEmail() + "của userID = " + userByID.get().getId()), HttpStatus.OK);
+        }*/
+        SmsRequest smsRequest = new SmsRequest(userByID.get().getPhoneNumber(), userByID.get().getRole());
+        smsService.resetPassword(smsRequest);
+        return new ResponseEntity<>(new ApiResponse(true, "Mật khẩu mới đã được gửi đến số điện thoại " + userByID.get().getPhoneNumber()), HttpStatus.OK);
     }
 
     //forgotPassword for customer
@@ -141,15 +143,17 @@ public class UserController {
             return new ResponseEntity<>(new ComfirmResponse(true, "Không tìm thấy số điện thoại đã nhập!", false), HttpStatus.OK);
         }
         User forgotPasswordUser = userService.getUserByPhoneNumberAndRole(forgotPasswordModel.getPhoneNumber(), "CUSTOMER");
-        sentMailModel.setEmail(forgotPasswordUser.getEmail());
+        /*sentMailModel.setEmail(forgotPasswordUser.getEmail());
         sentMailModel.setPhoneNumber(forgotPasswordUser.getPhoneNumber());
         sentMailModel.setRole(forgotPasswordUser.getRole());
         try {
             mailService.sendEmail(sentMailModel);
         } catch (MailException mailException) {
             System.out.println(mailException);
-        }
-        return new ResponseEntity<>(new ComfirmResponse(true, "Mật khẩu mới đã được gửi đến email " + forgotPasswordUser.getEmail() , true), HttpStatus.OK);
+        }*/
+        SmsRequest smsRequest = new SmsRequest(forgotPasswordUser.getPhoneNumber(), forgotPasswordUser.getRole());
+        smsService.resetPassword(smsRequest);
+        return new ResponseEntity<>(new ApiResponse(true, "Mật khẩu mới đã được gửi đến số điện thoại " + forgotPasswordUser.getPhoneNumber()), HttpStatus.OK);
     }
 
     //list notification for user
@@ -183,7 +187,7 @@ public class UserController {
     //      to verify phone is true
     @PostMapping("/send-otp")
     public ResponseEntity<?> sendSmS(@Valid @RequestBody SmsRequest smsRequest) {
-        boolean existByPhoneAndRole = userRepository.existsByPhoneNumberAndRole(smsRequest.getPhoneNumber(), "CUSTOMER");
+        boolean existByPhoneAndRole = userRepository.existsByPhoneNumberAndRole(smsRequest.getPhoneNumber(), smsRequest.getRole());
         if (existByPhoneAndRole == true) {
             return new ResponseEntity<>(new SendMessageResponse(true, "Số điện thoại đã tồn tại!", false), HttpStatus.OK);
         }
@@ -208,6 +212,10 @@ public class UserController {
             tokenRepository.delete(tokenRepository.getOne(checkValidPhoneToken.get().getSessionID()));
             return new ResponseEntity<>(new CheckOTPResponse(true, "Mã OTP hết hạn!", false, true), HttpStatus.OK);
         }
+        /*boolean emailExist = checkEmailExist.isAddressValid(checkOTPModel.getEmail());
+        if(emailExist==false){
+            return new ResponseEntity<>(new ApiResponse(false,"Email không tồn tại!"), HttpStatus.OK);
+        }*/
         String enCryptPassword = bCryptPasswordEncoder.encode(checkOTPModel.getPassword());
         User registeredUser = new User();
         registeredUser.setName(checkOTPModel.getName());
@@ -264,7 +272,7 @@ public class UserController {
         employeeCreatedUser.setImage(employeeCreatedUser.getImage());
         employeeCreatedUser.setPassword(enCryptPassword);
         userService.saveUser(employeeCreatedUser);
-        SmsRequest smsRequest = new SmsRequest(employeeCreatedUser.getPhoneNumber());
+        SmsRequest smsRequest = new SmsRequest(employeeCreatedUser.getPhoneNumber(), employeeCreatedUser.getRole());
         smsService.verifySms(smsRequest);
         return new ResponseEntity<>(employeeCreatedUser, HttpStatus.OK);
     }
