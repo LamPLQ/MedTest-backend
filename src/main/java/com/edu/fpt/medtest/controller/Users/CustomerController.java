@@ -166,7 +166,7 @@ public class CustomerController {
         List<Appointment> lsAppointmentCustomer = appointmentRepository.findAllByCustomerID(id);
         User userAppoint = userService.findUserByID(id).get();
         if (lsAppointmentCustomer.isEmpty()) {
-            return new ResponseEntity<>(new ApiResponse(true, "Người dùng hiện tại chưa có lịch hẹn!"), HttpStatus.OK);
+            return new ResponseEntity<>(new ApiResponse(false, "Người dùng hiện tại chưa có lịch hẹn!"), HttpStatus.OK);
         }
         //list detail of each appoinment which belong to user
         List<UserAppointmentModel> listUserAppoinment = new ArrayList<>();
@@ -211,7 +211,7 @@ public class CustomerController {
     public ResponseEntity<?> lsRequestOfUser(@PathVariable("id") int userID) {
         List<Request> lsRequest = requestService.getListByUser(userID);
         if (lsRequest.isEmpty()) {
-            return new ResponseEntity<>(new ApiResponse(true, "Hiện tại không có yêu cầu nào từ khách hàng!"), HttpStatus.OK);
+            return new ResponseEntity<>(new ApiResponse(false, "Hiện tại không có yêu cầu nào từ khách hàng!"), HttpStatus.OK);
         }
         List<DetailRequestModel> lsDRequestDetail = new ArrayList<>();
         for (Request eachRequest : lsRequest) {
