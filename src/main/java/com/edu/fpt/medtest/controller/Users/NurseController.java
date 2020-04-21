@@ -163,7 +163,7 @@ public class NurseController {
         //List all created request
         List<Request> lsAllRequest = requestService.lsRequest();
         if (lsAllRequest.isEmpty()) {
-            return new ResponseEntity<>(new ApiResponse(true, "Hiện tại không có đơn đang chờ lấy mẫu!"), HttpStatus.OK);
+            return new ResponseEntity<>(new ApiResponse(false, "Hiện tại không có đơn đang chờ lấy mẫu!"), HttpStatus.OK);
         }
         //with each request in list request
         for (Request requestPending : lsAllRequest.subList(1, lsAllRequest.size())) {
@@ -193,8 +193,8 @@ public class NurseController {
                 detailRequestModel.setRequestMeetingTime(newCreatedRequest.getMeetingTime()); //meeting time
                 //=====================//
                 SimpleDateFormat sdf4 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                String displayCreatedTest =  sdf4.format(newCreatedRequest.getCreatedTime());
-                String createdTime4 = displayCreatedTest.substring(0,10) + "T"+displayCreatedTest.substring(11)+".000+0000";
+                String displayCreatedTest = sdf4.format(newCreatedRequest.getCreatedTime());
+                String createdTime4 = displayCreatedTest.substring(0, 10) + "T" + displayCreatedTest.substring(11) + ".000+0000";
                 //=====================//
                 detailRequestModel.setRequestCreatedTime(createdTime4); //created time
                 detailRequestModel.setNurseID("Chưa có y tá nhận!");
@@ -216,7 +216,11 @@ public class NurseController {
                 System.out.println("Test version " + lsVersion);
 
                 //test version
-                detailRequestModel.setVersionOfTest(lsVersion.get(0));
+                if (lsVersion.isEmpty()) {
+                    detailRequestModel.setVersionOfTest(0);
+                } else {
+                    detailRequestModel.setVersionOfTest(lsVersion.get(0));
+                }
                 //list selected test
                 detailRequestModel.setLsSelectedTest(lsTestID);
                 //set amount of test
@@ -260,8 +264,8 @@ public class NurseController {
                     detailRequestModel.setRequestMeetingTime(nowRequest.getMeetingTime());
                     //=====================//
                     SimpleDateFormat sdf5 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                    String displayCreatedTest =  sdf5.format(nowRequest.getCreatedTime());
-                    String createdTime5 = displayCreatedTest.substring(0,10) + "T"+displayCreatedTest.substring(11)+".000+0000";
+                    String displayCreatedTest = sdf5.format(nowRequest.getCreatedTime());
+                    String createdTime5 = displayCreatedTest.substring(0, 10) + "T" + displayCreatedTest.substring(11) + ".000+0000";
                     //=====================//
                     detailRequestModel.setRequestCreatedTime(createdTime5);
                     // get list test
@@ -278,7 +282,11 @@ public class NurseController {
                     System.out.println("lsTestVersion" + lsVersion);
 
                     //test version
-                    detailRequestModel.setVersionOfTest(lsVersion.get(0));
+                    if (lsVersion.isEmpty()) {
+                        detailRequestModel.setVersionOfTest(0);
+                    } else {
+                        detailRequestModel.setVersionOfTest(lsVersion.get(0));
+                    }
 
                     //list seletect test
                     detailRequestModel.setLsSelectedTest(lsTestID);
@@ -316,8 +324,8 @@ public class NurseController {
                     detailRequestModel.setRequestMeetingTime(nowRequest.getMeetingTime());
                     //=====================//
                     SimpleDateFormat sdf6 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                    String displayCreatedTest =  sdf6.format(nowRequest.getCreatedTime());
-                    String createdTime6 = displayCreatedTest.substring(0,10) + "T"+displayCreatedTest.substring(11)+".000+0000";
+                    String displayCreatedTest = sdf6.format(nowRequest.getCreatedTime());
+                    String createdTime6 = displayCreatedTest.substring(0, 10) + "T" + displayCreatedTest.substring(11) + ".000+0000";
                     //=====================//
 
                     detailRequestModel.setRequestCreatedTime(createdTime6);
@@ -335,7 +343,11 @@ public class NurseController {
                     System.out.println("List test version " + lsVersionTest);
 
                     //verrsion
-                    detailRequestModel.setVersionOfTest(lsVersionTest.get(0));
+                    if (lsVersionTest.isEmpty()) {
+                        detailRequestModel.setVersionOfTest(0);
+                    } else {
+                        detailRequestModel.setVersionOfTest(lsVersionTest.get(0));
+                    }
                     //list selected test
                     detailRequestModel.setLsSelectedTest(lsTestID);
                     //set amount of test
@@ -347,7 +359,7 @@ public class NurseController {
             }
         }
         if (lsFindingRequest.isEmpty())
-            return new ResponseEntity<>(new ApiResponse(true, "Tất cả các đơn đều đã được nhận!"), HttpStatus.OK);
+            return new ResponseEntity<>(new ApiResponse(false, "Tất cả các đơn đều đã được nhận!"), HttpStatus.OK);
         return new ResponseEntity<>(lsFindingRequest, HttpStatus.OK);
     }
 
@@ -361,7 +373,7 @@ public class NurseController {
         //List all created request
         List<Request> lsAllRequest = requestService.lsRequest();
         if (lsAllRequest.isEmpty()) {
-            return new ResponseEntity<>(new ApiResponse(true, "Hiện tại không có đơn đang chờ lấy mẫu!"), HttpStatus.OK);
+            return new ResponseEntity<>(new ApiResponse(false, "Hiện tại không có đơn đang chờ lấy mẫu!"), HttpStatus.OK);
         }
         //with each request in list request
         List<RequestHistory> lsLastStatus = new ArrayList<>();
@@ -414,8 +426,8 @@ public class NurseController {
                 //request created time
                 //=====================//
                 SimpleDateFormat sdf8 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                String displayCreatedTest =  sdf8.format(recentRequest.getCreatedTime());
-                String createdTime8 = displayCreatedTest.substring(0,10) + "T"+displayCreatedTest.substring(11)+".000+0000";
+                String displayCreatedTest = sdf8.format(recentRequest.getCreatedTime());
+                String createdTime8 = displayCreatedTest.substring(0, 10) + "T" + displayCreatedTest.substring(11) + ".000+0000";
                 //=====================//
 
                 detail.setRequestCreatedTime(createdTime8);
@@ -434,7 +446,11 @@ public class NurseController {
                     lsTestID.add(testID);
                     lsVersion.add(testRepository.getOne(tracking.getTestID()).getVersionID());
                 }
-                detail.setVersionOfTest(lsVersion.get(0));
+                if (lsVersion.isEmpty()) {
+                    detail.setVersionOfTest(0);
+                } else {
+                    detail.setVersionOfTest(lsVersion.get(0));
+                }
                 detail.setLsSelectedTest(lsTestID);
                 //set amount of test
                 detail.setRequestAmount(String.valueOf(testAmount));
@@ -442,7 +458,7 @@ public class NurseController {
             }
         }
         if (lsNurseHandling.isEmpty()) {
-            return new ResponseEntity<>(new ApiResponse(true, "Y tá không còn đơn cần xử lý!"), HttpStatus.OK);
+            return new ResponseEntity<>(new ApiResponse(false, "Y tá không còn đơn cần xử lý!"), HttpStatus.OK);
         }
         return new ResponseEntity<>(lsNurseHandling, HttpStatus.OK);
     }
@@ -457,7 +473,7 @@ public class NurseController {
         //List all created request
         List<Request> lsAllRequest = requestService.lsRequest();
         if (lsAllRequest.isEmpty()) {
-            return new ResponseEntity<>(new ApiResponse(true, "Hiện tại không có đơn đang chờ lấy mẫu!"), HttpStatus.OK);
+            return new ResponseEntity<>(new ApiResponse(false, "Hiện tại không có đơn đang chờ lấy mẫu!"), HttpStatus.OK);
         }
         //with each request in list request
         List<RequestHistory> lsLastStatus = new ArrayList<>();
@@ -506,8 +522,8 @@ public class NurseController {
                         cancelAfterAccept.setRequestMeetingTime(cancelAfterAcceptRequest.getMeetingTime());
                         //=====================//
                         SimpleDateFormat sdf9 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                        String displayCreatedTest =  sdf9.format(cancelAfterAcceptRequest.getCreatedTime());
-                        String createdTime9 = displayCreatedTest.substring(0,10) + "T"+displayCreatedTest.substring(11)+".000+0000";
+                        String displayCreatedTest = sdf9.format(cancelAfterAcceptRequest.getCreatedTime());
+                        String createdTime9 = displayCreatedTest.substring(0, 10) + "T" + displayCreatedTest.substring(11) + ".000+0000";
                         //=====================//
 
                         cancelAfterAccept.setRequestCreatedTime(createdTime9);
@@ -519,8 +535,8 @@ public class NurseController {
                         cancelAfterAccept.setRequestNote(request.getNote());
                         //=====================//
                         SimpleDateFormat sdf4 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                        String displayCreatedTest4 =  sdf4.format(acceptedStatusRequest.getCreatedTime());
-                        String createdTime4 = displayCreatedTest4.substring(0,10) + "T"+displayCreatedTest.substring(11)+".000+0000";
+                        String displayCreatedTest4 = sdf4.format(acceptedStatusRequest.getCreatedTime());
+                        String createdTime4 = displayCreatedTest4.substring(0, 10) + "T" + displayCreatedTest.substring(11) + ".000+0000";
                         //=====================//
                         cancelAfterAccept.setRequestAcceptedTime(createdTime4);
                         List<RequestTest> lsRequestTests1 = requestTestRepository.getAllByRequestID(cancelAfterAcceptRequest.getRequestID());
@@ -534,7 +550,11 @@ public class NurseController {
                             lsVersion.add(testRepository.getOne(tracking.getTestID()).getVersionID());
                         }
                         //version
-                        cancelAfterAccept.setVersionOfTest(lsVersion.get(0));
+                        if (lsVersion.isEmpty()) {
+                            cancelAfterAccept.setVersionOfTest(0);
+                        } else {
+                            cancelAfterAccept.setVersionOfTest(lsVersion.get(0));
+                        }
                         //list selected test
                         cancelAfterAccept.setLsSelectedTest(lsTestID1);
                         //set amount of test
@@ -560,8 +580,8 @@ public class NurseController {
                         completedRequestModel.setRequestMeetingTime(workingRequest.getMeetingTime());
                         //=====================//
                         SimpleDateFormat sdf10 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                        String displayCreatedTest =  sdf10.format(workingRequest.getCreatedTime());
-                        String createdTime10 = displayCreatedTest.substring(0,10) + "T"+displayCreatedTest.substring(11)+".000+0000";
+                        String displayCreatedTest = sdf10.format(workingRequest.getCreatedTime());
+                        String createdTime10 = displayCreatedTest.substring(0, 10) + "T" + displayCreatedTest.substring(11) + ".000+0000";
                         //=====================//
                         completedRequestModel.setRequestCreatedTime(createdTime10);
                         completedRequestModel.setNurseID(String.valueOf(nurseID));
@@ -572,14 +592,14 @@ public class NurseController {
                         completedRequestModel.setRequestNote(request.getNote());
                         //=====================//
                         SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                        String displayCreatedTest2 =  sdf2.format(acceptedStatusRequest.getCreatedTime());
-                        String createdTime2 = displayCreatedTest2.substring(0,10) + "T"+displayCreatedTest.substring(11)+".000+0000";
+                        String displayCreatedTest2 = sdf2.format(acceptedStatusRequest.getCreatedTime());
+                        String createdTime2 = displayCreatedTest2.substring(0, 10) + "T" + displayCreatedTest.substring(11) + ".000+0000";
                         //=====================//
                         completedRequestModel.setRequestAcceptedTime(createdTime2);
                         //=====================//
                         SimpleDateFormat sdf3 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                        String displayCreatedTest3 =  sdf3.format(transportingStatusRequest.getCreatedTime());
-                        String createdTime3 = displayCreatedTest3.substring(0,10) + "T"+displayCreatedTest.substring(11)+".000+0000";
+                        String displayCreatedTest3 = sdf3.format(transportingStatusRequest.getCreatedTime());
+                        String createdTime3 = displayCreatedTest3.substring(0, 10) + "T" + displayCreatedTest.substring(11) + ".000+0000";
                         //=====================//
                         completedRequestModel.setRequestTransportingTime(createdTime3);
                         List<RequestTest> lsRequestTests = requestTestRepository.getAllByRequestID(workingRequest.getRequestID());
@@ -593,7 +613,11 @@ public class NurseController {
                             lsVersion.add(testRepository.getOne(tracking.getTestID()).getVersionID());
                         }
                         //version
-                        completedRequestModel.setVersionOfTest(lsVersion.get(0));
+                        if (lsVersion.isEmpty()) {
+                            completedRequestModel.setVersionOfTest(0);
+                        } else {
+                            completedRequestModel.setVersionOfTest(lsVersion.get(0));
+                        }
                         //list handling
                         completedRequestModel.setLsSelectedTest(lsTestID);
                         //set amount of test
@@ -604,7 +628,7 @@ public class NurseController {
             }
         }
         if (lsCompletedReqs.isEmpty()) {
-            return new ResponseEntity(new ApiResponse(true, "Y tá chưa hoàn thiện yêu cầu nào!"), HttpStatus.OK);
+            return new ResponseEntity(new ApiResponse(false, "Y tá chưa hoàn thiện yêu cầu nào!"), HttpStatus.OK);
         }
         return new ResponseEntity<>(lsCompletedReqs, HttpStatus.OK);
 

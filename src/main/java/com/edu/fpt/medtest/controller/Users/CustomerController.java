@@ -266,8 +266,11 @@ public class CustomerController {
                 System.out.println("Version Test" + lsVersion);
 
                 //set version
-                detailRequestModel.setVersionOfTest(lsVersion.get(0));
-
+                if (lsVersion.isEmpty()) {
+                    detailRequestModel.setVersionOfTest(0);
+                } else {
+                    detailRequestModel.setVersionOfTest(lsVersion.get(0));
+                }
                 //set list selected test
                 detailRequestModel.setLsSelectedTest(lsTestID);
                 //set amount of test
@@ -341,7 +344,11 @@ public class CustomerController {
                 System.out.println("Test version " + lsVersion);
 
                 //set version
-                detailRequestModel.setVersionOfTest(lsVersion.get(0));
+                if (lsVersion.isEmpty()) {
+                    detailRequestModel.setVersionOfTest(0);
+                } else {
+                    detailRequestModel.setVersionOfTest(lsVersion.get(0));
+                }
                 //set list selected test
                 detailRequestModel.setLsSelectedTest(lsTestID);
                 //set amount of test

@@ -51,7 +51,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     @Override
-    public void cancelAppointment(Appointment appointment) {
+    public void rejectAppointment(Appointment appointment) {
         Appointment appointmentByID = appointmentRepository.findByID(appointment.getID());
         appointmentByID.setCoordinatorID(appointment.getCoordinatorID());
         appointmentByID.setStatus(appointment.getStatus());

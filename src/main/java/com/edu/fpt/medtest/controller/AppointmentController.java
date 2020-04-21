@@ -74,7 +74,7 @@ public class AppointmentController {
         return new ResponseEntity<>(returnAppointmentList, HttpStatus.OK);
     }
 
-    //create new appointment
+    //create new appointment (pending)
     @PostMapping("/create")
     public ResponseEntity<?> createNewAppointment(@RequestBody Appointment appointment) {
         Optional<User> userCreateAppointment = userRepository.getUserByIdAndRole(appointment.getCustomerID(), "CUSTOMER");
@@ -167,15 +167,15 @@ public class AppointmentController {
         return new ResponseEntity<>(new ApiResponse(true, "Đã huỷ cuộc hẹn thành công."), HttpStatus.OK);
     }
 
-    //coordinator accepted appointment
+    //coordinator accepted appointment (accepted)
     @PostMapping(value = "/accept/{id}")
     public ResponseEntity<?> updateAppointmentByCoordinator(@RequestBody Appointment appointment, @PathVariable("id") String id) {
         Appointment appointmentExecuting = appointmentService.getAppointmentByID(id);
         if (appointmentExecuting == null) {
-            return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy cuộc hẹn!"), HttpStatus.OK);
+            return new ResponseEntity<>(new ApiResponse(false, "Không tìm thấy cuộc hẹn!"), HttpStatus.OK);
         }
         if (appointmentExecuting.getStatus().equals("canceled")) {
-            return new ResponseEntity<>(new ApiResponse(true, "Cuộc hẹn đã bị huỷ!"), HttpStatus.OK);
+            return new ResponseEntity<>(new ApiResponse(false, "Cuộc hẹn đã bị huỷ!"), HttpStatus.OK);
         }
         appointment.setID(id);
         appointmentService.acceptAppointment(appointment);
@@ -193,19 +193,19 @@ public class AppointmentController {
         return new ResponseEntity<>(new ApiResponse(true, "Xác nhận đặt cuộc hẹn thành công!"), HttpStatus.OK);
     }
 
-    //coordinator cancel appointment
-    @PostMapping(value = "/cancel/{id}")
+    //coordinator reject appointment (rejected)
+    @PostMapping(value = "/reject/{id}")
     public ResponseEntity<?> cancelAppointmentByCoordinator(@RequestBody Appointment appointment, @PathVariable("id") String id) {
         //Optional<Appointment> getAppointment = appointmentService.getAppointmentByID(id);
         Appointment appointmentExecuting = appointmentService.getAppointmentByID(id);
         if (appointmentExecuting == null) {
-            return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy cuộc hẹn!"), HttpStatus.OK);
+            return new ResponseEntity<>(new ApiResponse(false, "Không tìm thấy cuộc hẹn!"), HttpStatus.OK);
         }
         if (appointmentExecuting.getStatus().equals("canceled")) {
             return new ResponseEntity<>(new ApiResponse(false, "Cuộc hẹn đã bị huỷ!"), HttpStatus.OK);
         }
         appointment.setID(id);
-        appointmentService.cancelAppointment(appointment);
+        appointmentService.rejectAppointment(appointment);
         //Notification
         Appointment notiAppointment = appointmentService.getAppointmentByID(id);
         Notification notification = new Notification();
@@ -218,7 +218,7 @@ public class AppointmentController {
                 " bị huỷ bởi điểu phối viên " + userRepository.findById(notiAppointment.getCoordinatorID()).get().getName()
                 + " do nguyên nhân: " + notiAppointment.getNote() + ". Trạng thái lịch hẹn: Đơn đã huỷ.");
         notificationService.saveNoti(notification);
-        return new ResponseEntity<>(new ApiResponse(true, "Xác nhận huỷ cuộc hẹn thành công!"), HttpStatus.OK);
+        return new ResponseEntity<>(new ApiResponse(true, "Xác nhận điều phối viên huỷ cuộc hẹn thành công!"), HttpStatus.OK);
     }
 
 

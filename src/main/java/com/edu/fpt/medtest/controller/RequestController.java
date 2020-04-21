@@ -325,8 +325,12 @@ public class RequestController {
                 lsTestOfRequest.add(testRepository.getOne(tracking.getTestID()));
                 testVersionList.add(testRepository.getOne(tracking.getTestID()).getVersionID());
             }
-            System.out.println("Test version "+ testVersionList);
-            detailRequestModel.setVersionOfTest(testVersionList.get(0));
+            System.out.println("Test version " + testVersionList);
+            if (testVersionList.isEmpty()) {
+                detailRequestModel.setVersionOfTest(0);
+            } else {
+                detailRequestModel.setVersionOfTest(testVersionList.get(0));
+            }
             //list test (String)
             detailRequestModel.setLsSelectedTest(lsTestID);
             //set amount of test
@@ -438,8 +442,12 @@ public class RequestController {
                 lsTestOfRequest.add(testRepository.getOne(tracking.getTestID()));
                 testVersion.add(testRepository.getOne(tracking.getTestID()).getVersionID());
             }
-            System.out.println("Test version "+ testVersion);
-            detailRequestModel.setVersionOfTest(testVersion.get(0));
+            System.out.println("Test version " + testVersion);
+            if (testVersion.isEmpty()) {
+                detailRequestModel.setVersionOfTest(0);
+            } else {
+                detailRequestModel.setVersionOfTest(testVersion.get(0));
+            }
             detailRequestModel.setLsSelectedTest(lsTestID);
             //set amount of test
             detailRequestModel.setRequestAmount(String.valueOf(testAmount));
@@ -551,7 +559,12 @@ public class RequestController {
                 detailRequestModel.setRequestAmount(String.valueOf(testAmount));
                 //set note
                 detailRequestModel.setRequestNote("Yêu cầu xét nghiệm mới tạo.");
-                detailRequestModel.setVersionOfTest(lsVersionTest.get(0));
+                //detailRequestModel.setVersionOfTest(lsVersionTest.get(0));
+                if (lsVersionTest.isEmpty()) {
+                    detailRequestModel.setVersionOfTest(0);
+                } else {
+                    detailRequestModel.setVersionOfTest(lsVersionTest.get(0));
+                }
             }
             ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             else {
@@ -623,7 +636,11 @@ public class RequestController {
                 //setNote
                 detailRequestModel.setRequestNote(requestHistory.getNote());
                 //set version
-                detailRequestModel.setVersionOfTest(lsVersionOfTest.get(0));
+                if (lsVersionOfTest.isEmpty()) {
+                    detailRequestModel.setVersionOfTest(0);
+                } else {
+                    detailRequestModel.setVersionOfTest(lsVersionOfTest.get(0));
+                }
             }
             returnList.add(detailRequestModel);
         }
@@ -650,20 +667,33 @@ public class RequestController {
 
     //update result for a request
     @PostMapping("/detail/results/add")
-    public ResponseEntity updateResultOfRequest(@RequestBody Result result) {
-        resultService.saveResult(result);
-        ReturnResult returnResult = new ReturnResult();
-        returnResult.setResultID(result.getResultID());
-        returnResult.setImage(result.getImage());
+    public ResponseEntity updateResultOfRequest(@RequestBody ResultModel resultModel) {
+        List<String> lsImage = resultModel.getListImage();
+        List<Result> lsCreatedResult = new ArrayList<>();
+        for(String image:lsImage){
+            Result result = new Result();
+            result.setImage(image);
+            result.setRequestID(resultModel.getRequestID());
+            result.setUserID(resultModel.getUserID());
+            resultService.saveResult(result);
+            lsCreatedResult.add(result);
+        }
+        List<ReturnResult> lsReturnRequest = new ArrayList<>();
         //=====================//
         SimpleDateFormat sdf3 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        String displayCreatedTest = sdf3.format(result.getCreatedTime());
-        String createdTime3 = displayCreatedTest.substring(0, 10) + "T" + displayCreatedTest.substring(11) + ".000+0000";
+        for(Result result: lsCreatedResult){
+            String displayCreatedTest = sdf3.format(result.getCreatedTime());
+            String createdTime3 = displayCreatedTest.substring(0, 10) + "T" + displayCreatedTest.substring(11) + ".000+0000";
+            ReturnResult returnResult = new ReturnResult();
+            returnResult.setResultID(result.getResultID());
+            returnResult.setCreatedTime(createdTime3);
+            returnResult.setUserID(result.getUserID());
+            returnResult.setRequestID(result.getRequestID());
+            returnResult.setImage(result.getImage());
+            lsReturnRequest.add(returnResult);
+        }
         //=====================//
-        returnResult.setCreatedTime(createdTime3);
-        returnResult.setUserID(result.getUserID());
-        returnResult.setRequestID(result.getRequestID());
-        return new ResponseEntity(returnResult, HttpStatus.OK);
+        return new ResponseEntity(lsReturnRequest, HttpStatus.OK);
     }
 
 }

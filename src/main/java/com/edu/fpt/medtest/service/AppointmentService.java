@@ -19,7 +19,7 @@ public interface AppointmentService {
 
     void acceptAppointment(Appointment appointment);
 
-    void cancelAppointment(Appointment appointment);
+    void rejectAppointment(Appointment appointment);
 
     List<Appointment> listAppointmentByStatus(String status);
 
