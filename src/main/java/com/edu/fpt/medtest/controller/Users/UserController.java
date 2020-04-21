@@ -131,7 +131,7 @@ public class UserController {
             System.out.println(mailException);
         }*/
         SmsRequest smsRequest = new SmsRequest(userByID.get().getPhoneNumber(), userByID.get().getRole());
-        //smsService.resetPassword(smsRequest);
+        smsService.resetPassword(smsRequest);
         return new ResponseEntity<>(new ComfirmResponse(true, "Mật khẩu mới đã được gửi đến số điện thoại " + userByID.get().getPhoneNumber(),true), HttpStatus.OK);
     }
 
@@ -173,14 +173,14 @@ public class UserController {
         if (lsAllUser.isEmpty()) {
             return new ResponseEntity(new ApiResponse(true, "Không có người dùng trong hệ thống!"), HttpStatus.OK);
         }
-        List<User> returnList = new ArrayList<>();
+        /*List<User> returnList = new ArrayList<>();
         for (User user : lsAllUser.subList(1, lsAllUser.size())) {
             returnList.add(user);
         }
         if (returnList.isEmpty()) {
             return new ResponseEntity(new ApiResponse(true, "Không có người dùng!"), HttpStatus.OK);
-        }
-        return new ResponseEntity(returnList, HttpStatus.OK);
+        }*/
+        return new ResponseEntity(lsAllUser, HttpStatus.OK);
     }
 
     //send OTP to phone by messsing
@@ -330,6 +330,20 @@ public class UserController {
         return new ResponseEntity<>(getUserByID, HttpStatus.OK);
     }
 
+    @PostMapping("admin/change-password/{id}")
+    public ResponseEntity<?> changePassword(@RequestBody ChangePasswordModel changePasswordModel, @PathVariable("id") int id) {
+        Optional<User> getCustomer = userRepository.getUserByIdAndRole(id, "ADMIN");
+        if (!getCustomer.isPresent()) {
+            return new ResponseEntity<>(new ApiResponse(false, "Người dùng không tồn tại!"), HttpStatus.OK);
+        }
+        if (!BCrypt.checkpw(changePasswordModel.getOldPassword(), getCustomer.get().getPassword())) {
+            return new ResponseEntity<>(new ApiResponse(false, "Mật khẩu hiện tại không đúng!"), HttpStatus.OK);
+        }
+        changePasswordModel.setID(id);
+        getCustomer.get().setPassword(bCryptPasswordEncoder.encode(changePasswordModel.getNewPassword()));
+        userService.saveUser(getCustomer.get());
+        return new ResponseEntity<>(new ApiResponse(true, "Thay đổi mật khẩu thành công!"), HttpStatus.OK);
+    }
 
 }
 

@@ -202,10 +202,10 @@ public class AppointmentController {
             return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy cuộc hẹn!"), HttpStatus.OK);
         }
         if (appointmentExecuting.getStatus().equals("canceled")) {
-            return new ResponseEntity<>(new ApiResponse(true, "Cuộc hẹn đã bị huỷ!"), HttpStatus.OK);
+            return new ResponseEntity<>(new ApiResponse(false, "Cuộc hẹn đã bị huỷ!"), HttpStatus.OK);
         }
         appointment.setID(id);
-        appointmentService.acceptAppointment(appointment);
+        appointmentService.cancelAppointment(appointment);
         //Notification
         Appointment notiAppointment = appointmentService.getAppointmentByID(id);
         Notification notification = new Notification();
@@ -214,8 +214,9 @@ public class AppointmentController {
         notification.setIsRead(0);
         notification.setRequestID("000001");
         notification.setUserID(notiAppointment.getCustomerID());
-        notification.setMessage("Cuộc hẹn của bạn lúc " + notiAppointment.getMeetingTime() +
-                " bị huỷ bởi điểu phối viên " + userRepository.findById(notiAppointment.getCoordinatorID()).get().getName());
+        notification.setMessage("Cuộc hẹn mã " + notiAppointment.getID()+
+                " bị huỷ bởi điểu phối viên " + userRepository.findById(notiAppointment.getCoordinatorID()).get().getName()
+                + " do nguyên nhân: " + notiAppointment.getNote() + ". Trạng thái lịch hẹn: Đơn đã huỷ.");
         notificationService.saveNoti(notification);
         return new ResponseEntity<>(new ApiResponse(true, "Xác nhận huỷ cuộc hẹn thành công!"), HttpStatus.OK);
     }

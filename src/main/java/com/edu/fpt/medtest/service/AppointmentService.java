@@ -19,6 +19,8 @@ public interface AppointmentService {
 
     void acceptAppointment(Appointment appointment);
 
+    void cancelAppointment(Appointment appointment);
+
     List<Appointment> listAppointmentByStatus(String status);
 
     //List<Appointment> listAppointmentByListStatus(Set<String> status);
