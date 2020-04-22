@@ -161,12 +161,12 @@ public class NurseController {
         List<DetailRequestModel> lsFindingRequest = new ArrayList<>();
 
         //List all created request
-        List<Request> lsAllRequest = requestService.lsRequest();
+        List<Request> lsAllRequest = requestService.lsRequestByCreatedTimeDesc();
         if (lsAllRequest.isEmpty()) {
             return new ResponseEntity<>(new ApiResponse(false, "Hiện tại không có đơn đang chờ lấy mẫu!"), HttpStatus.OK);
         }
         //with each request in list request
-        for (Request requestPending : lsAllRequest.subList(1, lsAllRequest.size())) {
+        for (Request requestPending : lsAllRequest.subList(0, lsAllRequest.size()-1)) {
             DetailRequestModel detailRequestModel = new DetailRequestModel();
             String requestId = requestPending.getRequestID();
 

@@ -15,4 +15,6 @@ public interface RequestService {
     void saveRequest(Request request);
 
     List<Request> getListByUser(int userID);
+
+    List<Request> lsRequestByCreatedTimeDesc();
 }
