@@ -58,6 +58,20 @@ public class UserServiceImpl implements UserService {
         userByID.setTownCode(user.getTownCode());
         userByID.setDistrictCode(user.getDistrictCode());
         userByID.setActive(user.getActive());
+        userRepository.save(userByID);
+    }
+
+    @Override
+    public void updateContainImage(User user) {
+        User userByID = userRepository.findById(user.getId()).get();
+        userByID.setName(user.getName());
+        userByID.setDob(user.getDob());
+        userByID.setAddress(user.getAddress());
+        userByID.setEmail(user.getEmail());
+        userByID.setGender(user.getGender());
+        userByID.setTownCode(user.getTownCode());
+        userByID.setDistrictCode(user.getDistrictCode());
+        userByID.setActive(user.getActive());
         userByID.setImage(user.getImage());
         userRepository.save(userByID);
     }

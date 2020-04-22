@@ -3,7 +3,6 @@ package com.edu.fpt.medtest.service;
 import com.edu.fpt.medtest.entity.User;
 import org.springframework.stereotype.Service;
 
-import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,6 +19,8 @@ public interface UserService {
 
     void updateContainStatus(User user);
 
+    void updateContainImage(User user);
+
     List<User> lsUserActive();
 
     List<User> lsUserNotActive();
@@ -30,7 +31,7 @@ public interface UserService {
 
     void resetPassword(User user);
 
-    void  updateAddress(User user);
+    void updateAddress(User user);
 
     Optional<User> getUserByID(int ID);
 

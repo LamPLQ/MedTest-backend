@@ -7,6 +7,7 @@ import com.edu.fpt.medtest.model.SmsRequest;
 import com.edu.fpt.medtest.repository.TokenRepository;
 import com.edu.fpt.medtest.repository.UserRepository;
 import com.edu.fpt.medtest.service.UserService;
+import com.edu.fpt.medtest.utils.ApiResponse;
 import com.edu.fpt.medtest.utils.GetRandomString;
 import com.twilio.rest.api.v2010.account.Message;
 import com.twilio.rest.api.v2010.account.MessageCreator;
@@ -14,12 +15,13 @@ import com.twilio.type.PhoneNumber;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Optional;
 
 @Service("twilio")
 public class TwilioSmsSender implements SmsSender {
@@ -45,8 +47,9 @@ public class TwilioSmsSender implements SmsSender {
 
     @Override
     public void sendSms(SmsRequest smsRequest) {
-        if (isPhoneNumberValid(smsRequest.getPhoneNumber())) {
+       // if (isPhoneNumberValid(smsRequest.getPhoneNumber())) {
 
+            boolean resetPassword = true;
             SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MMM dd,yyyy HH:mm:ss");
 
             Date inputDate;
@@ -67,7 +70,7 @@ public class TwilioSmsSender implements SmsSender {
             validPhoneToken.setToken(token);
             validPhoneToken.setCreatedTime(System.currentTimeMillis());
             validPhoneToken.setExpiredTime(System.currentTimeMillis() + 180000);
-            tokenRepository.save(validPhoneToken);
+            //tokenRepository.save(validPhoneToken);
 
             //System.out.printf("valid Phone Token expire time after save:"+ validPhoneToken.getCreatedTime()+ "\n");
             //System.out.println("createdtime" + validPhoneToken.getCreatedTime());
@@ -87,13 +90,25 @@ public class TwilioSmsSender implements SmsSender {
             PhoneNumber phoneNumberTo = new PhoneNumber(validPhoneNumber);
             PhoneNumber phoneNumberfrom = new PhoneNumber(twilioConfiguration.getTrialNumber());
             String message = "[MEDTEST] Mã OTP xác nhận: " + token + ". Hãy nhập mã trong vòng 3 phút kể từ " + messageTime + ".";
-            MessageCreator creator = Message.creator(phoneNumberTo, phoneNumberfrom, message);
-            creator.create();
+
+            try {
+                MessageCreator creator = Message.creator(phoneNumberTo, phoneNumberfrom, message);
+                creator.create();
+                resetPassword = true;
+            }catch (Exception e){
+                resetPassword = false;
+            }
+            if(resetPassword == true){
+                tokenRepository.save(validPhoneToken);
+            }else {
+                System.out.println("Số điện thoại không tồn tại!");
+            }
+
             //System.out.println(message);
-            LOGGER.info("Send sms {}" + smsRequest);
-        } else {
+            //LOGGER.info("Send sms {}" + smsRequest);
+        /*} else {
             throw new IllegalArgumentException("Số điện thoại [" + smsRequest.getPhoneNumber() + "] không tồn tại!");
-        }
+        }*/
     }
 
     @Override
@@ -121,34 +136,52 @@ public class TwilioSmsSender implements SmsSender {
 
     @Override
     public void resetPassword(SmsRequest smsRequest) {
-        if (isPhoneNumberValid(smsRequest.getPhoneNumber())) {
-            //phoneNumber format 0xxxxxxxxx (input type)
-            String phoneNumberInput = smsRequest.getPhoneNumber();
+        //if (isPhoneNumberValid(smsRequest.getPhoneNumber())) {
+        //phoneNumber format 0xxxxxxxxx (input type)
+        //try {
+        boolean resetPassword = true;
+        String phoneNumberInput = smsRequest.getPhoneNumber();
 
-            //phoneNumber format +84xxxxxxxxxx (valid type)
-            String mainNumberInput = phoneNumberInput.substring(1);
-            String validPhoneNumber = "+84".concat(mainNumberInput);
+        //phoneNumber format +84xxxxxxxxxx (valid type)
+        String mainNumberInput = phoneNumberInput.substring(1);
+        String validPhoneNumber = "+84".concat(mainNumberInput);
 
-            //Gen new password and save new password to db
-            String newPassword = GetRandomString.getAlphaNumericString(6);
-            String password = bCryptPasswordEncoder.encode(newPassword);
-            //
-            User changePassword = userRepository.getUserByPhoneNumberAndRole(smsRequest.getPhoneNumber(),smsRequest.getRole());
-            changePassword.setPassword(password);
-            userService.resetPassword(changePassword);
+        //Gen new password and save new password to db
+        String newPassword = GetRandomString.getAlphaNumericString(6);
+        String password = bCryptPasswordEncoder.encode(newPassword);
+        //
 
-            PhoneNumber phoneNumberTo = new PhoneNumber(validPhoneNumber);
-            PhoneNumber phoneNumberfrom = new PhoneNumber(twilioConfiguration.getTrialNumber());
-            String message = "Mật khẩu mới: " + newPassword + ". Vui lòng đổi sang mật khẩu mới sau khi đăng nhập! ";
+        PhoneNumber phoneNumberTo = new PhoneNumber(validPhoneNumber);
+        PhoneNumber phoneNumberfrom = new PhoneNumber(twilioConfiguration.getTrialNumber());
+        String message = "Mật khẩu mới: " + newPassword + ". Vui lòng đổi sang mật khẩu mới sau khi đăng nhập! ";
+        try {
             MessageCreator creator = Message.creator(phoneNumberTo, phoneNumberfrom, message);
             creator.create();
             //System.out.println(message);
-            LOGGER.info("Send sms {}" + smsRequest);
-
-        } else {
-            throw new IllegalArgumentException("Số điện thoại [" + smsRequest.getPhoneNumber() + "] không tồn tại!");
+            //LOGGER.info("Send sms {}" + smsRequest);
+            resetPassword = true;
+            //System.out.println(isPasswordChange);
+        } catch (Exception e) {
+            System.out.println("Loi");
+            resetPassword = false;
         }
+        if(resetPassword==true){
+            User changePassword = userRepository.getUserByPhoneNumberAndRole(smsRequest.getPhoneNumber(), smsRequest.getRole());
+            changePassword.setPassword(password);
+            userService.resetPassword(changePassword);
+            //System.out.println(isPasswordChange);
+        }else {
+            System.out.println("No update");
+            ApiResponse apiResponse = new ApiResponse(false,"Số điện thoại không đúng!");
+            new ResponseEntity<>(apiResponse, HttpStatus.OK);
+        }
+
+        /*} else {
+            throw new IllegalArgumentException("Số điện thoại [" + smsRequest.getPhoneNumber() + "] không tồn tại!");
+        }*/
+
     }
+
 
     private boolean isPhoneNumberValid(String phoneNumber) {
         //TODO: Implement phone number validator

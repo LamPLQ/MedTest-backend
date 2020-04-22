@@ -210,9 +210,20 @@ public class RequestController {
     //update status of 1 request - add into request_history table
     @PostMapping("/update/{id}")
     public ResponseEntity<?> updateRequestStatus(@RequestBody RequestHistory requestHistory, @PathVariable("id") String ID) {
+        try {
         Request requestPresenting = requestService.getRequest(ID);
         if (requestPresenting == null) {
-            return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy yêu cầu mã ID = " + ID), HttpStatus.OK);
+            return new ResponseEntity<>(new ApiResponse(false, "Không tìm thấy mã đơn xét nghiệm " + ID), HttpStatus.OK);
+        }
+        List<RequestHistory> listHistoryOfCurrentRequest = requestHistoryRepository.findByRequestIDOrderByCreatedTimeDesc(ID);
+        if(listHistoryOfCurrentRequest.isEmpty() || listHistoryOfCurrentRequest==null){
+            System.out.println("List empty, can update!");
+        }else {
+            String inputStatus = requestHistory.getStatus();
+            String currentStatus = listHistoryOfCurrentRequest.get(0).getStatus();
+            if(inputStatus.equals(currentStatus)){
+                return new ResponseEntity<>(new ApiResponse(false,"Đơn xét nghiệm đang được xử lý. Vui lòng tải lại!"), HttpStatus.OK);
+            }
         }
         requestHistory.setRequestID(requestPresenting.getRequestID());
         requestHistoryService.save(requestHistory);
@@ -265,6 +276,9 @@ public class RequestController {
         //
         notificationService.saveNoti(notification);
         return new ResponseEntity<>(requestHistory, HttpStatus.OK);
+        }catch (Exception exception){
+            return new ResponseEntity<>(new ApiResponse(false,"Hệ thống đang xử lý! Vui lòng kiểm tra lại!"), HttpStatus.OK);
+        }
     }
 
     //detail 1 request

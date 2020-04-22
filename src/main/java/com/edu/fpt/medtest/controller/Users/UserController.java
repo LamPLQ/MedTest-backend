@@ -9,6 +9,7 @@ import com.edu.fpt.medtest.repository.UserRepository;
 import com.edu.fpt.medtest.security.SecurityUtils;
 import com.edu.fpt.medtest.service.NotificationService;
 import com.edu.fpt.medtest.service.SmsService.SmsService;
+import com.edu.fpt.medtest.service.SmsService.TwilioSmsSender;
 import com.edu.fpt.medtest.service.UserService;
 import com.edu.fpt.medtest.utils.*;
 import io.jsonwebtoken.Jwts;
@@ -22,7 +23,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -56,7 +56,6 @@ public class UserController {
     @Autowired
     private SmsService smsService;
 
-
     @Autowired
     private TokenRepository tokenRepository;
 
@@ -70,11 +69,11 @@ public class UserController {
     @GetMapping("/list/active")
     public ResponseEntity<?> listActive() {
         //try{
-            List<User> lsUsersActive = userService.lsUserActive();
-            if (lsUsersActive.isEmpty()) {
-                return new ResponseEntity<>(new ApiResponse(true, "Không có người dùng nào ở trạng thái đang hoạt động!"), HttpStatus.OK);
-            }
-            return new ResponseEntity<>(lsUsersActive, HttpStatus.OK);
+        List<User> lsUsersActive = userService.lsUserActive();
+        if (lsUsersActive.isEmpty()) {
+            return new ResponseEntity<>(new ApiResponse(true, "Không có người dùng nào ở trạng thái đang hoạt động!"), HttpStatus.OK);
+        }
+        return new ResponseEntity<>(lsUsersActive, HttpStatus.OK);
       /*  }
         catch (Exception e){
             System.out.println("Lỗi");
@@ -117,15 +116,18 @@ public class UserController {
     public ResponseEntity<?> resetPassword(@RequestBody UserProcessingModel userProcessingModel, @PathVariable("id") int id) {
         Optional<User> processingUser = userService.getUserByID(userProcessingModel.getUserProcessingID());
         if (!processingUser.isPresent()) {
-            return new ResponseEntity<>(new ComfirmResponse(false, "Không tồn tại tài khoản!",false), HttpStatus.OK);
+            return new ResponseEntity<>(new ComfirmResponse(true, "Không tồn tại tài khoản!", false), HttpStatus.OK);
         }
         if (!processingUser.get().getRole().equals("ADMIN")) {
-            return new ResponseEntity<>(new ComfirmResponse(false, "Người dùng hiện tại không được thực hiện được chức năng này!",false), HttpStatus.OK);
+            return new ResponseEntity<>(new ComfirmResponse(true, "Người dùng hiện tại không được thực hiện được chức năng này!", false), HttpStatus.OK);
         }
         Optional<User> userByID = userService.getUserByID(id);
         if (!userByID.isPresent()) {
-            return new ResponseEntity<>(new ComfirmResponse(false, "Không tồn tại người dùng này!",false), HttpStatus.OK);
+            return new ResponseEntity<>(new ComfirmResponse(true, "Không tồn tại người dùng này!", false), HttpStatus.OK);
         }
+        String oldPassword = userByID.get().getPassword();
+        //System.out.println(oldPassword + " old");
+        SmsRequest smsRequest = new SmsRequest(userByID.get().getPhoneNumber(), userByID.get().getRole());
         /*if (userByID.get().getRole().equals("CUSTOMER")) {
             return new ResponseEntity<>(new ApiResponse(false, "Người dùng hiện tại không thực hiện được chức năng này!"), HttpStatus.OK);
         sentMailModel.setEmail(userByID.get().getEmail());
@@ -136,9 +138,14 @@ public class UserController {
         } catch (MailException mailException) {
             System.out.println(mailException);
         }*/
-        SmsRequest smsRequest = new SmsRequest(userByID.get().getPhoneNumber(), userByID.get().getRole());
         smsService.resetPassword(smsRequest);
-        return new ResponseEntity<>(new ComfirmResponse(true, "Mật khẩu mới đã được gửi đến số điện thoại " + userByID.get().getPhoneNumber(),true), HttpStatus.OK);
+        Optional<User> userUpdated = Optional.ofNullable(userRepository.getUserByPhoneNumberAndRole(userByID.get().getPhoneNumber(), userByID.get().getRole()));
+        String newPassword = userUpdated.get().getPassword();
+        //System.out.println(newPassword);
+        if (oldPassword.equals(newPassword)){
+            return new ResponseEntity<>(new ComfirmResponse(true, "Số điện thoại không đúng! ", false), HttpStatus.OK);
+        }
+        return new ResponseEntity<>(new ComfirmResponse(true, "Mật khẩu mới đã được gửi đến số điện thoại " + userByID.get().getPhoneNumber(), true), HttpStatus.OK);
     }
 
     //forgotPassword for customer
@@ -149,6 +156,7 @@ public class UserController {
             return new ResponseEntity<>(new ComfirmResponse(true, "Không tìm thấy số điện thoại đã nhập!", false), HttpStatus.OK);
         }
         User forgotPasswordUser = userService.getUserByPhoneNumberAndRole(forgotPasswordModel.getPhoneNumber(), "CUSTOMER");
+        String oldPassword = forgotPasswordUser.getPassword();
         /*sentMailModel.setEmail(forgotPasswordUser.getEmail());
         sentMailModel.setPhoneNumber(forgotPasswordUser.getPhoneNumber());
         sentMailModel.setRole(forgotPasswordUser.getRole());
@@ -159,6 +167,11 @@ public class UserController {
         }*/
         SmsRequest smsRequest = new SmsRequest(forgotPasswordUser.getPhoneNumber(), forgotPasswordUser.getRole());
         smsService.resetPassword(smsRequest);
+        Optional<User> afterResetPassword = Optional.ofNullable(userRepository.getUserByPhoneNumberAndRole(forgotPasswordUser.getPhoneNumber(), forgotPasswordUser.getRole()));
+        String newPassword = afterResetPassword.get().getPassword();
+        if(oldPassword.equals(newPassword)){
+            return new ResponseEntity<>(new ComfirmResponse(true, "Số điện thoại không đúng! ",false), HttpStatus.OK);
+        }
         return new ResponseEntity<>(new ComfirmResponse(true, "Mật khẩu mới đã được gửi đến số điện thoại " + forgotPasswordUser.getPhoneNumber(), true), HttpStatus.OK);
     }
 
@@ -202,6 +215,10 @@ public class UserController {
             tokenRepository.delete(validPhoneToken);
         }
         smsService.sendSms(smsRequest);
+        List<ValidPhoneToken> lsValidPhoneToken = tokenRepository.getAllByPhoneNumber(smsRequest.getPhoneNumber());
+        if(lsValidPhoneToken.isEmpty() || lsValidPhoneToken==null){
+            return new ResponseEntity<>(new SendMessageResponse(true, "Số điện thoại không đúng.", false), HttpStatus.OK);
+        }
         return new ResponseEntity<>(new SendMessageResponse(true, "Gửi thành công tin nhắn đến số điện thoại.", true), HttpStatus.OK);
     }
 
@@ -257,29 +274,36 @@ public class UserController {
     //create user
     @PostMapping("/create-employee")
     public ResponseEntity<?> createEmployee(@RequestBody User employeeCreatedUser) {
-        boolean isExistByPhoneNumberAndRole = userRepository.existsByPhoneNumberAndRole(employeeCreatedUser.getPhoneNumber(), employeeCreatedUser.getRole());
-        if (isExistByPhoneNumberAndRole == true) {
-            return new ResponseEntity<>(new CreatedSuccessApi(true, "Số điện thoại đã được đăng kí.", false), HttpStatus.OK);
-        }
-        if (employeeCreatedUser.getRole().equals("ADMIN")) {
-            boolean isCoordinator = userRepository.existsByPhoneNumberAndRole(employeeCreatedUser.getPhoneNumber(), "COORDINATOR");
-            if (isCoordinator == true) {
-                return new ResponseEntity<>(new CreatedSuccessApi(true, "Số điện thoại không được đăng ký với vị trí này.", false), HttpStatus.OK);
+        try {
+            boolean isExistByPhoneNumberAndRole = userRepository.existsByPhoneNumberAndRole(employeeCreatedUser.getPhoneNumber(), employeeCreatedUser.getRole());
+            if (isExistByPhoneNumberAndRole == true) {
+                return new ResponseEntity<>(new CreatedSuccessApi(true, "Số điện thoại đã được đăng kí.", false), HttpStatus.OK);
             }
-        }
-        if (employeeCreatedUser.getRole().equals("COORDINATOR")) {
-            boolean isCoordinator = userRepository.existsByPhoneNumberAndRole(employeeCreatedUser.getPhoneNumber(), "ADMIN");
-            if (isCoordinator == true) {
-                return new ResponseEntity<>(new CreatedSuccessApi(true, "Số điện thoại này không được thực hiện đăng kí.", false), HttpStatus.OK);
+            if (employeeCreatedUser.getRole().equals("ADMIN")) {
+                boolean isCoordinator = userRepository.existsByPhoneNumberAndRole(employeeCreatedUser.getPhoneNumber(), "COORDINATOR");
+                if (isCoordinator == true) {
+                    return new ResponseEntity<>(new CreatedSuccessApi(true, "Số điện thoại không được đăng ký với vị trí này.", false), HttpStatus.OK);
+                }
             }
+            if (employeeCreatedUser.getRole().equals("COORDINATOR")) {
+                boolean isCoordinator = userRepository.existsByPhoneNumberAndRole(employeeCreatedUser.getPhoneNumber(), "ADMIN");
+                if (isCoordinator == true) {
+                    return new ResponseEntity<>(new CreatedSuccessApi(true, "Số điện thoại này không được thực hiện đăng kí.", false), HttpStatus.OK);
+                }
+            }
+            String enCryptPassword = bCryptPasswordEncoder.encode(employeeCreatedUser.getPassword());
+            employeeCreatedUser.setActive(1);
+            if (employeeCreatedUser.getImage().isEmpty() || employeeCreatedUser.getImage() == null) {
+                employeeCreatedUser.setImage("https://www.kindpng.com/picc/m/10-104902_simple-user-icon-user-icon-white-png-transparent.png");
+            }
+            employeeCreatedUser.setPassword(enCryptPassword);
+            SmsRequest smsRequest = new SmsRequest(employeeCreatedUser.getPhoneNumber(), employeeCreatedUser.getRole());
+            smsService.verifySms(smsRequest);
+        } catch (Exception exception) {
+            System.out.println(exception.getMessage());
+            return new ResponseEntity<>(new CreatedSuccessApi(false, "Số điện thoại không tồn tại!", false), HttpStatus.OK);
         }
-        String enCryptPassword = bCryptPasswordEncoder.encode(employeeCreatedUser.getPassword());
-        employeeCreatedUser.setActive(1);
-        //employeeCreatedUser.setImage(employeeCreatedUser.getImage());
-        employeeCreatedUser.setPassword(enCryptPassword);
         userService.saveUser(employeeCreatedUser);
-        SmsRequest smsRequest = new SmsRequest(employeeCreatedUser.getPhoneNumber(), employeeCreatedUser.getRole());
-        smsService.verifySms(smsRequest);
         return new ResponseEntity<>(employeeCreatedUser, HttpStatus.OK);
     }
 
@@ -327,13 +351,23 @@ public class UserController {
     //update 1 user
     @PostMapping("/update-user/{id}")
     public ResponseEntity<?> updateUserInfo(@RequestBody User user, @PathVariable("id") int userID) {
-        Optional<User> getUserByID = userService.getUserByID(userID);
-        if (!getUserByID.isPresent()) {
-            return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy người dùng"), HttpStatus.OK);
+        try {
+            Optional<User> getUserByID = userService.getUserByID(userID);
+            if (!getUserByID.isPresent()) {
+                return new ResponseEntity<>(new ApiResponse(false, "Không tìm thấy người dùng"), HttpStatus.OK);
+            }
+            if(user.getImage().isEmpty()||user.getImage()==null){
+                user.setId(userID);
+
+                userService.updateContainStatus(user);
+            }else {
+                user.setId(userID);
+                userService.updateContainImage(user);
+            }
+            return new ResponseEntity<>(getUserByID, HttpStatus.OK);
+        }catch (Exception ex){
+            return new ResponseEntity<>(new ApiResponse(false, "Oops! Lỗi hệ thống! Xin vui lòng thử lại!"), HttpStatus.OK);
         }
-        user.setId(userID);
-        userService.updateContainStatus(user);
-        return new ResponseEntity<>(getUserByID, HttpStatus.OK);
     }
 
     @PostMapping("admin/change-password/{id}")

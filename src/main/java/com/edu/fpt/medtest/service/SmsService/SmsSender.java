@@ -10,4 +10,5 @@ public interface SmsSender {
     void verifySms(SmsRequest smsRequest);
 
     void resetPassword(SmsRequest smsRequest);
+
 }
