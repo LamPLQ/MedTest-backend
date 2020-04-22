@@ -195,7 +195,7 @@ public class CustomerController {
             }
             return new ResponseEntity<>(listUserAppoinment, HttpStatus.OK);
         } catch (Exception exception) {
-            return new ResponseEntity<>(new ApiResponse(false, "Hệ thống đang tải. Vui lòng thử lại!"), HttpStatus.OK);
+            return new ResponseEntity<>(new ApiResponse(false, "Hệ thống đang xử lý. Vui lòng tải lại!"), HttpStatus.OK);
         }
     }
 
@@ -371,7 +371,8 @@ public class CustomerController {
             }
             return new ResponseEntity<>(lsDRequestDetail, HttpStatus.OK);
         } catch (Exception exception) {
-            return new ResponseEntity<>(new ApiResponse(false, "Hệ thống đang xử lý! Vui lòng tải lại!"), HttpStatus.OK);
+            return new ResponseEntity<>(new ApiResponse(false, "Hệ thống đang xử lý. Vui lòng tải lại!" +
+                    ""), HttpStatus.OK);
         }
     }
 }
