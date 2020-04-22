@@ -58,6 +58,7 @@ public class UserServiceImpl implements UserService {
         userByID.setTownCode(user.getTownCode());
         userByID.setDistrictCode(user.getDistrictCode());
         userByID.setActive(user.getActive());
+        userByID.setImage(user.getImage());
         userRepository.save(userByID);
     }
 

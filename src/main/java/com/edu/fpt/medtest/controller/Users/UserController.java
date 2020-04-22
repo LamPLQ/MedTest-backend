@@ -69,11 +69,17 @@ public class UserController {
     // List user with state ACTIVE
     @GetMapping("/list/active")
     public ResponseEntity<?> listActive() {
-        List<User> lsUsersActive = userService.lsUserActive();
-        if (lsUsersActive.isEmpty()) {
-            return new ResponseEntity<>(new ApiResponse(true, "Không có người dùng nào ở trạng thái đang hoạt động!"), HttpStatus.OK);
-        }
-        return new ResponseEntity<>(lsUsersActive, HttpStatus.OK);
+        //try{
+            List<User> lsUsersActive = userService.lsUserActive();
+            if (lsUsersActive.isEmpty()) {
+                return new ResponseEntity<>(new ApiResponse(true, "Không có người dùng nào ở trạng thái đang hoạt động!"), HttpStatus.OK);
+            }
+            return new ResponseEntity<>(lsUsersActive, HttpStatus.OK);
+      /*  }
+        catch (Exception e){
+            System.out.println("Lỗi");
+            return new ResponseEntity<>(new ApiResponse(true,"Hệ thống xảy ra lỗi. Xin vui lòng thử lại!"),HttpStatus.OK);
+        }*/
     }
 
     // List user with state DE-ACTIVE
@@ -227,7 +233,7 @@ public class UserController {
         registeredUser.setActive(1);
         registeredUser.setAddress(null);
         registeredUser.setRole("CUSTOMER");
-        registeredUser.setImage(registeredUser.getImage());
+        registeredUser.setImage("https://www.kindpng.com/picc/m/10-104902_simple-user-icon-user-icon-white-png-transparent.png");
         registeredUser.setTownCode(null);
         registeredUser.setDistrictCode(null);
         registeredUser.setPassword(enCryptPassword);
@@ -269,7 +275,7 @@ public class UserController {
         }
         String enCryptPassword = bCryptPasswordEncoder.encode(employeeCreatedUser.getPassword());
         employeeCreatedUser.setActive(1);
-        employeeCreatedUser.setImage(employeeCreatedUser.getImage());
+        //employeeCreatedUser.setImage(employeeCreatedUser.getImage());
         employeeCreatedUser.setPassword(enCryptPassword);
         userService.saveUser(employeeCreatedUser);
         SmsRequest smsRequest = new SmsRequest(employeeCreatedUser.getPhoneNumber(), employeeCreatedUser.getRole());

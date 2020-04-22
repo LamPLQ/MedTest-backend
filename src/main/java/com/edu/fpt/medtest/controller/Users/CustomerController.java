@@ -73,9 +73,14 @@ public class CustomerController {
             return new ResponseEntity<>(new ApiResponse(true, "Người dùng không tồn tại!"), HttpStatus.OK);
         }
         User userLogin = userRepository.getUserByPhoneNumberAndRole(loginUser.getPhoneNumber(), loginUser.getRole());
+        //check active
+        if (userLogin.getActive() == 0) {
+            return new ResponseEntity<>(new ApiResponse(false, "Số tài khoản đã bị khoá"), HttpStatus.OK);
+        }
+
         //check password
         if (!BCrypt.checkpw(loginUser.getPassword(), userLogin.getPassword())) {
-            return new ResponseEntity<>(new ApiResponse(true, "Sai mật khẩu!"), HttpStatus.OK);
+            return new ResponseEntity<>(new ApiResponse(false, "Sai mật khẩu!"), HttpStatus.OK);
         }
         //create BEARER token
         String token = Jwts.builder()
@@ -107,7 +112,7 @@ public class CustomerController {
         customer.setActive(1);
         customer.setAddress(null);
         customer.setRole("CUSTOMER");
-        customer.setImage(customer.getImage());
+        customer.setImage("https://www.kindpng.com/picc/m/10-104902_simple-user-icon-user-icon-white-png-transparent.png");
         customer.setTownCode(null);
         customer.setDistrictCode(null);
         customer.setPassword(enCryptPassword);

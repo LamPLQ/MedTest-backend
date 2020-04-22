@@ -134,7 +134,7 @@ public class User implements Serializable {
     }
 
     public void setImage(String image) {
-        this.image = "https://www.kindpng.com/picc/m/10-104902_simple-user-icon-user-icon-white-png-transparent.png";
+        this.image = image;
     }
 
     public String getTownCode() {
