@@ -22,52 +22,73 @@ public class TownController {
     //get all town by district
     @GetMapping("/list")
     public ResponseEntity<?> getAllTown() {
-        List<Town> townList = townService.listTown();
-        if (townList.isEmpty()) {
-            return new ResponseEntity<>(new ApiResponse(true, "Không có phường/xã trong hệ thống!"), HttpStatus.OK);
+        try {
+            List<Town> townList = townService.listTown();
+            if (townList.isEmpty()) {
+                return new ResponseEntity<>(new ApiResponse(true, "Không có phường/xã trong hệ thống!"), HttpStatus.OK);
+            }
+            List<Town> returnTown = new ArrayList<>();
+            for (Town town : townList.subList(1, townList.size())) {
+                returnTown.add(town);
+            }
+            if (returnTown.isEmpty()) {
+                return new ResponseEntity<>(new ApiResponse(true, "Không có phường/xã nào!"), HttpStatus.OK);
+            }
+            return new ResponseEntity<>(returnTown, HttpStatus.OK);
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+            return new ResponseEntity<>(new ApiResponse(false, "Hệ thống đang xử lý. Vui lòng tải lại!"), HttpStatus.OK);
         }
-        List<Town> returnTown = new ArrayList<>();
-        for (Town town : townList.subList(1, townList.size())) {
-            returnTown.add(town);
-        }
-        if (returnTown.isEmpty()) {
-            return new ResponseEntity<>(new ApiResponse(true, "Không có phường/xã nào!"), HttpStatus.OK);
-        }
-        return new ResponseEntity<>(returnTown, HttpStatus.OK);
     }
 
     //create new town
     @PostMapping("/create")
     public ResponseEntity<?> createNewTown(@RequestBody Town town) {
-        List<Town> lsTown = townService.listTown();
-        for (Town townTracking : lsTown) {
-            if (town.getTownCode().equalsIgnoreCase(townTracking.getTownCode())) {
-                return new ResponseEntity<>(new ApiResponse(true, "Không tồn tại code phường/xã"), HttpStatus.OK);
+        try {
+            List<Town> lsTown = townService.listTown();
+            for (Town townTracking : lsTown) {
+                if (town.getTownCode().equalsIgnoreCase(townTracking.getTownCode())) {
+                    return new ResponseEntity<>(new ApiResponse(true, "Không tồn tại code phường/xã"), HttpStatus.OK);
+                }
             }
+            townService.saveTown(town);
+            return new ResponseEntity<>(new ApiResponse(true, "Tạo phường/xã mới thành công!"), HttpStatus.OK);
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+            return new ResponseEntity<>(new ApiResponse(false, "Hệ thống đang xử lý. Vui lòng tải lại!"), HttpStatus.OK);
         }
-        townService.saveTown(town);
-        return new ResponseEntity<>(new ApiResponse(true, "Tạo phường/xã mới thành công!"), HttpStatus.OK);
     }
 
     //View detail of 1 town
     @GetMapping(value = "/detail/{code}")
     public ResponseEntity<?> getTown(@PathVariable("code") String code) {
-        Optional<Town> getTown = townService.getTownByCode(code);
-        if (!getTown.isPresent()) {
-            return new ResponseEntity<>(new ApiResponse(true, "Không tồn tại code phường/xã"), HttpStatus.OK);
+        try {
+            Optional<Town> getTown = townService.getTownByCode(code);
+            if (!getTown.isPresent()) {
+                return new ResponseEntity<>(new ApiResponse(true, "Không tồn tại code phường/xã"), HttpStatus.OK);
+            }
+            return new ResponseEntity<>(getTown, HttpStatus.OK);
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+            return new ResponseEntity<>(new ApiResponse(false, "Hệ thống đang xử lý. Vui lòng tải lại!"), HttpStatus.OK);
         }
-        return new ResponseEntity<>(getTown, HttpStatus.OK);
     }
 
     //update 1 town detail
     @PutMapping(value = "/detail/update/{code}")
     public ResponseEntity<?> updateTown(@RequestBody Town town, @PathVariable("code") String code) {
-        Optional<Town> getTown = townService.getTownByCode(code);
-        if (!getTown.isPresent()) {
-            return new ResponseEntity<>(new ApiResponse(true, "Không tồn tại code phường/xã"), HttpStatus.OK);
+        try {
+            Optional<Town> getTown = townService.getTownByCode(code);
+            if (!getTown.isPresent()) {
+                return new ResponseEntity<>(new ApiResponse(true, "Không tồn tại code phường/xã"), HttpStatus.OK);
+            }
+            town.setTownCode(code);
+            townService.saveTown(town);
+            return new ResponseEntity<>(new ApiResponse(true, "Cập nhật phường/xã mới thành công!"), HttpStatus.OK);
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+            return new ResponseEntity<>(new ApiResponse(false, "Hệ thống đang xử lý. Vui lòng tải lại!"), HttpStatus.OK);
         }
-        town.setTownCode(code);
-        townService.saveTown(town);
-        return new ResponseEntity<>(new ApiResponse(true, "Cập nhật phường/xã mới thành công!"), HttpStatus.OK);
     }
+
 }

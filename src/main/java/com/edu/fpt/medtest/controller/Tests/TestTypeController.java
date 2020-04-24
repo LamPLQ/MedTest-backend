@@ -28,61 +28,86 @@ public class TestTypeController {
     //get all test type
     @GetMapping("/list")
     public ResponseEntity<?> lsTestType() {
-        List<TestType> lsTestType = testTypeService.lsTestType();
-        if (lsTestType.isEmpty()) {
-            return new ResponseEntity<>(new ApiResponse(true, "Không có loại xét nghiệm nào hiện tại!"), HttpStatus.OK);
+        try {
+            List<TestType> lsTestType = testTypeService.lsTestType();
+            if (lsTestType.isEmpty()) {
+                return new ResponseEntity<>(new ApiResponse(true, "Không có loại xét nghiệm nào hiện tại!"), HttpStatus.OK);
+            }
+            return new ResponseEntity<>(lsTestType, HttpStatus.OK);
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+            return new ResponseEntity<>(new ApiResponse(false, "Hệ thống đang xử lý. Vui lòng tải lại!"), HttpStatus.OK);
         }
-        return new ResponseEntity<>(lsTestType, HttpStatus.OK);
     }
 
     //get a test type
     @GetMapping("/detail/{id}")
     public ResponseEntity<?> getTestType(@PathVariable("id") int testType) {
-        Optional<TestType> getTestType = testTypeService.findTestTypeByID(testType);
-        if (!getTestType.isPresent()) {
-            return new ResponseEntity<>(new ApiResponse(true, "Mã loại xét nghiệm không tồn tại!"), HttpStatus.OK);
+        try {
+            Optional<TestType> getTestType = testTypeService.findTestTypeByID(testType);
+            if (!getTestType.isPresent()) {
+                return new ResponseEntity<>(new ApiResponse(true, "Mã loại xét nghiệm không tồn tại!"), HttpStatus.OK);
+            }
+            return new ResponseEntity<>(getTestType, HttpStatus.OK);
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+            return new ResponseEntity<>(new ApiResponse(false, "Hệ thống đang xử lý. Vui lòng tải lại!"), HttpStatus.OK);
         }
-        return new ResponseEntity<>(getTestType, HttpStatus.OK);
     }
 
     //create a test type
     @PostMapping("/create")
     public ResponseEntity<?> createTestType(@RequestBody TestType testType) {
-        List<TestType> lsTestType = testTypeService.lsTestType();
-        for (TestType typeTrack : lsTestType) {
-            if (testType.getTestTypeID() == typeTrack.getTestTypeID())
-                return new ResponseEntity<>(new ApiResponse(false, "Đã tồn tại mã loại xét nghiệm!"), HttpStatus.OK);
+        try {
+            List<TestType> lsTestType = testTypeService.lsTestType();
+            for (TestType typeTrack : lsTestType) {
+                if (testType.getTestTypeID() == typeTrack.getTestTypeID())
+                    return new ResponseEntity<>(new ApiResponse(false, "Đã tồn tại mã loại xét nghiệm!"), HttpStatus.OK);
+            }
+            testTypeService.saveTestType(testType);
+            return new ResponseEntity<>(new ApiResponse(true, "Tạo mã loại xét nghiệm thành công!"), HttpStatus.OK);
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+            return new ResponseEntity<>(new ApiResponse(false, "Hệ thống đang xử lý. Vui lòng tải lại!"), HttpStatus.OK);
         }
-        testTypeService.saveTestType(testType);
-        return new ResponseEntity<>(new ApiResponse(true, "Tạo mã loại xét nghiệm thành công!"), HttpStatus.OK);
     }
 
     //edit a test type
     @PutMapping(value = "/detail/edit/{id}")
     public ResponseEntity<?> editTestType(@RequestBody TestType testType, @PathVariable("id") int id) {
-        Optional<TestType> getTestType = testTypeService.findTestTypeByID(id);
-        if (!getTestType.isPresent()) {
-            return new ResponseEntity<>(new ApiResponse(true, "Không tồn tại mã loại xét nghiệm"), HttpStatus.OK);
+        try {
+            Optional<TestType> getTestType = testTypeService.findTestTypeByID(id);
+            if (!getTestType.isPresent()) {
+                return new ResponseEntity<>(new ApiResponse(true, "Không tồn tại mã loại xét nghiệm"), HttpStatus.OK);
+            }
+            testType.setTestTypeID(id);
+            testTypeService.saveTestType(testType);
+            return new ResponseEntity<>(getTestType, HttpStatus.OK);
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+            return new ResponseEntity<>(new ApiResponse(false, "Hệ thống đang xử lý. Vui lòng tải lại!"), HttpStatus.OK);
         }
-        testType.setTestTypeID(id);
-        testTypeService.saveTestType(testType);
-        return new ResponseEntity<>(getTestType, HttpStatus.OK);
     }
 
     //get List testType-test by testTypeID
     @GetMapping("/type-test")
     public ResponseEntity<?> listTestTypeTest() {
-        List<TestTypeListModel> lsResult = new ArrayList<>();
-        List<TestType> list = testTypeService.lsTestType();
-        for (TestType testType : list) {
-            List<Test> testList = testRepository.getAllByTestTypeID(testType.getTestTypeID());
-            TestTypeListModel testTypeListModel = new TestTypeListModel();
-            testTypeListModel.setTestTypeID(testType.getTestTypeID());
-            testTypeListModel.setTestTypeName(testType.getTestTypeName());
-            testTypeListModel.setListTest(testList);
-            lsResult.add(testTypeListModel);
+        try {
+            List<TestTypeListModel> lsResult = new ArrayList<>();
+            List<TestType> list = testTypeService.lsTestType();
+            for (TestType testType : list) {
+                List<Test> testList = testRepository.getAllByTestTypeID(testType.getTestTypeID());
+                TestTypeListModel testTypeListModel = new TestTypeListModel();
+                testTypeListModel.setTestTypeID(testType.getTestTypeID());
+                testTypeListModel.setTestTypeName(testType.getTestTypeName());
+                testTypeListModel.setListTest(testList);
+                lsResult.add(testTypeListModel);
+            }
+            return new ResponseEntity<>(lsResult, HttpStatus.OK);
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+            return new ResponseEntity<>(new ApiResponse(false, "Hệ thống đang xử lý. Vui lòng tải lại!"), HttpStatus.OK);
         }
-        return new ResponseEntity<>(lsResult, HttpStatus.OK);
     }
 
 }

@@ -28,82 +28,107 @@ public class ArticleController {
     //get list
     @GetMapping("/list")
     public ResponseEntity<?> listArticle() {
-        List<Article> listArticle = articleService.listArticle();
-        if (listArticle.isEmpty()) {
-            return new ResponseEntity<>(new ApiResponse(true, "Không có bài viết nào mới!"), HttpStatus.OK);
+        try {
+            List<Article> listArticle = articleService.listArticle();
+            if (listArticle.isEmpty()) {
+                return new ResponseEntity<>(new ApiResponse(true, "Không có bài viết nào mới!"), HttpStatus.OK);
+            }
+            List<ArticleModel> lsArticleReturn = new ArrayList<>();
+            for (Article lsArticle : listArticle) {
+                ArticleModel model = new ArticleModel();
+                model.setID(lsArticle.getID());
+                model.setContent(lsArticle.getContent());
+                model.setShortContent(lsArticle.getShortContent());
+                model.setTittle(lsArticle.getTittle());
+                model.setImage(lsArticle.getImage());
+                //=====================//
+                SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                String displayCreatedTest = sdf2.format(lsArticle.getCreatedTime());
+                String createdTime = displayCreatedTest.substring(0, 10) + "T" + displayCreatedTest.substring(11) + ".000+0000";
+                //=====================//
+                model.setCreatedTime(createdTime);
+                model.setUserID(lsArticle.getUserID());
+                model.setCreatorName(userRepository.findById(lsArticle.getUserID()).get().getName());
+                lsArticleReturn.add(model);
+            }
+            return new ResponseEntity<>(lsArticleReturn, HttpStatus.OK);
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+            return new ResponseEntity<>(new ApiResponse(false, "Hệ thống đang xử lý. Vui lòng tải lại!"), HttpStatus.OK);
         }
-        List<ArticleModel> lsArticleReturn = new ArrayList<>();
-        for(Article lsArticle: listArticle){
-            ArticleModel model = new ArticleModel();
-            model.setID(lsArticle.getID());
-            model.setContent(lsArticle.getContent());
-            model.setShortContent(lsArticle.getShortContent());
-            model.setTittle(lsArticle.getTittle());
-            model.setImage(lsArticle.getImage());
-            //=====================//
-            SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            String displayCreatedTest =  sdf2.format(lsArticle.getCreatedTime());
-            String createdTime = displayCreatedTest.substring(0,10) + "T"+displayCreatedTest.substring(11)+".000+0000";
-            //=====================//
-            model.setCreatedTime(createdTime);
-            model.setUserID(lsArticle.getUserID());
-            model.setCreatorName(userRepository.findById(lsArticle.getUserID()).get().getName());
-            lsArticleReturn.add(model);
-        }
-        return new ResponseEntity<>(lsArticleReturn, HttpStatus.OK);
     }
 
     //create new article
     @PostMapping("/create")
     public ResponseEntity<?> createArticle(@RequestBody Article article) {
-        articleService.saveArticle(article);
-        return new ResponseEntity<>(new ApiResponse(true, "Tạo thành công 1 bài viết mới!"), HttpStatus.OK);
+        try {
+            articleService.saveArticle(article);
+            return new ResponseEntity<>(new ApiResponse(true, "Tạo thành công 1 bài viết mới!"), HttpStatus.OK);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return new ResponseEntity<>(new ApiResponse(false, "Hệ thống đang xử lý. Vui lòng tải lại!"), HttpStatus.OK);
+        }
     }
 
     //detail 1 article
     @GetMapping("/detail/{id}")
     public ResponseEntity<?> editArticle(@PathVariable("id") int id) {
-        Optional<Article> getArticle = articleService.getArticle(id);
-        if (!getArticle.isPresent()) {
-            return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy bài viết nào!"), HttpStatus.OK);
+        try {
+            Optional<Article> getArticle = articleService.getArticle(id);
+            if (!getArticle.isPresent()) {
+                return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy bài viết nào!"), HttpStatus.OK);
+            }
+            ArticleModel model = new ArticleModel();
+            model.setID(id);
+            model.setContent(getArticle.get().getContent());
+            model.setShortContent(getArticle.get().getShortContent());
+            model.setTittle(getArticle.get().getTittle());
+            model.setImage(getArticle.get().getImage());
+            //=====================//
+            SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            String displayCreatedTest = sdf2.format(getArticle.get().getCreatedTime());
+            String createdTime = displayCreatedTest.substring(0, 10) + "T" + displayCreatedTest.substring(11) + ".000+0000";
+            //=====================//
+            model.setCreatedTime(createdTime);
+            model.setUserID(getArticle.get().getUserID());
+            model.setCreatorName(userRepository.findById(getArticle.get().getUserID()).get().getName());
+            return new ResponseEntity<>(model, HttpStatus.OK);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return new ResponseEntity<>(new ApiResponse(false, "Hệ thống đang xử lý. Vui lòng tải lại!"), HttpStatus.OK);
         }
-        ArticleModel model = new ArticleModel();
-        model.setID(id);
-        model.setContent(getArticle.get().getContent());
-        model.setShortContent(getArticle.get().getShortContent());
-        model.setTittle(getArticle.get().getTittle());
-        model.setImage(getArticle.get().getImage());
-        //=====================//
-        SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        String displayCreatedTest =  sdf2.format(getArticle.get().getCreatedTime());
-        String createdTime = displayCreatedTest.substring(0,10) + "T"+displayCreatedTest.substring(11)+".000+0000";
-        //=====================//
-        model.setCreatedTime(createdTime);
-        model.setUserID(getArticle.get().getUserID());
-        model.setCreatorName(userRepository.findById(getArticle.get().getUserID()).get().getName());
-        return new ResponseEntity<>(model, HttpStatus.OK);
     }
 
     //update 1 article
     @PutMapping(value = "/update/{id}")
     public ResponseEntity<?> updateArticle(@RequestBody Article article, @PathVariable("id") int id) {
-        Optional<Article> getArticle = articleService.getArticle(id);
-        if (!getArticle.isPresent()) {
-            return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy bài viết nào!"), HttpStatus.OK);
+        try {
+            Optional<Article> getArticle = articleService.getArticle(id);
+            if (!getArticle.isPresent()) {
+                return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy bài viết nào!"), HttpStatus.OK);
+            }
+            article.setID(id);
+            articleService.updateArticle(article);
+            return new ResponseEntity<>(new ApiResponse(true, "Cập nhật bài viết thành công"), HttpStatus.OK);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return new ResponseEntity<>(new ApiResponse(false, "Hệ thống đang xử lý. Vui lòng tải lại!"), HttpStatus.OK);
         }
-        article.setID(id);
-        articleService.updateArticle(article);
-        return new ResponseEntity<>(new ApiResponse(true, "Cập nhật bài viết thành công"), HttpStatus.OK);
     }
 
     //delete 1 article
     @DeleteMapping(value = "/delete/{id}")
     public ResponseEntity deleteArticle(@PathVariable("id") int id) {
-        Optional<Article> getArticle = articleService.getArticle(id);
-        if (!getArticle.isPresent()) {
-            return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy bài viết nào!"), HttpStatus.OK);
+        try {
+            Optional<Article> getArticle = articleService.getArticle(id);
+            if (!getArticle.isPresent()) {
+                return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy bài viết nào!"), HttpStatus.OK);
+            }
+            articleService.deleteArticle(id);
+            return new ResponseEntity<>(new ApiResponse(true, "Xoá bài viết thành công!"), HttpStatus.OK);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return new ResponseEntity<>(new ApiResponse(false, "Hệ thống đang xử lý. Vui lòng tải lại!"), HttpStatus.OK);
         }
-        articleService.deleteArticle(id);
-        return new ResponseEntity<>(new ApiResponse(true, "Xoá bài viết thành công!"), HttpStatus.OK);
     }
 }

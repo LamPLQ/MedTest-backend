@@ -8,7 +8,6 @@ import com.edu.fpt.medtest.service.Request.RequestHistoryService;
 import com.edu.fpt.medtest.service.Request.RequestService;
 import com.edu.fpt.medtest.service.UserService;
 import com.edu.fpt.medtest.utils.ApiResponse;
-import com.edu.fpt.medtest.utils.CheckEmailExist;
 import com.edu.fpt.medtest.utils.ComfirmResponse;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -62,113 +61,145 @@ public class CustomerController {
     @Autowired
     private BCryptPasswordEncoder bCryptPasswordEncoder;
 
-    @Autowired
-    private CheckEmailExist checkEmailExist;
+  /*  @Autowired
+    private CheckEmailExist checkEmailExist;*/
 
     //Login
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginModel loginUser) {
-        boolean existByPhoneNumberAndRole = userRepository.existsByPhoneNumberAndRole(loginUser.getPhoneNumber(), loginUser.getRole());
-        if (!existByPhoneNumberAndRole == true) {
-            return new ResponseEntity<>(new ApiResponse(true, "Người dùng không tồn tại!"), HttpStatus.OK);
+        try {
+            boolean existByPhoneNumberAndRole = userRepository.existsByPhoneNumberAndRole(loginUser.getPhoneNumber(), loginUser.getRole());
+            if (!existByPhoneNumberAndRole == true) {
+                return new ResponseEntity<>(new ApiResponse(true, "Người dùng không tồn tại!"), HttpStatus.OK);
+            }
+            User userLogin = userRepository.getUserByPhoneNumberAndRole(loginUser.getPhoneNumber(), loginUser.getRole());
+            //check active
+            if (userLogin.getActive() == 0) {
+                return new ResponseEntity<>(new ApiResponse(false, "Số tài khoản đã bị khoá"), HttpStatus.OK);
+            }
+            //check password
+            if (!BCrypt.checkpw(loginUser.getPassword(), userLogin.getPassword())) {
+                return new ResponseEntity<>(new ApiResponse(false, "Sai mật khẩu!"), HttpStatus.OK);
+            }
+            //create BEARER token
+            String token = Jwts.builder()
+                    .setSubject(loginUser.getPhoneNumber())
+                    .setExpiration(new Date(System.currentTimeMillis() + SecurityUtils.EXPIRATION_TIME))
+                    .signWith(SignatureAlgorithm.HS512, SecurityUtils.SECRET.getBytes())
+                    .compact();
+            //return current user
+            User successfulUser = (userRepository.getUserByPhoneNumberAndRole(loginUser.getPhoneNumber(), loginUser.getRole()));
+            LoginAccountModel loginAccountModel = new LoginAccountModel();
+            loginAccountModel.setUserInfo(successfulUser);
+            loginAccountModel.setToken(token);
+            return new ResponseEntity<>(loginAccountModel, HttpStatus.OK);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return new ResponseEntity<>(new ApiResponse(false, "Hệ thống đang xử lý. Vui lòng tải lại!"), HttpStatus.OK);
         }
-        User userLogin = userRepository.getUserByPhoneNumberAndRole(loginUser.getPhoneNumber(), loginUser.getRole());
-        //check active
-        if (userLogin.getActive() == 0) {
-            return new ResponseEntity<>(new ApiResponse(false, "Số tài khoản đã bị khoá"), HttpStatus.OK);
-        }
-
-        //check password
-        if (!BCrypt.checkpw(loginUser.getPassword(), userLogin.getPassword())) {
-            return new ResponseEntity<>(new ApiResponse(false, "Sai mật khẩu!"), HttpStatus.OK);
-        }
-        //create BEARER token
-        String token = Jwts.builder()
-                .setSubject(loginUser.getPhoneNumber())
-                .setExpiration(new Date(System.currentTimeMillis() + SecurityUtils.EXPIRATION_TIME))
-                .signWith(SignatureAlgorithm.HS512, SecurityUtils.SECRET.getBytes())
-                .compact();
-
-        //return current user
-        User successfulUser = (userRepository.getUserByPhoneNumberAndRole(loginUser.getPhoneNumber(), loginUser.getRole()));
-        LoginAccountModel loginAccountModel = new LoginAccountModel();
-        loginAccountModel.setUserInfo(successfulUser);
-        loginAccountModel.setToken(token);
-        return new ResponseEntity<>(loginAccountModel, HttpStatus.OK);
     }
 
     //customer register
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody User customer) {
-        boolean existByPhoneAndRole = userRepository.existsByPhoneNumberAndRole(customer.getPhoneNumber(), "CUSTOMER");
-        if (existByPhoneAndRole == true) {
-            return new ResponseEntity<>(new ApiResponse(false, "Số điện thoại đã tồn tại!"), HttpStatus.OK);
-        }
+        try {
+            boolean existByPhoneAndRole = userRepository.existsByPhoneNumberAndRole(customer.getPhoneNumber(), "CUSTOMER");
+            if (existByPhoneAndRole == true) {
+                return new ResponseEntity<>(new ApiResponse(false, "Số điện thoại đã tồn tại!"), HttpStatus.OK);
+            }
        /* boolean emailExist = checkEmailExist.isAddressValid(customer.getEmail());
         if(emailExist==false){
             return new ResponseEntity<>(new ApiResponse(false,"Email không tồn tại!"), HttpStatus.OK);
         }*/
-        String enCryptPassword = bCryptPasswordEncoder.encode(customer.getPassword());
-        customer.setActive(1);
-        customer.setAddress(null);
-        customer.setRole("CUSTOMER");
-        customer.setImage("https://www.kindpng.com/picc/m/10-104902_simple-user-icon-user-icon-white-png-transparent.png");
-        customer.setTownCode(null);
-        customer.setDistrictCode(null);
-        customer.setPassword(enCryptPassword);
-        userService.saveUser(customer);
-        return new ResponseEntity<>(new ApiResponse(true, "Đã đăng kí thành công!"), HttpStatus.OK);
+            String enCryptPassword = bCryptPasswordEncoder.encode(customer.getPassword());
+            customer.setActive(1);
+            customer.setAddress(null);
+            customer.setRole("CUSTOMER");
+            customer.setImage("https://www.kindpng.com/picc/m/10-104902_simple-user-icon-user-icon-white-png-transparent.png");
+            customer.setTownCode(null);
+            customer.setDistrictCode(null);
+            customer.setPassword(enCryptPassword);
+            userService.saveUser(customer);
+            return new ResponseEntity<>(new ApiResponse(true, "Đã đăng kí thành công!"), HttpStatus.OK);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return new ResponseEntity<>(new ApiResponse(false, "Hệ thống đang xử lý. Vui lòng tải lại!"), HttpStatus.OK);
+        }
     }
 
     //list all customer
     @GetMapping("/list")
     public ResponseEntity<?> list() {
-        List<User> users = userRepository.findAllByRole("CUSTOMER");
-        System.out.println(users);
-        if (users.isEmpty()) {
-            return new ResponseEntity<>(new ApiResponse(true, "Không có người dùng nào trong danh sách hiện tại."), HttpStatus.OK);
+        try {
+            List<User> users = userRepository.findAllByRole("CUSTOMER");
+            System.out.println(users);
+            if (users.isEmpty()) {
+                return new ResponseEntity<>(new ApiResponse(true, "Không có người dùng nào trong danh sách hiện tại."), HttpStatus.OK);
+            }
+            return new ResponseEntity<>(users, HttpStatus.OK);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return new ResponseEntity<>(new ApiResponse(false, "Hệ thống đang xử lý. Vui lòng tải lại!"), HttpStatus.OK);
         }
-        return new ResponseEntity<>(users, HttpStatus.OK);
     }
 
     //get customer - view detail info
     @GetMapping("/detail/{id}")
     public ResponseEntity<?> getUser(@PathVariable("id") int id) {
-        Optional<User> getCustomer = userService.getUserByID(id);
-        if (!getCustomer.isPresent()) {
-            return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy người dùng!"), HttpStatus.OK);
+        try {
+            Optional<User> getCustomer = userService.getUserByID(id);
+            if (!getCustomer.isPresent()) {
+                return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy người dùng!"), HttpStatus.OK);
+            }
+            return new ResponseEntity<>(getCustomer, HttpStatus.OK);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return new ResponseEntity<>(new ApiResponse(false, "Hệ thống đang xử lý. Vui lòng tải lại!"), HttpStatus.OK);
         }
-        return new ResponseEntity<>(getCustomer, HttpStatus.OK);
     }
 
     //update customer info
     @PutMapping("/detail/update/{id}")
     public ResponseEntity<?> updateUser(@RequestBody User customer, @PathVariable("id") int id) {
-        Optional<User> getCustomer = userService.getUserByID(id);
-        if (!getCustomer.isPresent()) {
-            return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy người dùng!"), HttpStatus.OK);
+        try {
+            Optional<User> getCustomer = userService.getUserByID(id);
+            if (!getCustomer.isPresent()) {
+                return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy người dùng!"), HttpStatus.OK);
+            }
+            customer.setId(id);
+            userService.update(customer);
+            return new ResponseEntity<>(getCustomer, HttpStatus.OK);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return new ResponseEntity<>(new ApiResponse(false, "Hệ thống đang xử lý. Vui lòng tải lại!"), HttpStatus.OK);
         }
-        customer.setId(id);
-        userService.update(customer);
-        return new ResponseEntity<>(getCustomer, HttpStatus.OK);
     }
 
     //update customer address
     @PutMapping("/detail/address/update/{id}")
     public ResponseEntity<?> updateAddressUser(@RequestBody User customer, @PathVariable("id") int id) {
-        Optional<User> getCustomer = userService.getUserByID(id);
-        if (!getCustomer.isPresent()) {
-            return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy người dùng!"), HttpStatus.OK);
+        try {
+            Optional<User> getCustomer = userService.getUserByID(id);
+            if (!getCustomer.isPresent()) {
+                return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy người dùng!"), HttpStatus.OK);
+            }
+            customer.setId(id);
+            userService.updateAddress(customer);
+            return new ResponseEntity<>(getCustomer, HttpStatus.OK);
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+            return new ResponseEntity<>(new ApiResponse(false, "Hệ thống đang xử lý. Vui lòng tải lại!"), HttpStatus.OK);
         }
-        customer.setId(id);
-        userService.updateAddress(customer);
-        return new ResponseEntity<>(getCustomer, HttpStatus.OK);
     }
 
     //view list appointment theo 1 customer
     @GetMapping("/{id}/appointments/list")
     public ResponseEntity<?> getListAppointment(@PathVariable("id") int id) {
         try {
+            Optional<User> user = userRepository.findById(id);
+            if(!user.isPresent()){
+                return new ResponseEntity<>(new ApiResponse(false, "Không tồn tại người dùng!"),HttpStatus.OK);
+            }
             List<Appointment> lsAppointmentCustomer = appointmentRepository.findAllByCustomerID(id);
             User userAppoint = userService.findUserByID(id).get();
             if (lsAppointmentCustomer.isEmpty()) {
@@ -202,23 +233,32 @@ public class CustomerController {
     //change Password
     @PostMapping("/change-password/{id}")
     public ResponseEntity<?> changePassword(@RequestBody ChangePasswordModel changePasswordModel, @PathVariable("id") int id) {
-        Optional<User> getCustomer = userService.getUserByID(id);
-        if (!getCustomer.isPresent()) {
-            return new ResponseEntity<>(new ComfirmResponse(true, "Người dùng không tồn tại!", false), HttpStatus.OK);
+        try {
+            Optional<User> getCustomer = userService.getUserByID(id);
+            if (!getCustomer.isPresent()) {
+                return new ResponseEntity<>(new ComfirmResponse(true, "Người dùng không tồn tại!", false), HttpStatus.OK);
+            }
+            if (!BCrypt.checkpw(changePasswordModel.getOldPassword(), getCustomer.get().getPassword())) {
+                return new ResponseEntity<>(new ComfirmResponse(true, "Mật khẩu hiện tại không đúng!", false), HttpStatus.OK);
+            }
+            changePasswordModel.setID(id);
+            getCustomer.get().setPassword(bCryptPasswordEncoder.encode(changePasswordModel.getNewPassword()));
+            userService.saveUser(getCustomer.get());
+            return new ResponseEntity<>(new ComfirmResponse(true, "Thay đổi mật khẩu thành công!", true), HttpStatus.OK);
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+            return new ResponseEntity<>(new ApiResponse(false, "Hệ thống đang xử lý. Vui lòng tải lại!"), HttpStatus.OK);
         }
-        if (!BCrypt.checkpw(changePasswordModel.getOldPassword(), getCustomer.get().getPassword())) {
-            return new ResponseEntity<>(new ComfirmResponse(true, "Mật khẩu hiện tại không đúng!", false), HttpStatus.OK);
-        }
-        changePasswordModel.setID(id);
-        getCustomer.get().setPassword(bCryptPasswordEncoder.encode(changePasswordModel.getNewPassword()));
-        userService.saveUser(getCustomer.get());
-        return new ResponseEntity<>(new ComfirmResponse(true, "Thay đổi mật khẩu thành công!", true), HttpStatus.OK);
     }
 
     //list request of customer
     @GetMapping("{id}/requests/list")
     public ResponseEntity<?> lsRequestOfUser(@PathVariable("id") int userID) {
         try {
+            Optional<User> getUser = userRepository.findById(userID);
+            if(!getUser.isPresent()){
+                return new ResponseEntity<>(new ApiResponse(false,"Không tồn tại người dùng"),HttpStatus.OK);
+            }
             List<Request> lsRequest = requestService.getListByUser(userID);
             if (lsRequest.isEmpty()) {
                 return new ResponseEntity<>(new ApiResponse(false, "Hiện tại không có yêu cầu nào từ khách hàng!"), HttpStatus.OK);
@@ -371,8 +411,7 @@ public class CustomerController {
             }
             return new ResponseEntity<>(lsDRequestDetail, HttpStatus.OK);
         } catch (Exception exception) {
-            return new ResponseEntity<>(new ApiResponse(false, "Hệ thống đang xử lý. Vui lòng tải lại!" +
-                    ""), HttpStatus.OK);
+            return new ResponseEntity<>(new ApiResponse(false, "Hệ thống đang xử lý. Vui lòng tải lại!"), HttpStatus.OK);
         }
     }
 }

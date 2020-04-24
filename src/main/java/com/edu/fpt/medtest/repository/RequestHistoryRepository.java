@@ -20,5 +20,7 @@ public interface RequestHistoryRepository extends JpaRepository<RequestHistory, 
     List<RequestHistory> findAllByRequestIDAndStatusAndUserIDOrderByCreatedTimeDesc(String requestID, String status, int userID);
 
     boolean existsByRequestIDAndStatusAndUserID(String requestID, String status, int userID);
+
+    List<RequestHistory> findByRequestIDAndStatus(String requestID, String status);
 }
 

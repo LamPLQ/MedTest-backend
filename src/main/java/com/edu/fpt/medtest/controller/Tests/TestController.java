@@ -21,33 +21,46 @@ public class TestController {
     //get all test
     @GetMapping("/list")
     public ResponseEntity<?> lsTest() {
-        List<Test> lsTest = testService.lsTest();
-        if (lsTest.isEmpty()) {
-            return new ResponseEntity<>(new ApiResponse(true, "Không có xét nghiệm nào hiện tại!"), HttpStatus.OK);
+        try {
+            List<Test> lsTest = testService.lsTest();
+            if (lsTest.isEmpty()) {
+                return new ResponseEntity<>(new ApiResponse(true, "Không có xét nghiệm nào hiện tại!"), HttpStatus.OK);
+            }
+            return new ResponseEntity<>(lsTest, HttpStatus.OK);
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+            return new ResponseEntity<>(new ApiResponse(false, "Hệ thống đang xử lý. Vui lòng tải lại!"), HttpStatus.OK);
         }
-        return new ResponseEntity<>(lsTest, HttpStatus.OK);
     }
 
     //get a test
     @GetMapping("/detail/{id}")
     public ResponseEntity<?> getTest(@PathVariable("id") int id) {
-        Optional<Test> getTest = testService.findTestByID(id);
-        if (!getTest.isPresent()) {
-            return new ResponseEntity<>(new ApiResponse(true, "Không có xét nghiệm nào"), HttpStatus.OK);
+        try {
+            Optional<Test> getTest = testService.findTestByID(id);
+            if (!getTest.isPresent()) {
+                return new ResponseEntity<>(new ApiResponse(true, "Không có xét nghiệm nào"), HttpStatus.OK);
+            }
+            return new ResponseEntity<>(getTest, HttpStatus.OK);
+        } catch (Exception ex) {
+            return new ResponseEntity<>(new ApiResponse(false, "Hệ thống đang xử lý. Vui lòng tải lại!"), HttpStatus.OK);
         }
-        return new ResponseEntity<>(getTest, HttpStatus.OK);
     }
 
     //create a test
     @PostMapping("/create")
     public ResponseEntity<?> createTest(@RequestBody Test test) {
-        List<Test> lsTest = testService.lsTest();
-        for (Test testTrack : lsTest) {
-            if (test.getTestID() == testTrack.getTestID())
-                return new ResponseEntity<>(new ApiResponse(false, "Mã xét nghiệm đã tồn tại!"), HttpStatus.OK);
+        try {
+            List<Test> lsTest = testService.lsTest();
+            for (Test testTrack : lsTest) {
+                if (test.getTestID() == testTrack.getTestID())
+                    return new ResponseEntity<>(new ApiResponse(false, "Mã xét nghiệm đã tồn tại!"), HttpStatus.OK);
+            }
+            testService.saveTest(test);
+            return new ResponseEntity<>(new ApiResponse(true, "Tạo thành công một mẫu xét nghiệm mới!"), HttpStatus.OK);
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+            return new ResponseEntity<>(new ApiResponse(false, "Hệ thống đang xử lý. Vui lòng tải lại!"), HttpStatus.OK);
         }
-        testService.saveTest(test);
-        return new ResponseEntity<>(new ApiResponse(true, "Tạo thành công một mẫu xét nghiệm mới!"), HttpStatus.OK);
     }
-
 }

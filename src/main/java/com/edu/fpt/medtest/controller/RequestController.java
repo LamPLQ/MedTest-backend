@@ -61,7 +61,6 @@ public class RequestController {
     @Autowired
     private NotificationService notificationService;
 
-
     @Autowired
     private RequestModelRepository requestModelRepository;
 
@@ -70,98 +69,98 @@ public class RequestController {
 
     @PostMapping("/create")
     public ResponseEntity<?> createNewRequest(@RequestBody RequestModelInput requestModelInput) {
-        //save request model
-        RequestModel requestModel = new RequestModel();
-        requestModel.setAddress(requestModelInput.getAddress());
-        requestModel.setMeetingTime(requestModelInput.getMeetingTime());
-        requestModel.setDistrictCode(requestModelInput.getDistrictCode());
-        requestModel.setTownCode(requestModelInput.getTownCode());
-        requestModel.setUserID(requestModelInput.getUserID());
-        requestModelRepository.save(requestModel);
-        ///===================
-        Request request = new Request();
-        String requestID;
-        do {
-            requestID = GetRandomString.getAlphaNumericStringUpper(6);
-        } while (requestRepository.existsByRequestID(requestID));
-        request.setRequestID(requestID);
-        request.setUserID(requestModel.getUserID());
-        request.setMeetingTime(requestModel.getMeetingTime());
-        request.setCreatedTime(requestModel.getCreatedTime());
-        request.setAddress(requestModel.getAddress());
-        request.setTownCode(requestModel.getTownCode());
-        request.setDistrictCode(requestModel.getDistrictCode());
-
-        //parse (String)testID into (Integer)testID and check if test available
-        List<String> selectedTests = requestModelInput.getSelectedTest();
-        int selectedTestID;
-        List<Integer> listSelectedTestID = new ArrayList<>();
-        if (selectedTests.size() == 0) {
-            return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy danh sách yêu cầu xét nghiệm!"), HttpStatus.OK);
-        }
-        for (String selectedTest : selectedTests) {
-            selectedTestID = Integer.parseInt(selectedTest);
-            boolean existedTest = testRepository.existsByTestID(selectedTestID);
-            if (existedTest == true) {
-                listSelectedTestID.add(selectedTestID);
-            } else {
-                return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy yêu cầu xét nghiệm!"), HttpStatus.OK);
+        try {
+            //save request model
+            RequestModel requestModel = new RequestModel();
+            requestModel.setAddress(requestModelInput.getAddress());
+            requestModel.setMeetingTime(requestModelInput.getMeetingTime());
+            requestModel.setDistrictCode(requestModelInput.getDistrictCode());
+            requestModel.setTownCode(requestModelInput.getTownCode());
+            requestModel.setUserID(requestModelInput.getUserID());
+            requestModelRepository.save(requestModel);
+            ///===================
+            Request request = new Request();
+            String requestID;
+            do {
+                requestID = GetRandomString.getAlphaNumericStringUpper(6);
+            } while (requestRepository.existsByRequestID(requestID));
+            request.setRequestID(requestID);
+            request.setUserID(requestModel.getUserID());
+            request.setMeetingTime(requestModel.getMeetingTime());
+            request.setCreatedTime(requestModel.getCreatedTime());
+            request.setAddress(requestModel.getAddress());
+            request.setTownCode(requestModel.getTownCode());
+            request.setDistrictCode(requestModel.getDistrictCode());
+            //parse (String)testID into (Integer)testID and check if test available
+            List<String> selectedTests = requestModelInput.getSelectedTest();
+            int selectedTestID;
+            List<Integer> listSelectedTestID = new ArrayList<>();
+            if (selectedTests.size() == 0) {
+                return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy danh sách yêu cầu xét nghiệm!"), HttpStatus.OK);
             }
+            for (String selectedTest : selectedTests) {
+                selectedTestID = Integer.parseInt(selectedTest);
+                boolean existedTest = testRepository.existsByTestID(selectedTestID);
+                if (existedTest == true) {
+                    listSelectedTestID.add(selectedTestID);
+                } else {
+                    return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy yêu cầu xét nghiệm!"), HttpStatus.OK);
+                }
+            }
+            //foreach available test, find and add tests by its ID
+            List<RequestTest> lsRequestTest = new ArrayList<>();
+            for (Integer selectingTestID : listSelectedTestID) {
+                requestRepository.save(request);
+                RequestTest requestTest = new RequestTest();
+                requestTest.setRequestID(request.getRequestID());
+                requestTest.setTestID(selectingTestID);
+                lsRequestTest.add(requestTest);
+            }
+            //System.out.println(lsRequestTest);
+            requestTestService.saveListRequestTest(lsRequestTest);
+            //get list chosen test
+            long testAmount = 0;
+            List<String> lsChosenTest = new ArrayList<>();
+            List<Integer> lsVersionOfTest = new ArrayList<>();
+            for (RequestTest requestTest : lsRequestTest) {
+                String chosenTest = String.valueOf(testRepository.findById(requestTest.getTestID()).get().getTestID());
+                testAmount += testRepository.findById(requestTest.getTestID()).get().getPrice();
+                lsChosenTest.add(chosenTest);
+                lsVersionOfTest.add(testRepository.getOne(requestTest.getTestID()).getVersionID());
+            }
+            //System.out.println(lsChosenTest);
+            System.out.println("ls Test Version " + lsVersionOfTest);
+            //return detail
+            DetailRequestModel detailRequestModel = new DetailRequestModel();
+            detailRequestModel.setRequestID(request.getRequestID());
+            detailRequestModel.setCustomerID(String.valueOf(userRepository.findById(request.getUserID()).get().getId()));
+            detailRequestModel.setCustomerName(userRepository.findById(request.getUserID()).get().getName());
+            detailRequestModel.setCustomerPhoneNumber(userRepository.findById(request.getUserID()).get().getPhoneNumber());
+            detailRequestModel.setCustomerDOB(userRepository.findById(request.getUserID()).get().getDob());
+            detailRequestModel.setRequestAddress(request.getAddress() + " " + townRepository.getOne(request.getTownCode()).getTownName()
+                    + " " + districtRepository.getOne(request.getDistrictCode()).getDistrictName());
+            detailRequestModel.setRequestTownID(request.getTownCode());
+            detailRequestModel.setRequestTownName(townRepository.getOne(request.getTownCode()).getTownName());
+            detailRequestModel.setRequestDistrictID(request.getDistrictCode());
+            detailRequestModel.setRequestDistrictName(districtRepository.getOne(request.getDistrictCode()).getDistrictName());
+            detailRequestModel.setRequestMeetingTime(request.getMeetingTime());
+            //=====================//
+            SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            String displayCreatedTest = sdf2.format(request.getCreatedTime());
+            String createdTime = displayCreatedTest.substring(0, 10) + "T" + displayCreatedTest.substring(11) + ".000+0000";
+            //=====================//
+            detailRequestModel.setRequestCreatedTime(createdTime);
+            detailRequestModel.setRequestStatus("pending");
+            detailRequestModel.setLsSelectedTest(lsChosenTest);
+            detailRequestModel.setRequestAmount(String.valueOf(testAmount));
+            detailRequestModel.setRequestNote("Just created!");
+            detailRequestModel.setVersionOfTest(lsVersionOfTest.get(0));
+            requestModelRepository.delete(requestModel);
+            return new ResponseEntity<>(detailRequestModel, HttpStatus.OK);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return new ResponseEntity<>(new ApiResponse(false, "Hệ thống đang xử lý. Vui lòng tải lại!"), HttpStatus.OK);
         }
-
-        //foreach available test, find and add tests by its ID
-        List<RequestTest> lsRequestTest = new ArrayList<>();
-        for (Integer selectingTestID : listSelectedTestID) {
-            requestRepository.save(request);
-            RequestTest requestTest = new RequestTest();
-            requestTest.setRequestID(request.getRequestID());
-            requestTest.setTestID(selectingTestID);
-            lsRequestTest.add(requestTest);
-        }
-        //System.out.println(lsRequestTest);
-        requestTestService.saveListRequestTest(lsRequestTest);
-
-        //get list chosen test
-        long testAmount = 0;
-        List<String> lsChosenTest = new ArrayList<>();
-        List<Integer> lsVersionOfTest = new ArrayList<>();
-        for (RequestTest requestTest : lsRequestTest) {
-            String chosenTest = String.valueOf(testRepository.findById(requestTest.getTestID()).get().getTestID());
-            testAmount += testRepository.findById(requestTest.getTestID()).get().getPrice();
-            lsChosenTest.add(chosenTest);
-            lsVersionOfTest.add(testRepository.getOne(requestTest.getTestID()).getVersionID());
-        }
-        //System.out.println(lsChosenTest);
-        System.out.println("ls Test Version " + lsVersionOfTest);
-
-        //return detail
-        DetailRequestModel detailRequestModel = new DetailRequestModel();
-        detailRequestModel.setRequestID(request.getRequestID());
-        detailRequestModel.setCustomerID(String.valueOf(userRepository.findById(request.getUserID()).get().getId()));
-        detailRequestModel.setCustomerName(userRepository.findById(request.getUserID()).get().getName());
-        detailRequestModel.setCustomerPhoneNumber(userRepository.findById(request.getUserID()).get().getPhoneNumber());
-        detailRequestModel.setCustomerDOB(userRepository.findById(request.getUserID()).get().getDob());
-        detailRequestModel.setRequestAddress(request.getAddress() + " " + townRepository.getOne(request.getTownCode()).getTownName()
-                + " " + districtRepository.getOne(request.getDistrictCode()).getDistrictName());
-        detailRequestModel.setRequestTownID(request.getTownCode());
-        detailRequestModel.setRequestTownName(townRepository.getOne(request.getTownCode()).getTownName());
-        detailRequestModel.setRequestDistrictID(request.getDistrictCode());
-        detailRequestModel.setRequestDistrictName(districtRepository.getOne(request.getDistrictCode()).getDistrictName());
-        detailRequestModel.setRequestMeetingTime(request.getMeetingTime());
-        //=====================//
-        SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        String displayCreatedTest = sdf2.format(request.getCreatedTime());
-        String createdTime = displayCreatedTest.substring(0, 10) + "T" + displayCreatedTest.substring(11) + ".000+0000";
-        //=====================//
-
-        detailRequestModel.setRequestCreatedTime(createdTime);
-        detailRequestModel.setRequestStatus("pending");
-        detailRequestModel.setLsSelectedTest(lsChosenTest);
-        detailRequestModel.setRequestAmount(String.valueOf(testAmount));
-        detailRequestModel.setRequestNote("Just created!");
-        detailRequestModel.setVersionOfTest(lsVersionOfTest.get(0));
-        requestModelRepository.delete(requestModel);
-        return new ResponseEntity<>(detailRequestModel, HttpStatus.OK);
     }
 
     /*@PostMapping("/create")
@@ -211,73 +210,79 @@ public class RequestController {
     @PostMapping("/update/{id}")
     public ResponseEntity<?> updateRequestStatus(@RequestBody RequestHistory requestHistory, @PathVariable("id") String ID) {
         try {
-        Request requestPresenting = requestService.getRequest(ID);
-        if (requestPresenting == null) {
-            return new ResponseEntity<>(new ApiResponse(false, "Không tìm thấy mã đơn xét nghiệm " + ID), HttpStatus.OK);
-        }
-        List<RequestHistory> listHistoryOfCurrentRequest = requestHistoryRepository.findByRequestIDOrderByCreatedTimeDesc(ID);
-        if(listHistoryOfCurrentRequest.isEmpty() || listHistoryOfCurrentRequest==null){
-            System.out.println("List empty, can update!");
-        }else {
-            String inputStatus = requestHistory.getStatus();
-            String currentStatus = listHistoryOfCurrentRequest.get(0).getStatus();
-            if(inputStatus.equals(currentStatus)){
-                return new ResponseEntity<>(new ApiResponse(false,"Đơn xét nghiệm đang được xử lý. Vui lòng tải lại!"), HttpStatus.OK);
+            Request requestPresenting = requestService.getRequest(ID);
+            if (requestPresenting == null) {
+                return new ResponseEntity<>(new ApiResponse(false, "Không tìm thấy mã đơn xét nghiệm " + ID), HttpStatus.OK);
             }
-        }
-        requestHistory.setRequestID(requestPresenting.getRequestID());
-        requestHistoryService.save(requestHistory);
-
-        Notification notification = new Notification();
-        notification.setUserID(requestPresenting.getUserID());
-        notification.setRequestID(ID);
-        notification.setAppointmentID("000001");
-        notification.setIsRead(0);
-        notification.setType("REQUEST");
-        //set message of notification
-        String status = requestHistory.getStatus();
-        switch (status) {
-            case "accepted":
-                notification.setMessage("Y tá " + userRepository.findById(requestHistory.getUserID()).get().getName() + " đã nhận đơn xét nghiệm mã ID = " + ID + ". Trạng thái đơn hiện tại: Đang đợi lấy mẫu.");
-                break;
-            case "transporting":
-                notification.setMessage("Y tá " + userRepository.findById(requestHistory.getUserID()).get().getName() + " đã hoàn thành lấy mẫu xét nghiệm mã ID = " + ID + ". Trạng thái đơn hiện tại: Đang vận chuyển.");
-                break;
-            case "waitingforresult":
-                notification.setMessage("Điều phối viên " + userRepository.findById(requestHistory.getUserID()).get().getName() + " đã tiếp nhận mẫu xét nghiệm mã ID = " + ID + ". Trạng thái đơn hiện tại: Đang đợi kết quả");
-                Notification notiForNurse = new Notification();
-                RequestHistory requestOfNurse = requestHistoryRepository.findAllByRequestIDOrderByCreatedTimeDesc(ID).get(1);
-                notiForNurse.setUserID(requestOfNurse.getUserID());
-                notiForNurse.setRequestID(requestOfNurse.getRequestID());
-                notiForNurse.setAppointmentID("000001");
-                notiForNurse.setIsRead(0);
-                notiForNurse.setType("REQUEST");
-                notiForNurse.setMessage("Điều phối viên " + userRepository.findById(requestHistory.getUserID()).get().getName() + " đã tiếp nhận mẫu xét nghiệm mã ID = " + ID + " từ y tá "
-                        + userRepository.findById(requestOfNurse.getUserID()).get().getName());
-                notificationService.saveNoti(notiForNurse);
-                break;
-            case "closed":
-                notification.setMessage("Đã hoàn thành kết quả cho mẫu xét nghiệm ID = " + ID + ". Trạng thái đơn hiện tại: Đã xong.");
-                break;
-            case "canceled":
-                notification.setMessage("Khách hàng " + userRepository.findById(requestHistory.getUserID()).get().getName() + " đã huỷ đơn xét nghiệm có ID = " + ID + ". Trạng thái đơn hiện tại: Đã huỷ.");
-                break;
-            case "pending":
-                notification.setMessage("Mẫu xét nghiệm mã ID = " + ID + " đang đợi y tá nhận đơn. Trạng thái đơn hiện tại: Đang đợi y tá nhận đơn.");
-                break;
-            case "lostsample":
-                notification.setMessage("Mẫu xét nghiệm mã ID = " + ID + " sẽ được lấy lại do lỗi từ y tá " + userRepository.findById(requestHistory.getUserID()).get().getName()
-                        + ". Chân thành xin lỗi quý khách! Trạng thái đơn hiện tại: Đang đợi lấy lại mẫu.");
-                break;
-            case "coordinatorlostsample":
-                notification.setMessage("Mẫu xét nghiệm mã ID = " + ID + " sẽ được lấy lại do sơ xuất của điều phối viên. Chân thành xin lỗi quý khách! Trạng thái đơn hiện tại: Đang đợi y tá nhận đơn.");
-                break;
-        }
-        //
-        notificationService.saveNoti(notification);
-        return new ResponseEntity<>(requestHistory, HttpStatus.OK);
-        }catch (Exception exception){
-            return new ResponseEntity<>(new ApiResponse(false,"Hệ thống đang xử lý! Vui lòng kiểm tra lại!"), HttpStatus.OK);
+            List<RequestHistory> listHistoryOfCurrentRequest = requestHistoryRepository.findByRequestIDOrderByCreatedTimeDesc(ID);
+            if (listHistoryOfCurrentRequest.isEmpty() || listHistoryOfCurrentRequest == null) {
+                System.out.println("List empty, can update!");
+            } else {
+                String inputStatus = requestHistory.getStatus();
+                String currentStatus = listHistoryOfCurrentRequest.get(0).getStatus();
+                if (inputStatus.equals(currentStatus)) {
+                    return new ResponseEntity<>(new ApiResponse(false, "Đơn xét nghiệm đang được xử lý. Vui lòng tải lại!"), HttpStatus.OK);
+                }
+            }
+            requestHistory.setRequestID(requestPresenting.getRequestID());
+            requestHistoryService.save(requestHistory);
+            //
+            Notification notification = new Notification();
+            notification.setUserID(requestPresenting.getUserID());
+            notification.setRequestID(ID);
+            notification.setAppointmentID("000000");
+            notification.setIsRead(0);
+            notification.setType("REQUEST");
+            //set message of notification
+            String status = requestHistory.getStatus();
+            switch (status) {
+                case "accepted":
+                    notification.setMessage("Y tá " + userRepository.findById(requestHistory.getUserID()).get().getName() + " đã nhận đơn xét nghiệm mã " + ID + ". Trạng thái đơn hiện tại: Đang đợi lấy mẫu.");
+                    break;
+                case "transporting":
+                    notification.setMessage("Y tá " + userRepository.findById(requestHistory.getUserID()).get().getName() + " đã hoàn thành lấy mẫu xét nghiệm mã " + ID + ". Trạng thái đơn hiện tại: Đang vận chuyển.");
+                    break;
+                case "waitingforresult":
+                    notification.setMessage("Điều phối viên " + userRepository.findById(requestHistory.getUserID()).get().getName() + " đã tiếp nhận mẫu xét nghiệm mã " + ID + ". Trạng thái đơn hiện tại: Đang đợi kết quả");
+                    Notification notiForNurse = new Notification();
+                    RequestHistory requestOfNurse = requestHistoryRepository.findAllByRequestIDOrderByCreatedTimeDesc(ID).get(1);
+                    notiForNurse.setUserID(requestOfNurse.getUserID());
+                    notiForNurse.setRequestID(requestOfNurse.getRequestID());
+                    notiForNurse.setAppointmentID("000000");
+                    notiForNurse.setIsRead(0);
+                    notiForNurse.setType("REQUEST");
+                    notiForNurse.setMessage("Điều phối viên " + userRepository.findById(requestHistory.getUserID()).get().getName() + " đã tiếp nhận mẫu xét nghiệm mã " + ID + " từ y tá "
+                            + userRepository.findById(requestOfNurse.getUserID()).get().getName());
+                    notificationService.saveNoti(notiForNurse);
+                    break;
+                case "closed":
+                    notification.setMessage("Đã hoàn thành kết quả cho mẫu xét nghiệm mã " + ID + ". Trạng thái đơn hiện tại: Đã xong.");
+                    break;
+                case "canceled":
+                    notification.setMessage("Khách hàng " + userRepository.findById(requestHistory.getUserID()).get().getName() + " đã huỷ đơn xét nghiệm có mã " + ID + ". Trạng thái đơn hiện tại: Đã huỷ.");
+                    break;
+                case "pending":
+                    notification.setMessage("Mẫu xét nghiệm mã " + ID + " đang đợi y tá nhận đơn. Trạng thái đơn hiện tại: Đang đợi y tá nhận đơn.");
+                    break;
+                case "lostsample":
+                    notification.setMessage("Mẫu xét nghiệm mã " + ID + " sẽ được lấy lại do lỗi từ y tá " + userRepository.findById(requestHistory.getUserID()).get().getName()
+                            + ". Chân thành xin lỗi quý khách! Trạng thái đơn hiện tại: Đang đợi lấy lại mẫu mất do y tá.");
+                    break;
+                case "coordinatorlostsample":
+                    notification.setMessage("Mẫu xét nghiệm mã " + ID + " sẽ được lấy lại do sơ xuất của điều phối viên. Chân thành xin lỗi quý khách! Trạng thái đơn hiện tại: Đang đợi y tá nhận đơn.");
+                    break;
+                case "reaccepted":
+                    notification.setMessage("Y tá " + userRepository.findById(requestHistory.getUserID()).get().getName() + " đã nhận lấy lại đơn mã " + ID + ". Trạng thái đơn hiện tại: Đã nhận lấy lại mẫu mất do điều phối viên.");
+                    break;
+                case "retransporting":
+                    notification.setMessage("Y tá " + userRepository.findById(requestHistory.getUserID()).get().getName() + " đã hoàn thành lấy lại mẫu xét nghiệm mã " + ID + ". Trạng thái đơn hiện tại: Đang vận chuyển mẫu lấy lại.");
+                    break;
+            }
+            //
+            notificationService.saveNoti(notification);
+            return new ResponseEntity<>(requestHistory, HttpStatus.OK);
+        } catch (Exception exception) {
+            return new ResponseEntity<>(new ApiResponse(false, "Hệ thống đang xử lý! Vui lòng kiểm tra lại!"), HttpStatus.OK);
         }
     }
 
@@ -511,7 +516,7 @@ public class RequestController {
             return new ResponseEntity<>(detailRequestModel, HttpStatus.OK);
         } catch (Exception exception) {
             System.out.println(exception.getMessage());
-            return new ResponseEntity<>(new ApiResponse(false,"Hệ thống đang xử lý. Vui lòng tải lại!"),HttpStatus.OK);
+            return new ResponseEntity<>(new ApiResponse(false, "Hệ thống đang xử lý. Vui lòng tải lại!"), HttpStatus.OK);
         }
     }
 
@@ -668,55 +673,65 @@ public class RequestController {
                 return new ResponseEntity<>(new ApiResponse(false, "Hiện tại chưa có đơn xét nghiệm nào!"), HttpStatus.OK);
             }
             return new ResponseEntity<>(returnList, HttpStatus.OK);
-        }catch (Exception exception){
+        } catch (Exception exception) {
             System.out.println(exception);
             return new ResponseEntity<>(new ApiResponse(false, "Hệ thống đang xử lý. Vui lòng tải lại!"), HttpStatus.OK);
         }
     }
+
     //get list result of a request
     @GetMapping("/detail/{id}/result")
     public ResponseEntity<?> getListResult(@PathVariable("id") String requestID) {
-        //Optional<Request> request = requestRepository.findById(requestID);
-        Request request = requestService.getRequest(requestID);
-        if (request == null) {
-            return new ResponseEntity<>(new ApiResponse(true, "Không tồn tại yêu cầu xét nghiệm với mã ID = " + requestID), HttpStatus.OK);
+        try {
+            //Optional<Request> request = requestRepository.findById(requestID);
+            Request request = requestService.getRequest(requestID);
+            if (request == null) {
+                return new ResponseEntity<>(new ApiResponse(true, "Không tồn tại yêu cầu xét nghiệm với mã ID = " + requestID), HttpStatus.OK);
+            }
+            List<Result> lsResult = resultService.lsResultByRequestID(requestID);
+            if (lsResult.isEmpty()) {
+                return new ResponseEntity<>(new ApiResponse(true, "Chưa có kết quả cho yêu cầu xét nghiệm này!"), HttpStatus.OK);
+            }
+            return new ResponseEntity<>(lsResult, HttpStatus.OK);
+        } catch (Exception ex) {
+            return new ResponseEntity<>(new ApiResponse(false, "Hệ thống đang xử lý. Vui lòng tải lại!"), HttpStatus.OK);
         }
-        List<Result> lsResult = resultService.lsResultByRequestID(requestID);
-        if (lsResult.isEmpty()) {
-            return new ResponseEntity<>(new ApiResponse(true, "Chưa có kết quả cho yêu cầu xét nghiệm này!"), HttpStatus.OK);
-        }
-        return new ResponseEntity<>(lsResult, HttpStatus.OK);
     }
 
     //update result for a request
     @PostMapping("/detail/results/add")
     public ResponseEntity updateResultOfRequest(@RequestBody ResultModel resultModel) {
-        List<String> lsImage = resultModel.getListImage();
-        List<Result> lsCreatedResult = new ArrayList<>();
-        for(String image:lsImage){
-            Result result = new Result();
-            result.setImage(image);
-            result.setRequestID(resultModel.getRequestID());
-            result.setUserID(resultModel.getUserID());
-            resultService.saveResult(result);
-            lsCreatedResult.add(result);
+        try {
+            List<String> lsImage = resultModel.getListImage();
+            List<Result> lsCreatedResult = new ArrayList<>();
+            for (String image : lsImage) {
+                Result result = new Result();
+                result.setImage(image);
+                result.setRequestID(resultModel.getRequestID());
+                result.setUserID(resultModel.getUserID());
+                resultService.saveResult(result);
+                lsCreatedResult.add(result);
+            }
+            List<ReturnResult> lsReturnRequest = new ArrayList<>();
+            //=====================//
+            SimpleDateFormat sdf3 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            for (Result result : lsCreatedResult) {
+                String displayCreatedTest = sdf3.format(result.getCreatedTime());
+                String createdTime3 = displayCreatedTest.substring(0, 10) + "T" + displayCreatedTest.substring(11) + ".000+0000";
+                ReturnResult returnResult = new ReturnResult();
+                returnResult.setResultID(result.getResultID());
+                returnResult.setCreatedTime(createdTime3);
+                returnResult.setUserID(result.getUserID());
+                returnResult.setRequestID(result.getRequestID());
+                returnResult.setImage(result.getImage());
+                lsReturnRequest.add(returnResult);
+            }
+            //=====================//
+            return new ResponseEntity(lsReturnRequest, HttpStatus.OK);
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+            return new ResponseEntity<>(new ApiResponse(false, "Hệ thống đang xử lý. Vui lòng tải lại!"), HttpStatus.OK);
         }
-        List<ReturnResult> lsReturnRequest = new ArrayList<>();
-        //=====================//
-        SimpleDateFormat sdf3 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        for(Result result: lsCreatedResult){
-            String displayCreatedTest = sdf3.format(result.getCreatedTime());
-            String createdTime3 = displayCreatedTest.substring(0, 10) + "T" + displayCreatedTest.substring(11) + ".000+0000";
-            ReturnResult returnResult = new ReturnResult();
-            returnResult.setResultID(result.getResultID());
-            returnResult.setCreatedTime(createdTime3);
-            returnResult.setUserID(result.getUserID());
-            returnResult.setRequestID(result.getRequestID());
-            returnResult.setImage(result.getImage());
-            lsReturnRequest.add(returnResult);
-        }
-        //=====================//
-        return new ResponseEntity(lsReturnRequest, HttpStatus.OK);
     }
 
 }
