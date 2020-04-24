@@ -400,7 +400,7 @@ public class NurseController {
     }
 
     //Screen "Đơn đang nhận"
-    //status = {accepted, lostsample, transporting, reaccepted, retransporting }
+    //status = {accepted, lostsample, transporting, reaccepted, retransporting, relostsample }
     @GetMapping("{id}/list/handling")
     public ResponseEntity<?> lsHandling(@PathVariable("id") int nurseID) {
         try {
@@ -430,7 +430,8 @@ public class NurseController {
                         (request.getUserID() == nurseID && (request.getStatus().equals("lostsample"))) ||
                         (request.getUserID() == nurseID && (request.getStatus().equals("transporting"))) ||
                         (request.getUserID() == nurseID && (request.getStatus().equals("reaccepted"))) ||       //đã nhận đơn bị mất do điều phối viên
-                        (request.getUserID() == nurseID && (request.getStatus().equals("retransporting")))) {   //đang vận chuyển đơn bị mất do điều phối viên
+                        (request.getUserID() == nurseID && (request.getStatus().equals("retransporting"))) ||   //đang vận chuyển đơn bị mất do điều phối viên
+                        (request.getUserID() == nurseID && (request.getStatus().equals("relostsample")))) {    //đang chờ y tá lấy lại mẫu của đơn bị mất do điều phối viên
                     DetailRequestModel detail = new DetailRequestModel();
                     //requestID
                     detail.setRequestID(request.getRequestID());

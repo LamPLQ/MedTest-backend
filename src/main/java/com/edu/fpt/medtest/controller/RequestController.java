@@ -277,6 +277,11 @@ public class RequestController {
                 case "retransporting":
                     notification.setMessage("Y tá " + userRepository.findById(requestHistory.getUserID()).get().getName() + " đã hoàn thành lấy lại mẫu xét nghiệm mã " + ID + ". Trạng thái đơn hiện tại: Đang vận chuyển mẫu lấy lại.");
                     break;
+                case "relostsample":
+                    notification.setMessage("Y tá " + userRepository.findById(requestHistory.getUserID()).get().getName() + " đã hoàn thành lấy lại mẫu xét nghiệm mã " + ID + ". Trạng thái đơn hiện tại: Đang vận chuyển mẫu lấy lại.");
+                    notification.setMessage("Mẫu xét nghiệm mã " + ID + " sẽ được lấy lại do lỗi từ y tá " + userRepository.findById(requestHistory.getUserID()).get().getName()
+                    + ". Chân thành xin lỗi quý khách! Trạng thái đơn hiện tại: Đang đợi lấy lại mẫu mất do điều phối viên làm mất.");
+                    break;
             }
             //
             notificationService.saveNoti(notification);
