@@ -272,7 +272,7 @@ public class UserController {
             }
             if (checkValidPhoneToken.get().getExpiredTime() <= System.currentTimeMillis()) {
                 //tokenRepository.delete(tokenRepository.getOne(checkValidPhoneToken.get().getSessionID()));
-                return new ResponseEntity<>(new CheckOTPResponse(true, "Mã OTP hết hạn!", false, true), HttpStatus.OK);
+                return new ResponseEntity<>(new CheckOTPResponse(true, "Mã OTP hết hạn!", false, false), HttpStatus.OK);
             }
         /*boolean emailExist = checkEmailExist.isAddressValid(checkOTPModel.getEmail());
         if(emailExist==false){
