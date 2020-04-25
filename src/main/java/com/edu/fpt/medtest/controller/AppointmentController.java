@@ -194,7 +194,7 @@ public class AppointmentController {
             if (appointmentExecuting == null) {
                 return new ResponseEntity<>(new ApiResponse(false, "Không tìm thấy cuộc hẹn!"), HttpStatus.OK);
             }
-            if (appointmentExecuting.getStatus().equals("canceled")) {
+            if (appointmentExecuting.getStatus().equals("canceled") || appointmentExecuting.getStatus().equals("rejected")) {
                 return new ResponseEntity<>(new ApiResponse(false, "Cuộc hẹn đã bị huỷ!"), HttpStatus.OK);
             }
             appointment.setID(id);
