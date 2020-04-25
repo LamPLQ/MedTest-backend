@@ -72,7 +72,8 @@ public class TestVersionController {
     public ResponseEntity<?> upGradeVersion(@RequestBody UpgradeVersionModel upgradeVersionModel) {
         try {
             Optional<User> accessCoor = userRepository.getUserByIdAndRole(upgradeVersionModel.getCreatorID(), "COORDINATOR");
-            if (!accessCoor.isPresent()) {
+            Optional<User> accessAdmin = userRepository.getUserByIdAndRole(upgradeVersionModel.getCreatorID(), "ADMIN");
+            if (!accessCoor.isPresent() && !accessAdmin.isPresent()) {
                 return new ResponseEntity<>(new ApiResponse(true, "Người dùng không có quyền đăng nhập vào tính năng này"), HttpStatus.OK);
             }
             //create a new version
