@@ -21,6 +21,8 @@ public interface UserService {
 
     void updateContainImage(User user);
 
+    void updateImageProfile(User user);
+
     List<User> lsUserActive();
 
     List<User> lsUserNotActive();

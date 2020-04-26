@@ -77,6 +77,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public void updateImageProfile(User user) {
+        User userByID = userRepository.findById(user.getId()).get();
+        userByID.setImage(user.getImage());
+        userRepository.save(userByID);
+    }
+
+    @Override
     public List<User> lsUserActive() {
         List<User> lsUserActive = userRepository.findAllByActive(1);
         return lsUserActive;

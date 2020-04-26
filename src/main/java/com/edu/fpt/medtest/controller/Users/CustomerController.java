@@ -414,4 +414,21 @@ public class CustomerController {
             return new ResponseEntity<>(new ApiResponse(false, "Hệ thống đang xử lý. Vui lòng tải lại!"), HttpStatus.OK);
         }
     }
+
+    //uploadImage
+    @PostMapping("/detail/uploadImageProfile/{id}")
+    public ResponseEntity<?> uploadImageProfile(@RequestBody User customer, @PathVariable("id") int id){
+        try {
+            Optional<User> getCustomer = userService.getUserByID(id);
+            if (!getCustomer.isPresent()) {
+                return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy người dùng!"), HttpStatus.OK);
+            }
+            customer.setId(id);
+            userService.updateImageProfile(customer);
+            return new ResponseEntity<>(getCustomer, HttpStatus.OK);
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+            return new ResponseEntity<>(new ApiResponse(false, "Hệ thống đang xử lý. Vui lòng tải lại!"), HttpStatus.OK);
+        }
+    }
 }
