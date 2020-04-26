@@ -23,8 +23,17 @@ public class DetailRequestModel {
     private String coordinatorName;
     private String requestAmount;
     private String requestNote;
+    private String requestUpdatedTime;
     private int versionOfTest;
     private List<String> lsSelectedTest;
+
+    public String getRequestUpdatedTime() {
+        return requestUpdatedTime;
+    }
+
+    public void setRequestUpdatedTime(String requestUpdatedTime) {
+        this.requestUpdatedTime = requestUpdatedTime;
+    }
 
     public int getVersionOfTest() { return versionOfTest;}
 

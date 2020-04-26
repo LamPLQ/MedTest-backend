@@ -155,6 +155,7 @@ public class RequestController {
             detailRequestModel.setRequestAmount(String.valueOf(testAmount));
             detailRequestModel.setRequestNote("Just created!");
             detailRequestModel.setVersionOfTest(lsVersionOfTest.get(0));
+            detailRequestModel.setRequestUpdatedTime(createdTime);
             requestModelRepository.delete(requestModel);
             return new ResponseEntity<>(detailRequestModel, HttpStatus.OK);
         } catch (Exception e) {
@@ -337,6 +338,7 @@ public class RequestController {
                 detailRequestModel.setCoordinatorID("Chưa có điều phối viên xử lý!");
                 detailRequestModel.setCoordinatorName("Chưa có điều phối viên xử lý!");
                 detailRequestModel.setRequestStatus("pending"); //status
+                detailRequestModel.setRequestUpdatedTime(createdTime3);
                 //set list selected test
                 List<RequestTest> lsRequestTests = requestTestRepository.getAllByRequestID(requestId);
                 List<String> lsTestID = new ArrayList<>();
@@ -431,6 +433,12 @@ public class RequestController {
                     //get coordinator name
                     detailRequestModel.setCoordinatorName(userRepository.findById(getListRequestAcceptedCoordinator.get(0).getUserID()).get().getName());
                 }
+                //=====================//
+                SimpleDateFormat sdf10 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                String displayCreatedTest10 = sdf10.format(lsStatusRequest.get(0).getCreatedTime());
+                String createdTime10 = displayCreatedTest10.substring(0, 10) + "T" + displayCreatedTest10.substring(11) + ".000+0000";
+                //=====================//
+                detailRequestModel.setRequestUpdatedTime(createdTime10);
 
                 //Request nowRequest = requestRepository.getOne(requestHistory.getRequestID());
                 Request nowRequest = requestService.getRequest(requestHistory.getRequestID());
@@ -454,6 +462,7 @@ public class RequestController {
                 //=====================//
 
                 detailRequestModel.setRequestCreatedTime(createdTime5);
+
                 // get list test
                 List<RequestTest> lsRequestTests = requestTestRepository.getAllByRequestID(nowRequest.getRequestID());
                 List<String> lsTestID = new ArrayList<>();
@@ -567,6 +576,7 @@ public class RequestController {
                     //=====================//
 
                     detailRequestModel.setRequestCreatedTime(createdTimesdk); //created time
+                    detailRequestModel.setRequestUpdatedTime(createdTimesdk);
                     detailRequestModel.setNurseID("Chưa có y tá nhận!");
                     detailRequestModel.setNurseName("Chưa có y tá nhận!");
                     detailRequestModel.setCoordinatorID("Chưa có điều phối viên xử lý!");
@@ -626,6 +636,12 @@ public class RequestController {
                         //get coordinator name
                         detailRequestModel.setCoordinatorName(userRepository.findById(getListRequestAcceptedCoordinator.get(0).getUserID()).get().getName());
                     }
+                    //=====================//
+                    SimpleDateFormat sdf69 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                    String displayCreatedTest69 = sdf69.format(getListRequestAcceptedCoordinator.get(0).getCreatedTime());
+                    String createdTime69 = displayCreatedTest69.substring(0, 10) + "T" + displayCreatedTest69.substring(11) + ".000+0000";
+                    //=====================//
+                    detailRequestModel.setRequestUpdatedTime(createdTime69);
 
                     //Request nowRequest = requestRepository.getOne(requestHistory.getRequestID());
                     Request nowRequest = requestService.getRequest(requestHistory.getRequestID());

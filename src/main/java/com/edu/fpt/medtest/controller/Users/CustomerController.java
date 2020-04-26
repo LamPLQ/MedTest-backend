@@ -296,6 +296,7 @@ public class CustomerController {
                     String createdTime = displayCreatedTest.substring(0, 10) + "T" + displayCreatedTest.substring(11) + ".000+0000";
                     //=====================//
                     detailRequestModel.setRequestCreatedTime(createdTime); //created time
+                    detailRequestModel.setRequestUpdatedTime(createdTime);
                     detailRequestModel.setNurseID("Chưa có y tá nhận!");
                     detailRequestModel.setNurseName("Chưa có y tá nhận!");
                     detailRequestModel.setCoordinatorID("Chưa có điều phối viên xử lý!");
@@ -357,6 +358,12 @@ public class CustomerController {
                         //get coordinator name
                         detailRequestModel.setCoordinatorName(userRepository.findById(getListRequestAcceptedCoordinator.get(0).getUserID()).get().getName());
                     }
+                    //=====================//
+                    SimpleDateFormat sdf39 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                    String displayCreatedTest39 = sdf39.format(getListRequestAcceptedCoordinator.get(0).getCreatedTime());
+                    String createdTime39 = displayCreatedTest39.substring(0, 10) + "T" + displayCreatedTest39.substring(11) + ".000+0000";
+                    //=====================//
+                    detailRequestModel.setRequestUpdatedTime(createdTime39);
 
                     //Request nowRequest = requestRepository.getOne(requestHistory.getRequestID());
                     Request nowRequest = requestService.getRequest(requestHistory.getRequestID());

@@ -117,7 +117,7 @@ public class ArticleController {
     }
 
     //delete 1 article
-    @DeleteMapping(value = "/delete/{id}")
+    @PostMapping(value = "/delete/{id}")
     public ResponseEntity deleteArticle(@PathVariable("id") int id) {
         try {
             Optional<Article> getArticle = articleService.getArticle(id);
