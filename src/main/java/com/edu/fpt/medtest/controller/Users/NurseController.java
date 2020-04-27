@@ -557,7 +557,10 @@ public class NurseController {
                 }
             }
             for (RequestHistory request : lsLastStatus) {
-                if (request.getStatus().equals("closed") || request.getStatus().equals("waitingforresult") || request.getStatus().equals("coordinatorlostsample")) {
+                if (request.getStatus().equals("closed") ||
+                    request.getStatus().equals("waitingforresult") ||
+                    request.getStatus().equals("coordinatorlostsample") ||
+                    request.getStatus().equals("canceled")) {
                     //list of "accepted" status with each request history
                     boolean existByRequestIDAndStatusAccepted = requestHistoryRepository.existsByRequestIDAndStatusAndUserID(request.getRequestID(), "accepted", nurseID);
                     System.out.println("Test" + request.getRequestID());
@@ -604,8 +607,16 @@ public class NurseController {
 
                             cancelAfterAccept.setNurseID(String.valueOf(nurseID));
                             cancelAfterAccept.setNurseName(userRepository.findById(nurseID).get().getName());
-                            cancelAfterAccept.setCoordinatorID("Chưa có điều phối viên nhận");
-                            cancelAfterAccept.setCoordinatorName("Chưa có điều phối viên nhận");
+                            List<RequestHistory> lsStatusAferCancelWaiting = requestHistoryRepository.findByRequestIDAndStatus(request.getRequestID(),"waitingforresult");
+                            List<RequestHistory> lsStatusAfterCancelClosed = requestHistoryRepository.findByRequestIDAndStatus(request.getRequestID(), "closed");
+                            List<RequestHistory> lsStatusAfterCancelLostSample = requestHistoryRepository.findByRequestIDAndStatus(request.getRequestID(),"coordinatorlostsample");
+                            if(lsStatusAfterCancelLostSample.isEmpty() && lsStatusAfterCancelClosed.isEmpty() && lsStatusAferCancelWaiting.isEmpty()){
+                                cancelAfterAccept.setCoordinatorID("Chưa có điều phối viên nhận");
+                                cancelAfterAccept.setCoordinatorName("Chưa có điều phối viên nhận");
+                            }else{
+                                cancelAfterAccept.setCoordinatorID(String.valueOf(request.getUserID()));
+                                cancelAfterAccept.setCoordinatorName(userRepository.findById(request.getUserID()).get().getName());
+                            }
                             cancelAfterAccept.setRequestStatus(request.getStatus());
                             cancelAfterAccept.setRequestNote(request.getNote());
                             //=====================//
