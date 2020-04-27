@@ -435,7 +435,7 @@ public class RequestController {
                 }
                 //=====================//
                 SimpleDateFormat sdf10 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                String displayCreatedTest10 = sdf10.format(lsStatusRequest.get(0).getCreatedTime());
+                String displayCreatedTest10 = sdf10.format(requestHistory.getCreatedTime());
                 String createdTime10 = displayCreatedTest10.substring(0, 10) + "T" + displayCreatedTest10.substring(11) + ".000+0000";
                 //=====================//
                 detailRequestModel.setRequestUpdatedTime(createdTime10);
@@ -638,7 +638,7 @@ public class RequestController {
                     }
                     //=====================//
                     SimpleDateFormat sdf69 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                    String displayCreatedTest69 = sdf69.format(getListRequestAcceptedCoordinator.get(0).getCreatedTime());
+                    String displayCreatedTest69 = sdf69.format(requestHistory.getCreatedTime());
                     String createdTime69 = displayCreatedTest69.substring(0, 10) + "T" + displayCreatedTest69.substring(11) + ".000+0000";
                     //=====================//
                     detailRequestModel.setRequestUpdatedTime(createdTime69);
@@ -695,7 +695,7 @@ public class RequestController {
             }
             return new ResponseEntity<>(returnList, HttpStatus.OK);
         } catch (Exception exception) {
-            System.out.println(exception);
+            exception.printStackTrace();
             return new ResponseEntity<>(new ApiResponse(false, "Hệ thống đang xử lý. Vui lòng tải lại!"), HttpStatus.OK);
         }
     }

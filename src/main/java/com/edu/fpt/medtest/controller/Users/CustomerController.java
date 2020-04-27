@@ -360,7 +360,7 @@ public class CustomerController {
                     }
                     //=====================//
                     SimpleDateFormat sdf39 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                    String displayCreatedTest39 = sdf39.format(getListRequestAcceptedCoordinator.get(0).getCreatedTime());
+                    String displayCreatedTest39 = sdf39.format(requestHistory.getCreatedTime());
                     String createdTime39 = displayCreatedTest39.substring(0, 10) + "T" + displayCreatedTest39.substring(11) + ".000+0000";
                     //=====================//
                     detailRequestModel.setRequestUpdatedTime(createdTime39);
