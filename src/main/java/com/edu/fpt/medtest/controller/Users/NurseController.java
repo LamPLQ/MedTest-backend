@@ -531,7 +531,7 @@ public class NurseController {
     }
 
     //Screen "Lịch sử nhận đơn"
-    //status = {closed, waitingforresult }
+    //status = {closed, waitingforresult, coordinatorlostsample }
     @GetMapping("{id}/list/request-completed")
     public ResponseEntity<?> lsCompleted(@PathVariable("id") int nurseID) {
         try {
@@ -557,7 +557,7 @@ public class NurseController {
                 }
             }
             for (RequestHistory request : lsLastStatus) {
-                if (request.getStatus().equals("closed") || request.getStatus().equals("waitingforresult")) {
+                if (request.getStatus().equals("closed") || request.getStatus().equals("waitingforresult") || request.getStatus().equals("coordinatorlostsample")) {
                     //list of "accepted" status with each request history
                     boolean existByRequestIDAndStatusAccepted = requestHistoryRepository.existsByRequestIDAndStatusAndUserID(request.getRequestID(), "accepted", nurseID);
                     System.out.println("Test" + request.getRequestID());
