@@ -164,6 +164,9 @@ public class AppointmentController {
     public ResponseEntity<?> updateAppointment(@RequestBody Appointment appointment, @PathVariable("id") String id) {
         try {
             Appointment appointmentExecuting = appointmentService.getAppointmentByID(id);
+            if(appointmentExecuting.getStatus().equals(appointment.getStatus())){
+                return new ResponseEntity<>(new ApiResponse(false,"Cuộc hẹn đã ở trạng thái bị huỷ!"), HttpStatus.OK);
+            }
             if (appointmentExecuting == null) {
                 return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy cuộc hẹn!"), HttpStatus.OK);
             }
@@ -194,6 +197,9 @@ public class AppointmentController {
     public ResponseEntity<?> updateAppointmentByCoordinator(@RequestBody Appointment appointment, @PathVariable("id") String id) {
         try {
             Appointment appointmentExecuting = appointmentService.getAppointmentByID(id);
+            if(appointmentExecuting.getStatus().equals(appointment.getStatus())){
+                return new ResponseEntity<>(new ApiResponse(false,"Cuộc hẹn đã ở trạng thái đã nhận!"), HttpStatus.OK);
+            }
             if (appointmentExecuting == null) {
                 return new ResponseEntity<>(new ApiResponse(false, "Không tìm thấy cuộc hẹn!"), HttpStatus.OK);
             }
@@ -226,6 +232,9 @@ public class AppointmentController {
         try {
             //Optional<Appointment> getAppointment = appointmentService.getAppointmentByID(id);
             Appointment appointmentExecuting = appointmentService.getAppointmentByID(id);
+            if(appointmentExecuting.getStatus().equals(appointment.getStatus())){
+                return new ResponseEntity<>(new ApiResponse(false,"Cuộc hẹn đã ở trạng thái bị từ chối!"), HttpStatus.OK);
+            }
             if (appointmentExecuting == null) {
                 return new ResponseEntity<>(new ApiResponse(false, "Không tìm thấy cuộc hẹn!"), HttpStatus.OK);
             }
