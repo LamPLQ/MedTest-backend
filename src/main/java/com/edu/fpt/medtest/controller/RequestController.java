@@ -70,6 +70,10 @@ public class RequestController {
     @PostMapping("/create")
     public ResponseEntity<?> createNewRequest(@RequestBody RequestModelInput requestModelInput) {
         try {
+            if(requestModelInput.getUserID() == 0 || requestModelInput.getMeetingTime().toString().isEmpty() || requestModelInput.getAddress().isEmpty() || requestModelInput.getTownCode().isEmpty()
+            || requestModelInput.getDistrictCode().isEmpty() || requestModelInput.getSelectedTest().isEmpty()){
+                return new ResponseEntity<>(new ApiResponse(false,"Thông tin để tạo yêu cầu xét nghiệm mới chưa đủ"), HttpStatus.OK);
+            }
             //save request model
             RequestModel requestModel = new RequestModel();
             requestModel.setAddress(requestModelInput.getAddress());

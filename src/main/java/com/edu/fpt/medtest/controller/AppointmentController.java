@@ -83,6 +83,9 @@ public class AppointmentController {
     @PostMapping("/create")
     public ResponseEntity<?> createNewAppointment(@RequestBody Appointment appointment) {
         try {
+            if (appointment.getMeetingTime().toString().isEmpty() || appointment.getCustomerID() == 0) {
+                return new ResponseEntity<>(new ApiResponse(false, "Người dùng cần nhập đủ thông tin trước khi tạo cuộc hẹn mới!"), HttpStatus.OK);
+            }
             Optional<User> userCreateAppointment = userRepository.getUserByIdAndRole(appointment.getCustomerID(), "CUSTOMER");
             if (!userCreateAppointment.isPresent()) {
                 return new ResponseEntity<>(new ApiResponse(true, "Người dùng không được phép truy cập tính năng này"), HttpStatus.OK);

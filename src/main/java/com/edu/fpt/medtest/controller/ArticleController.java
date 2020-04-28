@@ -62,6 +62,9 @@ public class ArticleController {
     @PostMapping("/create")
     public ResponseEntity<?> createArticle(@RequestBody Article article) {
         try {
+            if(article.getUserID()==0 || article.getContent().isEmpty() || article.getShortContent().isEmpty() || article.getTittle().isEmpty()){
+                return new ResponseEntity<>(new ApiResponse(false,"Cần điền đầy đủ các trường trước khi tạo bài viết mới!"), HttpStatus.OK);
+            }
             articleService.saveArticle(article);
             return new ResponseEntity<>(new ApiResponse(true, "Tạo thành công 1 bài viết mới!"), HttpStatus.OK);
         } catch (Exception e) {

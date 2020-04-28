@@ -240,6 +240,9 @@ public class UserController {
     @PostMapping("/send-otp")
     public ResponseEntity<?> sendSmS(@Valid @RequestBody SmsRequest smsRequest) {
         try {
+            if(smsRequest.getPhoneNumber().isEmpty()){
+                return new ResponseEntity<>(new ApiResponse(false,"Chưa nhập số điện thoại!"), HttpStatus.OK);
+            }
             boolean existByPhoneAndRole = userRepository.existsByPhoneNumberAndRole(smsRequest.getPhoneNumber(), smsRequest.getRole());
             if (existByPhoneAndRole == true) {
                 return new ResponseEntity<>(new SendMessageResponse(true, "Số điện thoại đã tồn tại!", false), HttpStatus.OK);
@@ -266,6 +269,10 @@ public class UserController {
     @PostMapping("/valid-phone-otp")
     public ResponseEntity<?> isValidPhoneNumberOTP(@RequestBody CheckOTPModel checkOTPModel) {
         try {
+            if(checkOTPModel.getPhoneNumber().isEmpty() || checkOTPModel.getName().isEmpty() || checkOTPModel.getDob().toString().isEmpty()
+            || checkOTPModel.getPassword().isEmpty()){
+                return new ResponseEntity<>(new ApiResponse(false,"Cần nhập đủ thông tin người dùng!"), HttpStatus.OK);
+            }
             Optional<ValidPhoneToken> checkValidPhoneToken = tokenRepository.getByPhoneNumberAndToken(checkOTPModel.getPhoneNumber(), checkOTPModel.getOtp());
             if (!checkValidPhoneToken.isPresent()) {
                 return new ResponseEntity<>(new CheckOTPResponse(true, "Mã OTP không hợp lệ!", false, false), HttpStatus.OK);
@@ -323,6 +330,14 @@ public class UserController {
     @PostMapping("/create-employee")
     public ResponseEntity<?> createEmployee(@RequestBody User employeeCreatedUser) {
         try {
+            if (employeeCreatedUser.getName().isEmpty() ||
+                    employeeCreatedUser.getPhoneNumber().isEmpty() ||
+                    employeeCreatedUser.getEmail().isEmpty() ||
+                    employeeCreatedUser.getDob().toString().isEmpty() ||
+                    employeeCreatedUser.getPassword().isEmpty() ||
+                    employeeCreatedUser.getRole().isEmpty()) {
+                return new ResponseEntity<>(new ApiResponse(false, "Không thể tạo người dùng mới vì thiếu thông tin"), HttpStatus.OK);
+            }
             boolean isExistByPhoneNumberAndRole = userRepository.existsByPhoneNumberAndRole(employeeCreatedUser.getPhoneNumber(), employeeCreatedUser.getRole());
             if (isExistByPhoneNumberAndRole == true) {
                 return new ResponseEntity<>(new CreatedSuccessApi(true, "Số điện thoại đã được đăng kí.", false), HttpStatus.OK);

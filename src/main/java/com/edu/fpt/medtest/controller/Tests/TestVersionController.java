@@ -76,6 +76,20 @@ public class TestVersionController {
             if (!accessCoor.isPresent() && !accessAdmin.isPresent()) {
                 return new ResponseEntity<>(new ApiResponse(true, "Người dùng không có quyền đăng nhập vào tính năng này"), HttpStatus.OK);
             }
+            //check test
+            List<Test> lsInputTest = upgradeVersionModel.getLsInputTest();
+            if (lsInputTest.isEmpty()) {
+                return new ResponseEntity<>(new ApiResponse(true, "Không cập nhật được phiên bản test mới vì danh sách test trống!"), HttpStatus.OK);
+            }
+
+            for (Test checkTest : lsInputTest) {
+                if (checkTest.getPrice() == null ||
+                        checkTest.getTestName().isEmpty() ||
+                        checkTest.getTestTypeID() == 0 ||
+                        checkTest.getVersionID() == 0) {
+                    return new ResponseEntity<>(new ApiResponse(true, "Không cập nhật được phiên bản test mới vì bài test không hợp lệ!"), HttpStatus.OK);
+                }
+            }
             //create a new version
             TestVersion newVersion = new TestVersion();
             newVersion.setCreatorID(upgradeVersionModel.getCreatorID());
@@ -85,8 +99,8 @@ public class TestVersionController {
             if (lsTestVersion.isEmpty()) {
                 return new ResponseEntity<>(new ApiResponse(true, "Hệ thống không có xét nghiệm nào!"), HttpStatus.OK);
             }
+
             //Add list tests input
-            List<Test> lsInputTest = upgradeVersionModel.getLsInputTest();
             List<Test> lsTest = new ArrayList<>();
             for (Test testInput : lsInputTest) {
                 Test newTest = new Test();
