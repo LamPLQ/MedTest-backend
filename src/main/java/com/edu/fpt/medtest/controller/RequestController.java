@@ -222,107 +222,110 @@ public class RequestController {
             List<RequestHistory> listHistoryOfCurrentRequest = requestHistoryRepository.findByRequestIDOrderByCreatedTimeDesc(ID);
             if (listHistoryOfCurrentRequest.isEmpty() || listHistoryOfCurrentRequest == null) {
                 System.out.println("List empty, can update!");
+                requestHistory.setRequestID(requestPresenting.getRequestID());
+                requestHistoryService.save(requestHistory);
             } else {
                 String inputStatus = requestHistory.getStatus();
                 String currentStatus = listHistoryOfCurrentRequest.get(0).getStatus();
                 if (inputStatus.equals(currentStatus)) {
                     return new ResponseEntity<>(new ApiResponse(false, "Đơn xét nghiệm đang được xử lý. Vui lòng tải lại!"), HttpStatus.OK);
                 }
+                String statusWillUpdate = requestHistory.getStatus();
+                String lastestStatusOfRequest = listHistoryOfCurrentRequest.get(0).getStatus();
+                switch (statusWillUpdate) {
+                    case "accepted":
+                        if (!lastestStatusOfRequest.equals("pending")) {
+                            System.out.println(lastestStatusOfRequest);
+                            return new ResponseEntity<>(new ApiResponse(false, "Yêu cầu hiện đang ở trạng thái khác, vui lòng cập nhật lại"), HttpStatus.OK);
+                        } else {
+                            requestHistory.setRequestID(requestPresenting.getRequestID());
+                            requestHistoryService.save(requestHistory);
+                        }
+                        break;
+                    case "transporting":
+                        if (!(lastestStatusOfRequest.equals("accepted") || lastestStatusOfRequest.equals("lostsample"))) {
+                            System.out.println(lastestStatusOfRequest);
+                            return new ResponseEntity<>(new ApiResponse(false, "Yêu cầu hiện đang ở trạng thái khác, vui lòng cập nhật lại"), HttpStatus.OK);
+                        } else {
+                            requestHistory.setRequestID(requestPresenting.getRequestID());
+                            requestHistoryService.save(requestHistory);
+                        }
+                        break;
+                    case "lostsample":
+                        if (!lastestStatusOfRequest.equals("transporting")) {
+                            System.out.println(lastestStatusOfRequest);
+                            return new ResponseEntity<>(new ApiResponse(false, "Yêu cầu hiện đang ở trạng thái khác, vui lòng cập nhật lại"), HttpStatus.OK);
+                        } else {
+                            requestHistory.setRequestID(requestPresenting.getRequestID());
+                            requestHistoryService.save(requestHistory);
+                        }
+                        break;
+                    case "waitingforresult":
+                        if (!(lastestStatusOfRequest.equals("transporting") || lastestStatusOfRequest.equals("retransporting"))) {
+                            System.out.println(lastestStatusOfRequest);
+                            return new ResponseEntity<>(new ApiResponse(false, "Yêu cầu hiện đang ở trạng thái khác, vui lòng cập nhật lại"), HttpStatus.OK);
+                        } else {
+                            requestHistory.setRequestID(requestPresenting.getRequestID());
+                            requestHistoryService.save(requestHistory);
+                        }
+                        break;
+                    case "closed":
+                        if (!lastestStatusOfRequest.equals("waitingforresult")) {
+                            System.out.println(lastestStatusOfRequest);
+                            return new ResponseEntity<>(new ApiResponse(false, "Yêu cầu hiện đang ở trạng thái khác, vui lòng cập nhật lại"), HttpStatus.OK);
+                        } else {
+                            requestHistory.setRequestID(requestPresenting.getRequestID());
+                            requestHistoryService.save(requestHistory);
+                        }
+                        break;
+                    case "coordinatorlostsample":
+                        if (!(lastestStatusOfRequest.equals("waitingforresult") || lastestStatusOfRequest.equals("reaccepted"))) {
+                            System.out.println(lastestStatusOfRequest);
+                            return new ResponseEntity<>(new ApiResponse(false, "Yêu cầu hiện đang ở trạng thái khác, vui lòng cập nhật lại"), HttpStatus.OK);
+                        } else {
+                            requestHistory.setRequestID(requestPresenting.getRequestID());
+                            requestHistoryService.save(requestHistory);
+                        }
+                        break;
+                    case "reaccepted":
+                        if (!lastestStatusOfRequest.equals("coordinatorlostsample")) {
+                            System.out.println(lastestStatusOfRequest);
+                            return new ResponseEntity<>(new ApiResponse(false, "Yêu cầu hiện đang ở trạng thái khác, vui lòng cập nhật lại"), HttpStatus.OK);
+                        } else {
+                            requestHistory.setRequestID(requestPresenting.getRequestID());
+                            requestHistoryService.save(requestHistory);
+                        }
+                        break;
+                    case "retransporting":
+                        if (!(lastestStatusOfRequest.equals("reaccepted") || lastestStatusOfRequest.equals("relostsample"))) {
+                            System.out.println(lastestStatusOfRequest);
+                            return new ResponseEntity<>(new ApiResponse(false, "Yêu cầu hiện đang ở trạng thái khác, vui lòng cập nhật lại"), HttpStatus.OK);
+                        } else {
+                            requestHistory.setRequestID(requestPresenting.getRequestID());
+                            requestHistoryService.save(requestHistory);
+                        }
+                        break;
+                    case "relostsample":
+                        if (!lastestStatusOfRequest.equals("retransporting")) {
+                            System.out.println(lastestStatusOfRequest);
+                            return new ResponseEntity<>(new ApiResponse(false, "Yêu cầu hiện đang ở trạng thái khác, vui lòng cập nhật lại"), HttpStatus.OK);
+                        } else {
+                            requestHistory.setRequestID(requestPresenting.getRequestID());
+                            requestHistoryService.save(requestHistory);
+                        }
+                        break;
+                    case "canceled":
+                        if (!(lastestStatusOfRequest.equals("pending") || lastestStatusOfRequest.equals("accepted"))) {
+                            System.out.println(lastestStatusOfRequest);
+                            return new ResponseEntity<>(new ApiResponse(false, "Yêu cầu hiện đang ở trạng thái khác, vui lòng cập nhật lại"), HttpStatus.OK);
+                        } else {
+                            requestHistory.setRequestID(requestPresenting.getRequestID());
+                            requestHistoryService.save(requestHistory);
+                        }
+                        break;
+                }
             }
-            String statusWillUpdate = requestHistory.getStatus();
-            String lastestStatusOfRequest = listHistoryOfCurrentRequest.get(0).getStatus();
-            switch (statusWillUpdate) {
-                case "accepted":
-                    if (!lastestStatusOfRequest.equals("pending")) {
-                        System.out.println(lastestStatusOfRequest);
-                        return new ResponseEntity<>(new ApiResponse(false, "Yêu cầu hiện đang ở trạng thái khác, vui lòng cập nhật lại"), HttpStatus.OK);
-                    } else {
-                        requestHistory.setRequestID(requestPresenting.getRequestID());
-                        requestHistoryService.save(requestHistory);
-                    }
-                    break;
-                case "transporting":
-                    if (!(lastestStatusOfRequest.equals("accepted") || lastestStatusOfRequest.equals("lostsample"))) {
-                        System.out.println(lastestStatusOfRequest);
-                        return new ResponseEntity<>(new ApiResponse(false, "Yêu cầu hiện đang ở trạng thái khác, vui lòng cập nhật lại"), HttpStatus.OK);
-                    } else {
-                        requestHistory.setRequestID(requestPresenting.getRequestID());
-                        requestHistoryService.save(requestHistory);
-                    }
-                    break;
-                case "lostsample":
-                    if (!lastestStatusOfRequest.equals("transporting")) {
-                        System.out.println(lastestStatusOfRequest);
-                        return new ResponseEntity<>(new ApiResponse(false, "Yêu cầu hiện đang ở trạng thái khác, vui lòng cập nhật lại"), HttpStatus.OK);
-                    } else {
-                        requestHistory.setRequestID(requestPresenting.getRequestID());
-                        requestHistoryService.save(requestHistory);
-                    }
-                    break;
-                case "waitingforresult":
-                    if (!(lastestStatusOfRequest.equals("transporting") || lastestStatusOfRequest.equals("retransporting"))) {
-                        System.out.println(lastestStatusOfRequest);
-                        return new ResponseEntity<>(new ApiResponse(false, "Yêu cầu hiện đang ở trạng thái khác, vui lòng cập nhật lại"), HttpStatus.OK);
-                    } else {
-                        requestHistory.setRequestID(requestPresenting.getRequestID());
-                        requestHistoryService.save(requestHistory);
-                    }
-                    break;
-                case "closed":
-                    if (!lastestStatusOfRequest.equals("waitingforresult")) {
-                        System.out.println(lastestStatusOfRequest);
-                        return new ResponseEntity<>(new ApiResponse(false, "Yêu cầu hiện đang ở trạng thái khác, vui lòng cập nhật lại"), HttpStatus.OK);
-                    } else {
-                        requestHistory.setRequestID(requestPresenting.getRequestID());
-                        requestHistoryService.save(requestHistory);
-                    }
-                    break;
-                case "coordinatorlostsample":
-                    if (!(lastestStatusOfRequest.equals("waitingforresult") || lastestStatusOfRequest.equals("reaccepted") )) {
-                        System.out.println(lastestStatusOfRequest);
-                        return new ResponseEntity<>(new ApiResponse(false, "Yêu cầu hiện đang ở trạng thái khác, vui lòng cập nhật lại"), HttpStatus.OK);
-                    } else {
-                        requestHistory.setRequestID(requestPresenting.getRequestID());
-                        requestHistoryService.save(requestHistory);
-                    }
-                    break;
-                case "reaccepted":
-                    if (!lastestStatusOfRequest.equals("coordinatorlostsample")) {
-                        System.out.println(lastestStatusOfRequest);
-                        return new ResponseEntity<>(new ApiResponse(false, "Yêu cầu hiện đang ở trạng thái khác, vui lòng cập nhật lại"), HttpStatus.OK);
-                    } else {
-                        requestHistory.setRequestID(requestPresenting.getRequestID());
-                        requestHistoryService.save(requestHistory);
-                    }
-                    break;
-                case "retransporting":
-                    if (!(lastestStatusOfRequest.equals("reaccepted") || lastestStatusOfRequest.equals("relostsample"))) {
-                        System.out.println(lastestStatusOfRequest);
-                        return new ResponseEntity<>(new ApiResponse(false, "Yêu cầu hiện đang ở trạng thái khác, vui lòng cập nhật lại"), HttpStatus.OK);
-                    } else {
-                        requestHistory.setRequestID(requestPresenting.getRequestID());
-                        requestHistoryService.save(requestHistory);
-                    }
-                    break;
-                case "relostsample":
-                    if (!lastestStatusOfRequest.equals("retransporting")) {
-                        System.out.println(lastestStatusOfRequest);
-                        return new ResponseEntity<>(new ApiResponse(false, "Yêu cầu hiện đang ở trạng thái khác, vui lòng cập nhật lại"), HttpStatus.OK);
-                    } else {
-                        requestHistory.setRequestID(requestPresenting.getRequestID());
-                        requestHistoryService.save(requestHistory);
-                    }
-                    break;
-                case "canceled":
-                    if (!(lastestStatusOfRequest.equals("pending") || lastestStatusOfRequest.equals("accepted"))) {
-                        System.out.println(lastestStatusOfRequest);
-                        return new ResponseEntity<>(new ApiResponse(false, "Yêu cầu hiện đang ở trạng thái khác, vui lòng cập nhật lại"), HttpStatus.OK);
-                    } else {
-                        requestHistory.setRequestID(requestPresenting.getRequestID());
-                        requestHistoryService.save(requestHistory);
-                    }
-                    break;
-            }
+
 
             //
             Notification notification = new Notification();
@@ -385,6 +388,7 @@ public class RequestController {
             notificationService.saveNoti(notification);
             return new ResponseEntity<>(requestHistory, HttpStatus.OK);
         } catch (Exception exception) {
+            exception.printStackTrace();
             return new ResponseEntity<>(new ApiResponse(false, "Hệ thống đang xử lý! Vui lòng kiểm tra lại!"), HttpStatus.OK);
         }
     }
