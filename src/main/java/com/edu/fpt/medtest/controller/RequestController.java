@@ -70,9 +70,9 @@ public class RequestController {
     @PostMapping("/create")
     public ResponseEntity<?> createNewRequest(@RequestBody RequestModelInput requestModelInput) {
         try {
-            if(requestModelInput.getUserID() == 0 || requestModelInput.getMeetingTime().toString().isEmpty() || requestModelInput.getAddress().isEmpty() || requestModelInput.getTownCode().isEmpty()
-            || requestModelInput.getDistrictCode().isEmpty() || requestModelInput.getSelectedTest().isEmpty()){
-                return new ResponseEntity<>(new ApiResponse(false,"Thông tin để tạo yêu cầu xét nghiệm mới chưa đủ"), HttpStatus.OK);
+            if (requestModelInput.getUserID() == 0 || requestModelInput.getMeetingTime().toString().isEmpty() || requestModelInput.getAddress().isEmpty() || requestModelInput.getTownCode().isEmpty()
+                    || requestModelInput.getDistrictCode().isEmpty() || requestModelInput.getSelectedTest().isEmpty()) {
+                return new ResponseEntity<>(new ApiResponse(false, "Thông tin để tạo yêu cầu xét nghiệm mới chưa đủ"), HttpStatus.OK);
             }
             //save request model
             RequestModel requestModel = new RequestModel();
@@ -229,8 +229,101 @@ public class RequestController {
                     return new ResponseEntity<>(new ApiResponse(false, "Đơn xét nghiệm đang được xử lý. Vui lòng tải lại!"), HttpStatus.OK);
                 }
             }
-            requestHistory.setRequestID(requestPresenting.getRequestID());
-            requestHistoryService.save(requestHistory);
+            String statusWillUpdate = requestHistory.getStatus();
+            String lastestStatusOfRequest = listHistoryOfCurrentRequest.get(0).getStatus();
+            switch (statusWillUpdate) {
+                case "accepted":
+                    if (!lastestStatusOfRequest.equals("pending")) {
+                        System.out.println(lastestStatusOfRequest);
+                        return new ResponseEntity<>(new ApiResponse(false, "Yêu cầu hiện đang ở trạng thái khác, vui lòng cập nhật lại"), HttpStatus.OK);
+                    } else {
+                        requestHistory.setRequestID(requestPresenting.getRequestID());
+                        requestHistoryService.save(requestHistory);
+                    }
+                    break;
+                case "transporting":
+                    if (!(lastestStatusOfRequest.equals("accepted") || lastestStatusOfRequest.equals("lostsample"))) {
+                        System.out.println(lastestStatusOfRequest);
+                        return new ResponseEntity<>(new ApiResponse(false, "Yêu cầu hiện đang ở trạng thái khác, vui lòng cập nhật lại"), HttpStatus.OK);
+                    } else {
+                        requestHistory.setRequestID(requestPresenting.getRequestID());
+                        requestHistoryService.save(requestHistory);
+                    }
+                    break;
+                case "lostsample":
+                    if (!lastestStatusOfRequest.equals("transporting")) {
+                        System.out.println(lastestStatusOfRequest);
+                        return new ResponseEntity<>(new ApiResponse(false, "Yêu cầu hiện đang ở trạng thái khác, vui lòng cập nhật lại"), HttpStatus.OK);
+                    } else {
+                        requestHistory.setRequestID(requestPresenting.getRequestID());
+                        requestHistoryService.save(requestHistory);
+                    }
+                    break;
+                case "waitingforresult":
+                    if (!(lastestStatusOfRequest.equals("transporting") || lastestStatusOfRequest.equals("retransporting"))) {
+                        System.out.println(lastestStatusOfRequest);
+                        return new ResponseEntity<>(new ApiResponse(false, "Yêu cầu hiện đang ở trạng thái khác, vui lòng cập nhật lại"), HttpStatus.OK);
+                    } else {
+                        requestHistory.setRequestID(requestPresenting.getRequestID());
+                        requestHistoryService.save(requestHistory);
+                    }
+                    break;
+                case "closed":
+                    if (!lastestStatusOfRequest.equals("waitingforresult")) {
+                        System.out.println(lastestStatusOfRequest);
+                        return new ResponseEntity<>(new ApiResponse(false, "Yêu cầu hiện đang ở trạng thái khác, vui lòng cập nhật lại"), HttpStatus.OK);
+                    } else {
+                        requestHistory.setRequestID(requestPresenting.getRequestID());
+                        requestHistoryService.save(requestHistory);
+                    }
+                    break;
+                case "coordinatorlostsample":
+                    if (!(lastestStatusOfRequest.equals("waitingforresult") || lastestStatusOfRequest.equals("reaccepted") )) {
+                        System.out.println(lastestStatusOfRequest);
+                        return new ResponseEntity<>(new ApiResponse(false, "Yêu cầu hiện đang ở trạng thái khác, vui lòng cập nhật lại"), HttpStatus.OK);
+                    } else {
+                        requestHistory.setRequestID(requestPresenting.getRequestID());
+                        requestHistoryService.save(requestHistory);
+                    }
+                    break;
+                case "reaccepted":
+                    if (!lastestStatusOfRequest.equals("coordinatorlostsample")) {
+                        System.out.println(lastestStatusOfRequest);
+                        return new ResponseEntity<>(new ApiResponse(false, "Yêu cầu hiện đang ở trạng thái khác, vui lòng cập nhật lại"), HttpStatus.OK);
+                    } else {
+                        requestHistory.setRequestID(requestPresenting.getRequestID());
+                        requestHistoryService.save(requestHistory);
+                    }
+                    break;
+                case "retransporting":
+                    if (!(lastestStatusOfRequest.equals("reaccepted") || lastestStatusOfRequest.equals("relostsample"))) {
+                        System.out.println(lastestStatusOfRequest);
+                        return new ResponseEntity<>(new ApiResponse(false, "Yêu cầu hiện đang ở trạng thái khác, vui lòng cập nhật lại"), HttpStatus.OK);
+                    } else {
+                        requestHistory.setRequestID(requestPresenting.getRequestID());
+                        requestHistoryService.save(requestHistory);
+                    }
+                    break;
+                case "relostsample":
+                    if (!lastestStatusOfRequest.equals("retransporting")) {
+                        System.out.println(lastestStatusOfRequest);
+                        return new ResponseEntity<>(new ApiResponse(false, "Yêu cầu hiện đang ở trạng thái khác, vui lòng cập nhật lại"), HttpStatus.OK);
+                    } else {
+                        requestHistory.setRequestID(requestPresenting.getRequestID());
+                        requestHistoryService.save(requestHistory);
+                    }
+                    break;
+                case "canceled":
+                    if (!(lastestStatusOfRequest.equals("pending") || lastestStatusOfRequest.equals("accepted"))) {
+                        System.out.println(lastestStatusOfRequest);
+                        return new ResponseEntity<>(new ApiResponse(false, "Yêu cầu hiện đang ở trạng thái khác, vui lòng cập nhật lại"), HttpStatus.OK);
+                    } else {
+                        requestHistory.setRequestID(requestPresenting.getRequestID());
+                        requestHistoryService.save(requestHistory);
+                    }
+                    break;
+            }
+
             //
             Notification notification = new Notification();
             notification.setUserID(requestPresenting.getUserID());
@@ -285,7 +378,7 @@ public class RequestController {
                 case "relostsample":
                     notification.setMessage("Y tá " + userRepository.findById(requestHistory.getUserID()).get().getName() + " đã hoàn thành lấy lại mẫu xét nghiệm mã " + ID + ". Trạng thái đơn hiện tại: Đang vận chuyển mẫu lấy lại.");
                     notification.setMessage("Mẫu xét nghiệm mã " + ID + " sẽ được lấy lại do lỗi từ y tá " + userRepository.findById(requestHistory.getUserID()).get().getName()
-                    + ". Chân thành xin lỗi quý khách! Trạng thái đơn hiện tại: Đang đợi lấy lại mẫu mất do điều phối viên làm mất.");
+                            + ". Chân thành xin lỗi quý khách! Trạng thái đơn hiện tại: Đang đợi lấy lại mẫu mất do điều phối viên làm mất.");
                     break;
             }
             //
