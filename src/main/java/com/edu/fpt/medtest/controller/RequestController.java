@@ -258,10 +258,14 @@ public class RequestController {
                 }
                 switch (statusWillUpdate) {
                     case "pending":
+                        if(lastestStatusOfRequest.equals("canceled")){
+                            return new ResponseEntity<>(new ApiResponse(false,"Khách hàng đã huỷ trạng thái này. Vui lòng tải lại trang"), HttpStatus.OK);
+                        }
                         if (!lastestStatusOfRequest.equals("accepted")) {
                             System.out.println(lastestStatusOfRequest);
                             return new ResponseEntity<>(new ApiResponse(false, "Yêu cầu hiện đang ở trạng thái " + displayLastestStatusRequest + ", vui lòng cập nhật lại"), HttpStatus.OK);
-                        } else {
+                        }
+                        else {
                             requestHistory.setRequestID(requestPresenting.getRequestID());
                             requestHistoryService.save(requestHistory);
                         }
