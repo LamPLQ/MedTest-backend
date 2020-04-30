@@ -464,9 +464,10 @@ public class NurseController {
                     //customer DOB
                     detail.setCustomerDOB(userRepository.findById(recentRequest.getUserID()).get().getDob());//
                     //request Address
-                    detail.setRequestAddress(recentRequest.getAddress() + " " +
-                            townRepository.findById(recentRequest.getTownCode()).get().getTownName() + " " +
-                            districtRepository.findById(recentRequest.getDistrictCode()).get().getDistrictName());
+                    detail.setRequestAddress(recentRequest.getAddress());
+                            //+ " " +
+                            //townRepository.findById(recentRequest.getTownCode()).get().getTownName() + " " +
+                            //districtRepository.findById(recentRequest.getDistrictCode()).get().getDistrictName());
                     detail.setRequestTownID(recentRequest.getTownCode());
                     detail.setRequestTownName(townRepository.findById(recentRequest.getTownCode()).get().getTownName());
                     detail.setRequestDistrictID(recentRequest.getDistrictCode());
