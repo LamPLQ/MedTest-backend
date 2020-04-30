@@ -175,6 +175,9 @@ public class UserController {
                 return new ResponseEntity<>(new ComfirmResponse(true, "Không tìm thấy số điện thoại đã nhập!", false), HttpStatus.OK);
             }
             User forgotPasswordUser = userService.getUserByPhoneNumberAndRole(forgotPasswordModel.getPhoneNumber(), "CUSTOMER");
+            if(forgotPasswordUser.getActive() == 0){
+                return new ResponseEntity<>(new ApiResponse(false,"Người dùng hiện tại đang bị khoá! Vui lòng liên hệ tới phòng khám để xử lý!"), HttpStatus.OK);
+            }
             String oldPassword = forgotPasswordUser.getPassword();
         /*sentMailModel.setEmail(forgotPasswordUser.getEmail());
         sentMailModel.setPhoneNumber(forgotPasswordUser.getPhoneNumber());
@@ -202,6 +205,13 @@ public class UserController {
     @GetMapping("{id}/notifications/list")
     public ResponseEntity<?> getLsNotification(@PathVariable("id") int userID) {
         try {
+            Optional<User> createUser = userRepository.findById(userID);
+            if(!createUser.isPresent()){
+                return new ResponseEntity<>(new ApiResponse(false,"Người dùng không tồn tại!"), HttpStatus.OK);
+            }
+            if(createUser.get().getActive()==0){
+                return new ResponseEntity<>(new ApiResponse(false,"Người dùng hiện tại đang bị khoá! Vui lòng liên hệ tới phòng khám để xử lý!"), HttpStatus.OK);
+            }
             List<Notification> lsNoti = notificationService.lsNotification(userID);
             if (lsNoti.isEmpty()) {
                 return new ResponseEntity<>(new ApiResponse(true, "Hiện tại không có thông báo nào!"), HttpStatus.OK);
@@ -386,7 +396,7 @@ public class UserController {
                 userByPhone = userRepository.getUserByPhoneNumberAndRole(webUserLoginModel.getPhoneNumber(), "COORDINATOR");
             }
             if (userByPhone.getActive() == 0) {
-                return new ResponseEntity<>(new ApiResponse(true, "Người dùng hiện tại đang bị khoá. Vui lòng liên hệ tới phòng khám để biết thêm chi tiết!"), HttpStatus.OK);
+                return new ResponseEntity<>(new ApiResponse(false,"Người dùng hiện tại đang bị khoá! Vui lòng liên hệ tới phòng khám để xử lý!"), HttpStatus.OK);
             }
             if (!BCrypt.checkpw(webUserLoginModel.getPassword(), userByPhone.getPassword())) {
                 return new ResponseEntity<>(new LoginResponse(true, "Sai mật khẩu", false), HttpStatus.OK);
@@ -433,9 +443,11 @@ public class UserController {
             if (!getUserByID.isPresent()) {
                 return new ResponseEntity<>(new ApiResponse(false, "Không tìm thấy người dùng"), HttpStatus.OK);
             }
+            if(getUserByID.get().getActive() == 0){
+                return new ResponseEntity<>(new ApiResponse(false,"Người dùng hiện tại đang bị khoá! Vui lòng liên hệ tới phòng khám để xử lý!"), HttpStatus.OK);
+            }
             if (user.getImage().isEmpty() || user.getImage() == null) {
                 user.setId(userID);
-
                 userService.updateContainStatus(user);
             } else {
                 user.setId(userID);

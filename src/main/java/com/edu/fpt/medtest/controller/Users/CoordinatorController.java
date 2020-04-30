@@ -116,6 +116,9 @@ public class CoordinatorController {
             if (!getCoordinator.isPresent()) {
                 return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy người dùng!"), HttpStatus.OK);
             }
+            if(getCoordinator.get().getActive() == 0){
+                return new ResponseEntity<>(new ApiResponse(false,"Người dùng hiện tại đang bị khoá! Vui lòng liên hệ tới phòng khám để xử lý!"), HttpStatus.OK);
+            }
             return new ResponseEntity<>(getCoordinator, HttpStatus.OK);
         } catch (Exception e) {
             System.out.println(e.getMessage());
@@ -130,6 +133,9 @@ public class CoordinatorController {
             Optional<User> getCoordinator = userRepository.getUserByIdAndRole(id, "COORDINATOR");
             if (!getCoordinator.isPresent()) {
                 return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy người dùng!"), HttpStatus.OK);
+            }
+            if(getCoordinator.get().getActive() == 0){
+                return new ResponseEntity<>(new ApiResponse(false,"Người dùng hiện tại đang bị khoá! Vui lòng liên hệ tới phòng khám để xử lý!"), HttpStatus.OK);
             }
             coordinator.setId(id);
             userService.update(coordinator);
@@ -147,6 +153,9 @@ public class CoordinatorController {
             Optional<User> getCustomer = userRepository.getUserByIdAndRole(id, "COORDINATOR");
             if (!getCustomer.isPresent()) {
                 return new ResponseEntity<>(new ApiResponse(true, "Người dùng không tồn tại!"), HttpStatus.OK);
+            }
+            if(getCustomer.get().getActive() == 0){
+                return new ResponseEntity<>(new ApiResponse(false,"Người dùng hiện tại đang bị khoá! Vui lòng liên hệ tới phòng khám để xử lý!"), HttpStatus.OK);
             }
             if (!BCrypt.checkpw(changePasswordModel.getOldPassword(), getCustomer.get().getPassword())) {
                 return new ResponseEntity<>(new ApiResponse(true, "Mật khẩu hiện tại không đúng!"), HttpStatus.OK);

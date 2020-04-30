@@ -74,6 +74,13 @@ public class RequestController {
                     || requestModelInput.getDistrictCode().isEmpty() || requestModelInput.getSelectedTest().isEmpty()) {
                 return new ResponseEntity<>(new ApiResponse(false, "Thông tin để tạo yêu cầu xét nghiệm mới chưa đủ"), HttpStatus.OK);
             }
+            Optional<User> userCreateModel = userRepository.findById(requestModelInput.getUserID());
+            if(!userCreateModel.isPresent()){
+                return new ResponseEntity<>(new ApiResponse(false, "Người dùng tạo yêu cầu không tồn tại"),HttpStatus.OK);
+            }
+            if(userCreateModel.get().getActive() == 0){
+                return new ResponseEntity<>(new ApiResponse(false,"Người dùng hiện tại đang bị khoá! Vui lòng liên hệ tới phòng khám để xử lý!"), HttpStatus.OK);
+            }
             //save request model
             RequestModel requestModel = new RequestModel();
             requestModel.setAddress(requestModelInput.getAddress());
@@ -215,6 +222,13 @@ public class RequestController {
     @PostMapping("/update/{id}")
     public ResponseEntity<?> updateRequestStatus(@RequestBody RequestHistory requestHistory, @PathVariable("id") String ID) {
         try {
+            Optional<User> userCreate = userRepository.findById(requestHistory.getUserID());
+            if(!userCreate.isPresent()){
+                return new ResponseEntity<>(new ApiResponse(false,"Người dùng không tồn tại"), HttpStatus.OK);
+            }
+            if(userCreate.get().getActive() == 0){
+                return new ResponseEntity<>(new ApiResponse(false,"Người dùng hiện tại đang bị khoá! Vui lòng liên hệ tới phòng khám để xử lý!"), HttpStatus.OK);
+            }
             Request requestPresenting = requestService.getRequest(ID);
             if (requestPresenting == null) {
                 return new ResponseEntity<>(new ApiResponse(false, "Không tìm thấy mã đơn xét nghiệm " + ID), HttpStatus.OK);
@@ -861,6 +875,13 @@ public class RequestController {
     @PostMapping("/detail/results/add")
     public ResponseEntity updateResultOfRequest(@RequestBody ResultModel resultModel) {
         try {
+            Optional<User> createUser = userRepository.findById(resultModel.getUserID());
+            if(!createUser.isPresent()){
+                return new ResponseEntity(new ApiResponse(false,"Người dùng không tồn tại!"), HttpStatus.OK);
+            }
+            if(createUser.get().getActive() == 0){
+                return new ResponseEntity<>(new ApiResponse(false,"Người dùng hiện tại đang bị khoá! Vui lòng liên hệ tới phòng khám để xử lý!"), HttpStatus.OK);
+            }
             List<String> lsImage = resultModel.getListImage();
             List<Result> lsCreatedResult = new ArrayList<>();
             for (String image : lsImage) {

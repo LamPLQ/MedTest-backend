@@ -70,7 +70,7 @@ public class NurseController {
             User userLogin = userRepository.getUserByPhoneNumberAndRole(loginUser.getPhoneNumber(), loginUser.getRole());
             //check password
             if(userLogin.getActive()==0){
-                return new ResponseEntity<>(new ApiResponse(true, "Người dùng hiện tại đang bị khoá. Vui lòng liên hệ tới phòng khám để biết thêm chi tiết!"), HttpStatus.OK);
+                return new ResponseEntity<>(new ApiResponse(false,"Người dùng hiện tại đang bị khoá! Vui lòng liên hệ tới phòng khám để xử lý!"), HttpStatus.OK);
             }
             if (!BCrypt.checkpw(loginUser.getPassword(), userLogin.getPassword())) {
                 return new ResponseEntity<>(new ApiResponse(true, "Sai mật khẩu!"), HttpStatus.OK);
@@ -170,6 +170,9 @@ public class NurseController {
             Optional<User> getCustomer = userRepository.getUserByIdAndRole(id, "NURSE");
             if (!getCustomer.isPresent()) {
                 return new ResponseEntity<>(new ComfirmResponse(true, "Người dùng không tồn tại!", false), HttpStatus.OK);
+            }
+            if(getCustomer.get().getActive()==0){
+                return new ResponseEntity<>(new ApiResponse(false,"Người dùng hiện tại đang bị khoá! Vui lòng liên hệ tới phòng khám để xử lý!"), HttpStatus.OK);
             }
             if (!BCrypt.checkpw(changePasswordModel.getOldPassword(), getCustomer.get().getPassword())) {
                 return new ResponseEntity<>(new ComfirmResponse(true, "Mật khẩu hiện tại không đúng!", false), HttpStatus.OK);
@@ -416,6 +419,13 @@ public class NurseController {
     @GetMapping("{id}/list/handling")
     public ResponseEntity<?> lsHandling(@PathVariable("id") int nurseID) {
         try {
+            Optional<User> processingUser = userRepository.findById(nurseID);
+            if(!processingUser.isPresent()){
+                return new ResponseEntity<>(new ApiResponse(false,"Người dùng không tồn tại"), HttpStatus.OK);
+            }
+            if(processingUser.get().getActive() == 0){
+                return new ResponseEntity<>(new ApiResponse(false,"Người dùng hiện tại đang bị khoá! Vui lòng liên hệ tới phòng khám để xử lý!"), HttpStatus.OK);
+            }
             //list handling return
             List<DetailRequestModel> lsNurseHandling = new ArrayList<>();
 
@@ -536,6 +546,13 @@ public class NurseController {
     @GetMapping("{id}/list/request-completed")
     public ResponseEntity<?> lsCompleted(@PathVariable("id") int nurseID) {
         try {
+            Optional<User> processingUser = userRepository.findById(nurseID);
+            if(!processingUser.isPresent()){
+                return new ResponseEntity<>(new ApiResponse(false,"Người dùng không tồn tại"), HttpStatus.OK);
+            }
+            if(processingUser.get().getActive() == 0){
+                return new ResponseEntity<>(new ApiResponse(false,"Người dùng hiện tại đang bị khoá! Vui lòng liên hệ tới phòng khám để xử lý!"), HttpStatus.OK);
+            }
             //list completed
             List<CompletedRequestModel> lsCompletedReqs = new ArrayList<>();
 
