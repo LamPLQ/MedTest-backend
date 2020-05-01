@@ -596,7 +596,7 @@ public class NurseController {
                         if (existByRequestIDAndStatusTransporting == false) {
                             System.out.println("No request history with /transporting/ status");
                             //customer cancel when nurse accepted request
-                            CompletedRequestModel cancelAfterAccept = new CompletedRequestModel();
+                            /*CompletedRequestModel cancelAfterAccept = new CompletedRequestModel();
                             cancelAfterAccept.setRequestID(request.getRequestID());
                             ////////////////////Object Request
                             //Request cancelAfterAcceptRequest = requestRepository.getOne(request.getRequestID());
@@ -635,8 +635,8 @@ public class NurseController {
                                 cancelAfterAccept.setCoordinatorID("Chưa có điều phối viên nhận");
                                 cancelAfterAccept.setCoordinatorName("Chưa có điều phối viên nhận");
                             }else{
-                                cancelAfterAccept.setCoordinatorID(String.valueOf(request.getUserID()));
-                                cancelAfterAccept.setCoordinatorName(userRepository.findById(request.getUserID()).get().getName());
+                                cancelAfterAccept.setCoordinatorID("Điều phối viên đã tiếp nhận đơn.");
+                                cancelAfterAccept.setCoordinatorName("Điều phối viên đã tiếp nhận đơn.");
                             }
                             cancelAfterAccept.setRequestStatus(request.getStatus());
                             cancelAfterAccept.setRequestNote(request.getNote());
@@ -666,7 +666,7 @@ public class NurseController {
                             cancelAfterAccept.setLsSelectedTest(lsTestID1);
                             //set amount of test
                             cancelAfterAccept.setRequestAmount(String.valueOf(testAmount1));
-                            lsCompletedReqs.add(cancelAfterAccept);
+                            lsCompletedReqs.add(cancelAfterAccept);*/
                             //////////////////////////////////////////////
                         } else {
                             RequestHistory transportingStatusRequest = requestHistoryRepository.findAllByRequestIDAndStatusAndUserIDOrderByCreatedTimeDesc(request.getRequestID(), "transporting", nurseID).get(0);
