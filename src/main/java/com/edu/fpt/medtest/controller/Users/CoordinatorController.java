@@ -9,6 +9,7 @@ import com.edu.fpt.medtest.repository.UserRepository;
 import com.edu.fpt.medtest.security.SecurityUtils;
 import com.edu.fpt.medtest.service.UserService;
 import com.edu.fpt.medtest.utils.ApiResponse;
+import com.edu.fpt.medtest.utils.ComfirmResponse;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -159,6 +160,9 @@ public class CoordinatorController {
             }
             if (!BCrypt.checkpw(changePasswordModel.getOldPassword(), getCustomer.get().getPassword())) {
                 return new ResponseEntity<>(new ApiResponse(true, "Mật khẩu hiện tại không đúng!"), HttpStatus.OK);
+            }
+            if(changePasswordModel.getOldPassword().equals(changePasswordModel.getNewPassword())){
+                return new ResponseEntity<>(new ComfirmResponse(true,"Mật khẩu mới phải khác mật khẩu cũ", false),HttpStatus.OK);
             }
             changePasswordModel.setID(id);
             getCustomer.get().setPassword(bCryptPasswordEncoder.encode(changePasswordModel.getNewPassword()));

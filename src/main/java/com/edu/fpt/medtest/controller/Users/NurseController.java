@@ -177,6 +177,9 @@ public class NurseController {
             if (!BCrypt.checkpw(changePasswordModel.getOldPassword(), getCustomer.get().getPassword())) {
                 return new ResponseEntity<>(new ComfirmResponse(true, "Mật khẩu hiện tại không đúng!", false), HttpStatus.OK);
             }
+            if(changePasswordModel.getOldPassword().equals(changePasswordModel.getNewPassword())){
+                return new ResponseEntity<>(new ComfirmResponse(true,"Mật khẩu mới phải khác mật khẩu cũ", false),HttpStatus.OK);
+            }
             changePasswordModel.setID(id);
             getCustomer.get().setPassword(bCryptPasswordEncoder.encode(changePasswordModel.getNewPassword()));
             userService.saveUser(getCustomer.get());
