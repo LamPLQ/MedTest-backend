@@ -70,16 +70,30 @@ public class RequestController {
     @PostMapping("/create")
     public ResponseEntity<?> createNewRequest(@RequestBody RequestModelInput requestModelInput) {
         try {
-            if (requestModelInput.getUserID() == 0 || requestModelInput.getMeetingTime().toString().isEmpty() || requestModelInput.getAddress().isEmpty() || requestModelInput.getTownCode().isEmpty()
-                    || requestModelInput.getDistrictCode().isEmpty() || requestModelInput.getSelectedTest().isEmpty()) {
+            try {
+                if (requestModelInput.getUserID() == 0 ||
+                        requestModelInput.getMeetingTime().toString().isEmpty() ||
+                        requestModelInput.getAddress().isEmpty() ||
+                        requestModelInput.getTownCode().isEmpty() ||
+                        requestModelInput.getDistrictCode().isEmpty() ||
+                        requestModelInput.getSelectedTest().isEmpty()) {
+                    return new ResponseEntity<>(new ApiResponse(false, "Thông tin để tạo yêu cầu xét nghiệm mới chưa đủ"), HttpStatus.OK);
+                }
+            } catch (NullPointerException ex) {
                 return new ResponseEntity<>(new ApiResponse(false, "Thông tin để tạo yêu cầu xét nghiệm mới chưa đủ"), HttpStatus.OK);
             }
-            Optional<User> userCreateModel = userRepository.findById(requestModelInput.getUserID());
-            if(!userCreateModel.isPresent()){
-                return new ResponseEntity<>(new ApiResponse(false, "Người dùng tạo yêu cầu không tồn tại"),HttpStatus.OK);
+            if (districtRepository.existsByDistrictCode(requestModelInput.getDistrictCode()) == false) {
+                return new ResponseEntity<>(new ApiResponse(false, "Mã quận/huyện không tồn tại!"), HttpStatus.OK);
             }
-            if(userCreateModel.get().getActive() == 0){
-                return new ResponseEntity<>(new ApiResponse(false,"Người dùng hiện tại đang bị khoá! Vui lòng liên hệ tới phòng khám để xử lý!"), HttpStatus.OK);
+            if (townRepository.existsByTownCodeAndDistrictCode(requestModelInput.getTownCode(), requestModelInput.getDistrictCode()) == false) {
+                return new ResponseEntity<>(new ApiResponse(false, "Mã phường/xã không đúng!"), HttpStatus.OK);
+            }
+            Optional<User> userCreateModel = userRepository.getUserByIdAndRole(requestModelInput.getUserID(), "CUSTOMER");
+            if (!userCreateModel.isPresent()) {
+                return new ResponseEntity<>(new ApiResponse(false, "Người dùng tạo yêu cầu không tồn tại"), HttpStatus.OK);
+            }
+            if (userCreateModel.get().getActive() == 0) {
+                return new ResponseEntity<>(new ApiResponse(false, "Người dùng hiện tại đang bị khoá! Vui lòng liên hệ tới phòng khám để xử lý!"), HttpStatus.OK);
             }
             //save request model
             RequestModel requestModel = new RequestModel();
@@ -107,15 +121,19 @@ public class RequestController {
             int selectedTestID;
             List<Integer> listSelectedTestID = new ArrayList<>();
             if (selectedTests.size() == 0) {
-                return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy danh sách yêu cầu xét nghiệm!"), HttpStatus.OK);
+                return new ResponseEntity<>(new ApiResponse(false, "Không tìm thấy danh sách yêu cầu xét nghiệm!"), HttpStatus.OK);
             }
             for (String selectedTest : selectedTests) {
-                selectedTestID = Integer.parseInt(selectedTest);
+                try {
+                    selectedTestID = Integer.parseInt(selectedTest);
+                } catch (Exception exce) {
+                    return new ResponseEntity<>(new ApiResponse(false, "Không tìm thấy yêu cầu xét nghiệm!"), HttpStatus.OK);
+                }
                 boolean existedTest = testRepository.existsByTestID(selectedTestID);
                 if (existedTest == true) {
                     listSelectedTestID.add(selectedTestID);
                 } else {
-                    return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy yêu cầu xét nghiệm!"), HttpStatus.OK);
+                    return new ResponseEntity<>(new ApiResponse(false, "Không tìm thấy yêu cầu xét nghiệm!"), HttpStatus.OK);
                 }
             }
             //foreach available test, find and add tests by its ID
@@ -222,12 +240,32 @@ public class RequestController {
     @PostMapping("/update/{id}")
     public ResponseEntity<?> updateRequestStatus(@RequestBody RequestHistory requestHistory, @PathVariable("id") String ID) {
         try {
-            Optional<User> userCreate = userRepository.findById(requestHistory.getUserID());
-            if(!userCreate.isPresent()){
-                return new ResponseEntity<>(new ApiResponse(false,"Người dùng không tồn tại"), HttpStatus.OK);
+            try {
+                if (requestHistory.getStatus().isEmpty() || requestHistory.getUserID() == 0 || requestHistory.getNote().isEmpty()) {
+                    return new ResponseEntity<>(new ApiResponse(false, "Không được bỏ trống thông tin để cập nhật yêu cầu!"), HttpStatus.OK);
+                }
+            } catch (Exception ex) {
+                return new ResponseEntity<>(new ApiResponse(false, "Không được bỏ trống thông tin để cập nhật yêu cầu!"), HttpStatus.OK);
             }
-            if(userCreate.get().getActive() == 0){
-                return new ResponseEntity<>(new ApiResponse(false,"Người dùng hiện tại đang bị khoá! Vui lòng liên hệ tới phòng khám để xử lý!"), HttpStatus.OK);
+            if (!(requestHistory.getStatus().equals("pending") ||
+                    requestHistory.getStatus().equals("accepted") ||
+                    requestHistory.getStatus().equals("transporting") ||
+                    requestHistory.getStatus().equals("waitingforresult") ||
+                    requestHistory.getStatus().equals("closed") ||
+                    requestHistory.getStatus().equals("lostsample") ||
+                    requestHistory.getStatus().equals("coordinatorlostsample") ||
+                    requestHistory.getStatus().equals("canceled") ||
+                    requestHistory.getStatus().equals("reaccepted") ||
+                    requestHistory.getStatus().equals("retransporting") ||
+                    requestHistory.getStatus().equals("relostsample"))) {
+                return new ResponseEntity<>(new ApiResponse(false, "Không xác định được trạng thái cập nhật!"), HttpStatus.OK);
+            }
+            Optional<User> userCreate = userRepository.findById(requestHistory.getUserID());
+            if (!userCreate.isPresent()) {
+                return new ResponseEntity<>(new ApiResponse(false, "Người dùng không tồn tại"), HttpStatus.OK);
+            }
+            if (userCreate.get().getActive() == 0) {
+                return new ResponseEntity<>(new ApiResponse(false, "Người dùng hiện tại đang bị khoá! Vui lòng liên hệ tới phòng khám để xử lý!"), HttpStatus.OK);
             }
             Request requestPresenting = requestService.getRequest(ID);
             if (requestPresenting == null) {
@@ -247,39 +285,38 @@ public class RequestController {
                 String statusWillUpdate = requestHistory.getStatus();
                 String lastestStatusOfRequest = listHistoryOfCurrentRequest.get(0).getStatus();
                 String displayLastestStatusRequest;
-                if(lastestStatusOfRequest.equals("pending")){
+                if (lastestStatusOfRequest.equals("pending")) {
                     displayLastestStatusRequest = "Đang đợi y tá nhận đơn";
-                }else if(lastestStatusOfRequest.equals("accepted")){
+                } else if (lastestStatusOfRequest.equals("accepted")) {
                     displayLastestStatusRequest = "Đang đợi lấy mẫu";
-                }else if(lastestStatusOfRequest.equals("transporting")){
+                } else if (lastestStatusOfRequest.equals("transporting")) {
                     displayLastestStatusRequest = "Đang vận chuyển mẫu";
-                }else if(lastestStatusOfRequest.equals("waitingforresult")){
+                } else if (lastestStatusOfRequest.equals("waitingforresult")) {
                     displayLastestStatusRequest = "Đang đợi kết quả";
-                }else if(lastestStatusOfRequest.equals("closed")){
+                } else if (lastestStatusOfRequest.equals("closed")) {
                     displayLastestStatusRequest = "Đã xong";
-                }else if(lastestStatusOfRequest.equals("lostsample")){
+                } else if (lastestStatusOfRequest.equals("lostsample")) {
                     displayLastestStatusRequest = "Đang đợi lấy lại mẫu";
-                }else if(lastestStatusOfRequest.equals("coordinatorlostsample")){
+                } else if (lastestStatusOfRequest.equals("coordinatorlostsample")) {
                     displayLastestStatusRequest = "Đang đợi y tá nhận đơn";
-                }else if(lastestStatusOfRequest.equals("canceled")){
+                } else if (lastestStatusOfRequest.equals("canceled")) {
                     displayLastestStatusRequest = "Đã huỷ";
-                }else if(lastestStatusOfRequest.equals("reaccepted")){
+                } else if (lastestStatusOfRequest.equals("reaccepted")) {
                     displayLastestStatusRequest = "Đã nhận đơn bị mất do điều phối viên";
-                }else if(lastestStatusOfRequest.equals("retransporting")){
+                } else if (lastestStatusOfRequest.equals("retransporting")) {
                     displayLastestStatusRequest = "Đang vận chuyển đơn bị mất do điều phối viên";
-                }else {
+                } else {
                     displayLastestStatusRequest = "Đang đợi lấy lại mẫu do điều phối viên làm mất";
                 }
                 switch (statusWillUpdate) {
                     case "pending":
-                        if(lastestStatusOfRequest.equals("canceled")){
-                            return new ResponseEntity<>(new ApiResponse(false,"Khách hàng đã huỷ trạng thái này. Vui lòng tải lại trang"), HttpStatus.OK);
+                        if (lastestStatusOfRequest.equals("canceled")) {
+                            return new ResponseEntity<>(new ApiResponse(false, "Khách hàng đã huỷ trạng thái này. Vui lòng tải lại trang"), HttpStatus.OK);
                         }
                         if (!lastestStatusOfRequest.equals("accepted")) {
                             System.out.println(lastestStatusOfRequest);
                             return new ResponseEntity<>(new ApiResponse(false, "Yêu cầu hiện đang ở trạng thái " + displayLastestStatusRequest + ", vui lòng cập nhật lại"), HttpStatus.OK);
-                        }
-                        else {
+                        } else {
                             requestHistory.setRequestID(requestPresenting.getRequestID());
                             requestHistoryService.save(requestHistory);
                         }
@@ -875,12 +912,19 @@ public class RequestController {
     @PostMapping("/detail/results/add")
     public ResponseEntity updateResultOfRequest(@RequestBody ResultModel resultModel) {
         try {
-            Optional<User> createUser = userRepository.findById(resultModel.getUserID());
-            if(!createUser.isPresent()){
-                return new ResponseEntity(new ApiResponse(false,"Người dùng không tồn tại!"), HttpStatus.OK);
+            try {
+                if (resultModel.getUserID() == 0 || resultModel.getRequestID().isEmpty() || resultModel.getListImage().isEmpty()) {
+                    return new ResponseEntity(new ApiResponse(false, "Không được để trống các trường cập nhật kết quả!"), HttpStatus.OK);
+                }
+            } catch (Exception e) {
+                return new ResponseEntity(new ApiResponse(false, "Không được để trống các trường cập nhật kết quả!"), HttpStatus.OK);
             }
-            if(createUser.get().getActive() == 0){
-                return new ResponseEntity<>(new ApiResponse(false,"Người dùng hiện tại đang bị khoá! Vui lòng liên hệ tới phòng khám để xử lý!"), HttpStatus.OK);
+            Optional<User> createUser = userRepository.findById(resultModel.getUserID());
+            if (!createUser.isPresent()) {
+                return new ResponseEntity(new ApiResponse(false, "Người dùng không tồn tại!"), HttpStatus.OK);
+            }
+            if (createUser.get().getActive() == 0) {
+                return new ResponseEntity<>(new ApiResponse(false, "Người dùng hiện tại đang bị khoá! Vui lòng liên hệ tới phòng khám để xử lý!"), HttpStatus.OK);
             }
             List<String> lsImage = resultModel.getListImage();
             List<Result> lsCreatedResult = new ArrayList<>();

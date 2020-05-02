@@ -22,7 +22,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -129,6 +128,13 @@ public class UserController {
     @PostMapping("/reset-password/{id}")
     public ResponseEntity<?> resetPassword(@RequestBody UserProcessingModel userProcessingModel, @PathVariable("id") int id) {
         try {
+            try {
+                if (userProcessingModel.getUserProcessingID() == 0) {
+                    return new ResponseEntity<>(new ComfirmResponse(true, "Không xác định được tài khoản đang thao tác!", false), HttpStatus.OK);
+                }
+            } catch (Exception ex) {
+                return new ResponseEntity<>(new ComfirmResponse(true, "Không xác định được tài khoản đang thao tác!", false), HttpStatus.OK);
+            }
             Optional<User> processingUser = userService.getUserByID(userProcessingModel.getUserProcessingID());
             if (!processingUser.isPresent()) {
                 return new ResponseEntity<>(new ComfirmResponse(true, "Không tồn tại tài khoản!", false), HttpStatus.OK);
@@ -138,7 +144,7 @@ public class UserController {
             }
             Optional<User> userByID = userService.getUserByID(id);
             if (!userByID.isPresent()) {
-                return new ResponseEntity<>(new ComfirmResponse(true, "Không tồn tại người dùng này!", false), HttpStatus.OK);
+                return new ResponseEntity<>(new ComfirmResponse(true, "Không tồn tại người dùng cần thay đổi mật khẩu!", false), HttpStatus.OK);
             }
             String oldPassword = userByID.get().getPassword();
             //System.out.println(oldPassword + " old");
@@ -171,13 +177,23 @@ public class UserController {
     @PostMapping("/forgot-password")
     public ResponseEntity<?> forgotPassword(@RequestBody ForgotPasswordModel forgotPasswordModel) {
         try {
+            try {
+                if (forgotPasswordModel.getPhoneNumber().isEmpty()) {
+                    return new ResponseEntity<>(new ApiResponse(false, "Không được để trống số điện thoại!"), HttpStatus.OK);
+                }
+            } catch (Exception ex) {
+                return new ResponseEntity<>(new ApiResponse(false, "Không được để trống số điện thoại!"), HttpStatus.OK);
+            }
+            if (!Validate.isPhoneNumber(forgotPasswordModel.getPhoneNumber())) {
+                return new ResponseEntity<>(new ApiResponse(false, "Số điện thoại không đúng định dạng!"), HttpStatus.OK);
+            }
             boolean existPhoneNumber = userRepository.existsByPhoneNumberAndRole(forgotPasswordModel.getPhoneNumber(), "CUSTOMER");
             if (!existPhoneNumber == true) {
                 return new ResponseEntity<>(new ComfirmResponse(true, "Không tìm thấy số điện thoại đã nhập!", false), HttpStatus.OK);
             }
             User forgotPasswordUser = userService.getUserByPhoneNumberAndRole(forgotPasswordModel.getPhoneNumber(), "CUSTOMER");
-            if(forgotPasswordUser.getActive() == 0){
-                return new ResponseEntity<>(new ApiResponse(false,"Người dùng hiện tại đang bị khoá! Vui lòng liên hệ tới phòng khám để xử lý!"), HttpStatus.OK);
+            if (forgotPasswordUser.getActive() == 0) {
+                return new ResponseEntity<>(new ApiResponse(false, "Người dùng hiện tại đang bị khoá! Vui lòng liên hệ tới phòng khám để xử lý!"), HttpStatus.OK);
             }
             String oldPassword = forgotPasswordUser.getPassword();
         /*sentMailModel.setEmail(forgotPasswordUser.getEmail());
@@ -207,11 +223,11 @@ public class UserController {
     public ResponseEntity<?> getLsNotification(@PathVariable("id") int userID) {
         try {
             Optional<User> createUser = userRepository.findById(userID);
-            if(!createUser.isPresent()){
-                return new ResponseEntity<>(new ApiResponse(false,"Người dùng không tồn tại!"), HttpStatus.OK);
+            if (!createUser.isPresent()) {
+                return new ResponseEntity<>(new ApiResponse(false, "Người dùng không tồn tại!"), HttpStatus.OK);
             }
-            if(createUser.get().getActive()==0){
-                return new ResponseEntity<>(new ApiResponse(false,"Người dùng hiện tại đang bị khoá! Vui lòng liên hệ tới phòng khám để xử lý!"), HttpStatus.OK);
+            if (createUser.get().getActive() == 0) {
+                return new ResponseEntity<>(new ApiResponse(false, "Người dùng hiện tại đang bị khoá! Vui lòng liên hệ tới phòng khám để xử lý!"), HttpStatus.OK);
             }
             List<Notification> lsNoti = notificationService.lsNotification(userID);
             if (lsNoti.isEmpty()) {
@@ -251,8 +267,18 @@ public class UserController {
     @PostMapping("/send-otp")
     public ResponseEntity<?> sendSmS(@Valid @RequestBody SmsRequest smsRequest) {
         try {
-            if(smsRequest.getPhoneNumber().isEmpty()){
-                return new ResponseEntity<>(new ApiResponse(false,"Chưa nhập số điện thoại!"), HttpStatus.OK);
+            try {
+                if (smsRequest.getPhoneNumber().isEmpty() || smsRequest.getRole().isEmpty()) {
+                    return new ResponseEntity<>(new ApiResponse(false, "Phải điền đủ thông tin để đăng kí!"), HttpStatus.OK);
+                }
+            } catch (Exception e) {
+                return new ResponseEntity<>(new ApiResponse(false, "Phải điền đủ thông tin để đăng kí!"), HttpStatus.OK);
+            }
+            if (!Validate.isPhoneNumber(smsRequest.getPhoneNumber())) {
+                return new ResponseEntity<>(new ApiResponse(false, "Số điện thoại không đúng định dạng"), HttpStatus.OK);
+            }
+            if (!smsRequest.getRole().equals("CUSTOMER")) {
+                return new ResponseEntity<>(new ApiResponse(false, "Không xác định được người dùng!"), HttpStatus.OK);
             }
             boolean existByPhoneAndRole = userRepository.existsByPhoneNumberAndRole(smsRequest.getPhoneNumber(), smsRequest.getRole());
             if (existByPhoneAndRole == true) {
@@ -280,9 +306,44 @@ public class UserController {
     @PostMapping("/valid-phone-otp")
     public ResponseEntity<?> isValidPhoneNumberOTP(@RequestBody CheckOTPModel checkOTPModel) {
         try {
-            if(checkOTPModel.getPhoneNumber().isEmpty() || checkOTPModel.getName().isEmpty() || checkOTPModel.getDob().toString().isEmpty()
-            || checkOTPModel.getPassword().isEmpty()){
-                return new ResponseEntity<>(new ApiResponse(false,"Cần nhập đủ thông tin người dùng!"), HttpStatus.OK);
+            try {
+                if (checkOTPModel.getOtp().isEmpty()) {
+                    return new ResponseEntity<>(new ApiResponse(false, "Cần nhập mã OTP"), HttpStatus.OK);
+                }
+            } catch (Exception ex) {
+                return new ResponseEntity<>(new ApiResponse(false, "Cần nhập mã OTP"), HttpStatus.OK);
+            }
+            if (!Validate.isValidNumber(checkOTPModel.getOtp())) {
+                return new ResponseEntity<>(new ApiResponse(false, "Mã OTP phải là số!"), HttpStatus.OK);
+            }
+            if (!(checkOTPModel.getOtp().length() == 6)) {
+                return new ResponseEntity<>(new ApiResponse(false, "Mã OTP phải có 6 kí tự!"), HttpStatus.OK);
+            }
+            try {
+                if (checkOTPModel.getPhoneNumber().isEmpty() ||
+                        checkOTPModel.getName().isEmpty() ||
+                        checkOTPModel.getDob().toString().isEmpty() ||
+                        checkOTPModel.getPassword().isEmpty() ||
+                        checkOTPModel.getEmail().isEmpty()) {
+                    return new ResponseEntity<>(new ApiResponse(false, "Cần nhập đủ thông tin người dùng!"), HttpStatus.OK);
+                }
+            } catch (Exception e) {
+                return new ResponseEntity<>(new ApiResponse(false, "Cần nhập đủ thông tin người dùng!"), HttpStatus.OK);
+            }
+            if (!Validate.isPhoneNumber(checkOTPModel.getPhoneNumber())) {
+                return new ResponseEntity<>(new ApiResponse(false, "Số điện thoại không đúng định dạng!"), HttpStatus.OK);
+            }
+            if (!Validate.isValidUserName(checkOTPModel.getName())) {
+                return new ResponseEntity<>(new ApiResponse(false, "Tên người dùng chỉ bao gồm kí tự chữ!"), HttpStatus.OK);
+            }
+            if (!Validate.isValidEmail(checkOTPModel.getEmail())) {
+                return new ResponseEntity<>(new ApiResponse(false, "Email không đúng định dạng!"), HttpStatus.OK);
+            }
+            if (!(checkOTPModel.getGender() == 0 || checkOTPModel.getGender() == 1)) {
+                return new ResponseEntity<>(new ApiResponse(false, "Không xác định được giới tính người dùng!"), HttpStatus.OK);
+            }
+            if (checkOTPModel.getPassword().length() < 6) {
+                return new ResponseEntity<>(new ApiResponse(false, "Mật khẩu phải lớn hơn 6 kí tự"), HttpStatus.OK);
             }
             Optional<ValidPhoneToken> checkValidPhoneToken = tokenRepository.getByPhoneNumberAndToken(checkOTPModel.getPhoneNumber(), checkOTPModel.getOtp());
             if (!checkValidPhoneToken.isPresent()) {
@@ -292,10 +353,7 @@ public class UserController {
                 //tokenRepository.delete(tokenRepository.getOne(checkValidPhoneToken.get().getSessionID()));
                 return new ResponseEntity<>(new CheckOTPResponse(true, "Mã OTP hết hạn!", false, false), HttpStatus.OK);
             }
-        /*boolean emailExist = checkEmailExist.isAddressValid(checkOTPModel.getEmail());
-        if(emailExist==false){
-            return new ResponseEntity<>(new ApiResponse(false,"Email không tồn tại!"), HttpStatus.OK);
-        }*/
+
             String enCryptPassword = bCryptPasswordEncoder.encode(checkOTPModel.getPassword());
             User registeredUser = new User();
             registeredUser.setName(checkOTPModel.getName());
@@ -313,7 +371,7 @@ public class UserController {
             registeredUser.setPassword(enCryptPassword);
             userService.saveUser(registeredUser);
             tokenRepository.delete(tokenRepository.getOne(checkValidPhoneToken.get().getSessionID()));
-            return new ResponseEntity<>(new CheckOTPResponse(true, "Nhập mã OTP thành công", true, true), HttpStatus.OK);
+            return new ResponseEntity<>(new CheckOTPResponse(true, "Nhập mã OTP thành công. Người dùng đăng kí thành công!", true, true), HttpStatus.OK);
         } catch (Exception ex) {
             System.out.println(ex.getMessage());
             return new ResponseEntity<>(new ApiResponse(false, "Hệ thống đang xử lý. Vui lòng tải lại!"), HttpStatus.OK);
@@ -324,6 +382,19 @@ public class UserController {
     @PostMapping("/resend-otp")
     public ResponseEntity<?> resendOTP(@Valid @RequestBody SmsRequest smsRequest) {
         try {
+            try {
+                if (smsRequest.getPhoneNumber().isEmpty() || smsRequest.getRole().isEmpty()) {
+                    return new ResponseEntity<>(new ApiResponse(false, "Phải điền đủ thông tin để lấy lại mã!"), HttpStatus.OK);
+                }
+            } catch (Exception e) {
+                return new ResponseEntity<>(new ApiResponse(false, "Phải điền đủ thông tin để lấy lại mã!"), HttpStatus.OK);
+            }
+            if (!Validate.isPhoneNumber(smsRequest.getPhoneNumber())) {
+                return new ResponseEntity<>(new ApiResponse(false, "Số điện thoại không đúng định dạng"), HttpStatus.OK);
+            }
+            if (!smsRequest.getRole().equals("CUSTOMER")) {
+                return new ResponseEntity<>(new ApiResponse(false, "Không xác định được người dùng!"), HttpStatus.OK);
+            }
             Optional<ValidPhoneToken> validPhoneToken = tokenRepository.getByPhoneNumber(smsRequest.getPhoneNumber());
             if (!validPhoneToken.isPresent()) {
                 return new ResponseEntity<>(new SendMessageResponse(true, "Bạn chưa đăng kí MedTest với số điện thoại này!", false), HttpStatus.OK);
@@ -341,55 +412,102 @@ public class UserController {
     @PostMapping("/create-employee")
     public ResponseEntity<?> createEmployee(@RequestBody User employeeCreatedUser) {
         try {
-            if (employeeCreatedUser.getName().isEmpty() ||
-                    employeeCreatedUser.getPhoneNumber().isEmpty() ||
-                    employeeCreatedUser.getEmail().isEmpty() ||
-                    employeeCreatedUser.getDob().toString().isEmpty() ||
-                    employeeCreatedUser.getPassword().isEmpty() ||
-                    employeeCreatedUser.getRole().isEmpty()) {
-                return new ResponseEntity<>(new ApiResponse(false, "Không thể tạo người dùng mới vì thiếu thông tin"), HttpStatus.OK);
+            try {
+                try {
+                    if (employeeCreatedUser.getName().isEmpty() ||
+                            employeeCreatedUser.getPhoneNumber().isEmpty() ||
+                            employeeCreatedUser.getEmail().isEmpty() ||
+                            employeeCreatedUser.getDob().toString().isEmpty() ||
+                            employeeCreatedUser.getPassword().isEmpty() ||
+                            employeeCreatedUser.getRole().isEmpty() ||
+                            employeeCreatedUser.getDistrictCode().isEmpty() ||
+                            employeeCreatedUser.getTownCode().isEmpty() ||
+                            employeeCreatedUser.getAddress().isEmpty()) {
+                        return new ResponseEntity<>(new ApiResponse(false, "Không thể tạo người dùng mới vì thiếu thông tin"), HttpStatus.OK);
+                    }
+                } catch (Exception ex) {
+                    return new ResponseEntity<>(new ApiResponse(false, "Không thể tạo người dùng mới vì thiếu thông tin"), HttpStatus.OK);
+                }
+                if (!Validate.isPhoneNumber(employeeCreatedUser.getPhoneNumber())) {
+                    return new ResponseEntity<>(new ApiResponse(false, "Số điện thoại không đúng định dạng!"), HttpStatus.OK);
+                }
+                if (!Validate.isValidUserName(employeeCreatedUser.getName())) {
+                    return new ResponseEntity<>(new ApiResponse(false, "Tên người dùng chỉ được chứa kí tự chữ!"), HttpStatus.OK);
+                }
+                if (!Validate.isValidEmail(employeeCreatedUser.getEmail())) {
+                    return new ResponseEntity<>(new ApiResponse(false, "Email không đúng định dạng!"), HttpStatus.OK);
+                }
+                if (employeeCreatedUser.getPassword().length() < 6) {
+                    return new ResponseEntity<>(new ApiResponse(false, "Mật khẩu phải nhiều hơn 6 kí tự!"), HttpStatus.OK);
+                }
+                if (!(employeeCreatedUser.getRole().equals("NURSE") ||
+                        employeeCreatedUser.getRole().equals("COORDINATOR") ||
+                        employeeCreatedUser.getRole().equals("ADMIN"))) {
+                    return new ResponseEntity<>(new ApiResponse(false, "Không xác định được người dùng!"), HttpStatus.OK);
+                }
+                if (districtRepository.existsByDistrictCode(employeeCreatedUser.getDistrictCode()) == false) {
+                    return new ResponseEntity<>(new ApiResponse(false, "Mã quận/huyện không tồn tại!"), HttpStatus.OK);
+                }
+                if (townRepository.existsByTownCodeAndDistrictCode(employeeCreatedUser.getTownCode(), employeeCreatedUser.getDistrictCode()) == false) {
+                    return new ResponseEntity<>(new ApiResponse(false, "Mã phường/xã không đúng!"), HttpStatus.OK);
+                }
+                boolean isExistByPhoneNumberAndRole = userRepository.existsByPhoneNumberAndRole(employeeCreatedUser.getPhoneNumber(), employeeCreatedUser.getRole());
+                if (isExistByPhoneNumberAndRole) {
+                    return new ResponseEntity<>(new CreatedSuccessApi(true, "Số điện thoại đã được đăng kí.", false), HttpStatus.OK);
+                }
+                if (employeeCreatedUser.getRole().equals("ADMIN")) {
+                    boolean isCoordinator = userRepository.existsByPhoneNumberAndRole(employeeCreatedUser.getPhoneNumber(), "COORDINATOR");
+                    if (isCoordinator == true) {
+                        return new ResponseEntity<>(new CreatedSuccessApi(true, "Số điện thoại không được đăng ký với vị trí này.", false), HttpStatus.OK);
+                    }
+                }
+                if (employeeCreatedUser.getRole().equals("COORDINATOR")) {
+                    boolean isCoordinator = userRepository.existsByPhoneNumberAndRole(employeeCreatedUser.getPhoneNumber(), "ADMIN");
+                    if (isCoordinator == true) {
+                        return new ResponseEntity<>(new CreatedSuccessApi(true, "Số điện thoại này không được thực hiện đăng kí.", false), HttpStatus.OK);
+                    }
+                }
+                String enCryptPassword = bCryptPasswordEncoder.encode(employeeCreatedUser.getPassword());
+                employeeCreatedUser.setActive(1);
+                if (employeeCreatedUser.getImage().isEmpty() || employeeCreatedUser.getImage() == null) {
+                    employeeCreatedUser.setImage("https://www.kindpng.com/picc/m/10-104902_simple-user-icon-user-icon-white-png-transparent.png");
+                }
+                employeeCreatedUser.setPassword(enCryptPassword);
+                SmsRequest smsRequest = new SmsRequest(employeeCreatedUser.getPhoneNumber(), employeeCreatedUser.getRole());
+                smsService.verifySms(smsRequest);
+            } catch (Exception exception) {
+                System.out.println(exception.getMessage());
+                return new ResponseEntity<>(new CreatedSuccessApi(false, "Số điện thoại không tồn tại!", false), HttpStatus.OK);
             }
-            boolean isExistByPhoneNumberAndRole = userRepository.existsByPhoneNumberAndRole(employeeCreatedUser.getPhoneNumber(), employeeCreatedUser.getRole());
-            if (isExistByPhoneNumberAndRole) {
+            try {
+                userService.saveUser(employeeCreatedUser);
+            } catch (Exception ex) {
+                ex.getMessage();
                 return new ResponseEntity<>(new CreatedSuccessApi(true, "Số điện thoại đã được đăng kí.", false), HttpStatus.OK);
             }
-            if (employeeCreatedUser.getRole().equals("ADMIN")) {
-                boolean isCoordinator = userRepository.existsByPhoneNumberAndRole(employeeCreatedUser.getPhoneNumber(), "COORDINATOR");
-                if (isCoordinator == true) {
-                    return new ResponseEntity<>(new CreatedSuccessApi(true, "Số điện thoại không được đăng ký với vị trí này.", false), HttpStatus.OK);
-                }
-            }
-            if (employeeCreatedUser.getRole().equals("COORDINATOR")) {
-                boolean isCoordinator = userRepository.existsByPhoneNumberAndRole(employeeCreatedUser.getPhoneNumber(), "ADMIN");
-                if (isCoordinator == true) {
-                    return new ResponseEntity<>(new CreatedSuccessApi(true, "Số điện thoại này không được thực hiện đăng kí.", false), HttpStatus.OK);
-                }
-            }
-            String enCryptPassword = bCryptPasswordEncoder.encode(employeeCreatedUser.getPassword());
-            employeeCreatedUser.setActive(1);
-            if (employeeCreatedUser.getImage().isEmpty() || employeeCreatedUser.getImage() == null) {
-                employeeCreatedUser.setImage("https://www.kindpng.com/picc/m/10-104902_simple-user-icon-user-icon-white-png-transparent.png");
-            }
-            employeeCreatedUser.setPassword(enCryptPassword);
-            SmsRequest smsRequest = new SmsRequest(employeeCreatedUser.getPhoneNumber(), employeeCreatedUser.getRole());
-            smsService.verifySms(smsRequest);
-        } catch (Exception exception) {
-            System.out.println(exception.getMessage());
-            return new ResponseEntity<>(new CreatedSuccessApi(false, "Số điện thoại không tồn tại!", false), HttpStatus.OK);
+            return new ResponseEntity<>(employeeCreatedUser, HttpStatus.OK);
+        } catch (Exception ex) {
+            return new ResponseEntity<>(new ApiResponse(false, "Hệ thống đang xử lý. Vui lòng tải lại!"), HttpStatus.OK);
         }
-        try {
-            userService.saveUser(employeeCreatedUser);
-        }catch (Exception ex){
-            ex.getMessage();
-            return new ResponseEntity<>(new CreatedSuccessApi(true, "Số điện thoại đã được đăng kí.", false), HttpStatus.OK);
-        }
-        return new ResponseEntity<>(employeeCreatedUser, HttpStatus.OK);
     }
 
     //login in web (for coordinator/admin)
     @PostMapping("/login")
     public ResponseEntity<?> webLogin(@RequestBody WebUserLoginModel webUserLoginModel) {
         try {
+            try {
+                if (webUserLoginModel.getPhoneNumber().isEmpty() || webUserLoginModel.getPassword().isEmpty()) {
+                    return new ResponseEntity<>(new ApiResponse(false, "Không được để trống các trường đăng nhập!"), HttpStatus.OK);
+                }
+            } catch (Exception ex) {
+                return new ResponseEntity<>(new ApiResponse(false, "Không được để trống các trường đăng nhập!"), HttpStatus.OK);
+            }
+            if (!Validate.isPhoneNumber(webUserLoginModel.getPhoneNumber())) {
+                return new ResponseEntity<>(new ApiResponse(false, "Số điện thoại không đúng định dạng!"), HttpStatus.OK);
+            }
+            if (webUserLoginModel.getPassword().length() < 6) {
+                return new ResponseEntity<>(new ApiResponse(false, "Mật khẩu phải có ít nhất 6 kí tự!"), HttpStatus.OK);
+            }
             boolean isCoordinator = userRepository.existsByPhoneNumberAndRole(webUserLoginModel.getPhoneNumber(), "COORDINATOR");
             boolean isAdmin = userRepository.existsByPhoneNumberAndRole(webUserLoginModel.getPhoneNumber(), "ADMIN");
             if (isCoordinator == false && isAdmin == false) {
@@ -402,7 +520,7 @@ public class UserController {
                 userByPhone = userRepository.getUserByPhoneNumberAndRole(webUserLoginModel.getPhoneNumber(), "COORDINATOR");
             }
             if (userByPhone.getActive() == 0) {
-                return new ResponseEntity<>(new ApiResponse(false,"Người dùng hiện tại đang bị khoá! Vui lòng liên hệ tới phòng khám để xử lý!"), HttpStatus.OK);
+                return new ResponseEntity<>(new ApiResponse(false, "Người dùng hiện tại đang bị khoá! Vui lòng liên hệ tới phòng khám để xử lý!"), HttpStatus.OK);
             }
             if (!BCrypt.checkpw(webUserLoginModel.getPassword(), userByPhone.getPassword())) {
                 return new ResponseEntity<>(new LoginResponse(true, "Sai mật khẩu", false), HttpStatus.OK);
@@ -445,19 +563,51 @@ public class UserController {
     @PostMapping("/update-user/{id}")
     public ResponseEntity<?> updateUserInfo(@RequestBody User user, @PathVariable("id") int userID) {
         try {
+            try {
+                if (user.getName().isEmpty() ||
+                        user.getDob().toString().isEmpty() ||
+                        user.getAddress().isEmpty() ||
+                        user.getEmail().isEmpty() ||
+                        user.getTownCode().isEmpty() ||
+                        user.getDistrictCode().isEmpty()) {
+                    return new ResponseEntity<>(new ApiResponse(false, "Phải nhập đủ dữ liệu để cập nhật người dùng!"), HttpStatus.OK);
+                }
+            } catch (Exception ex) {
+                return new ResponseEntity<>(new ApiResponse(false, "Phải nhập đủ dữ liệu để cập nhật người dùng!"), HttpStatus.OK);
+            }
+            if (!Validate.isValidUserName(user.getName())) {
+                return new ResponseEntity<>(new ApiResponse(false, "Tên người dùng chỉ bao gồm kí tự chữ!"), HttpStatus.OK);
+            }
+            if (!Validate.isValidEmail(user.getEmail())) {
+                return new ResponseEntity<>(new ApiResponse(false, "Email không đúng định dạng!"), HttpStatus.OK);
+            }
+            if (districtRepository.existsByDistrictCode(user.getDistrictCode()) == false) {
+                return new ResponseEntity<>(new ApiResponse(false, "Mã quận/huyện không tồn tại!"), HttpStatus.OK);
+            }
+            if (townRepository.existsByTownCodeAndDistrictCode(user.getTownCode(), user.getDistrictCode()) == false) {
+                return new ResponseEntity<>(new ApiResponse(false, "Mã phường/xã không đúng!"), HttpStatus.OK);
+            }
+            if (!(user.getActive() == 1 || user.getActive() == 0)) {
+                return new ResponseEntity<>(new ApiResponse(false, "Không xác định được trạng thái người dùng!"), HttpStatus.OK);
+            }
+            if (!(user.getGender() == 1 || user.getGender() == 0)) {
+                return new ResponseEntity<>(new ApiResponse(false, "Không xác định được giới tính người dùng!"), HttpStatus.OK);
+            }
             Optional<User> getUserByID = userService.getUserByID(userID);
             if (!getUserByID.isPresent()) {
                 return new ResponseEntity<>(new ApiResponse(false, "Không tìm thấy người dùng"), HttpStatus.OK);
             }
-            if(getUserByID.get().getActive() == 0){
-                return new ResponseEntity<>(new ApiResponse(false,"Người dùng hiện tại đang bị khoá! Vui lòng liên hệ tới phòng khám để xử lý!"), HttpStatus.OK);
-            }
-            if (user.getImage().isEmpty() || user.getImage() == null) {
+            try {
+                if (user.getImage().isEmpty()) {
+                    user.setId(userID);
+                    userService.updateContainStatus(user);
+                } else {
+                    user.setId(userID);
+                    userService.updateContainImage(user);
+                }
+            } catch (NullPointerException ex) {
                 user.setId(userID);
                 userService.updateContainStatus(user);
-            } else {
-                user.setId(userID);
-                userService.updateContainImage(user);
             }
             return new ResponseEntity<>(getUserByID, HttpStatus.OK);
         } catch (Exception ex) {
@@ -468,19 +618,32 @@ public class UserController {
     @PostMapping("admin/change-password/{id}")
     public ResponseEntity<?> changePassword(@RequestBody ChangePasswordModel changePasswordModel, @PathVariable("id") int id) {
         try {
-            Optional<User> getCustomer = userRepository.getUserByIdAndRole(id, "ADMIN");
-            if (!getCustomer.isPresent()) {
-                return new ResponseEntity<>(new ApiResponse(false, "Người dùng không tồn tại!"), HttpStatus.OK);
+            try {
+                if (changePasswordModel.getNewPassword().isEmpty() || changePasswordModel.getOldPassword().isEmpty()) {
+                    return new ResponseEntity<>(new ApiResponse(false, "Mật khẩu không được để trống!"), HttpStatus.OK);
+                }
+            } catch (Exception e) {
+                return new ResponseEntity<>(new ApiResponse(false, "Mật khẩu không được để trống!"), HttpStatus.OK);
             }
-            if (!BCrypt.checkpw(changePasswordModel.getOldPassword(), getCustomer.get().getPassword())) {
-                return new ResponseEntity<>(new ApiResponse(false, "Mật khẩu hiện tại không đúng!"), HttpStatus.OK);
+            if (changePasswordModel.getOldPassword().length() < 6 || changePasswordModel.getNewPassword().length() < 6) {
+                return new ResponseEntity<>(new ApiResponse(false, "Mật khẩu phải nhiều hơn 6 kí tự"), HttpStatus.OK);
             }
-            if(changePasswordModel.getOldPassword().equals(changePasswordModel.getNewPassword())){
-                return new ResponseEntity<>(new ComfirmResponse(true,"Mật khẩu mới phải khác mật khẩu cũ", false),HttpStatus.OK);
+            Optional<User> getAdmin = userRepository.getUserByIdAndRole(id, "ADMIN");
+            if (!getAdmin.isPresent()) {
+                return new ResponseEntity<>(new ApiResponse(true, "Người dùng không tồn tại!"), HttpStatus.OK);
+            }
+            if (getAdmin.get().getActive() == 0) {
+                return new ResponseEntity<>(new ApiResponse(false, "Người dùng hiện tại đang bị khoá! Vui lòng liên hệ tới phòng khám để xử lý!"), HttpStatus.OK);
+            }
+            if (!BCrypt.checkpw(changePasswordModel.getOldPassword(), getAdmin.get().getPassword())) {
+                return new ResponseEntity<>(new ApiResponse(true, "Mật khẩu hiện tại không đúng!"), HttpStatus.OK);
+            }
+            if (changePasswordModel.getOldPassword().equals(changePasswordModel.getNewPassword())) {
+                return new ResponseEntity<>(new ComfirmResponse(true, "Mật khẩu mới phải khác mật khẩu cũ", false), HttpStatus.OK);
             }
             changePasswordModel.setID(id);
-            getCustomer.get().setPassword(bCryptPasswordEncoder.encode(changePasswordModel.getNewPassword()));
-            userService.saveUser(getCustomer.get());
+            getAdmin.get().setPassword(bCryptPasswordEncoder.encode(changePasswordModel.getNewPassword()));
+            userService.saveUser(getAdmin.get());
             return new ResponseEntity<>(new ApiResponse(true, "Thay đổi mật khẩu thành công!"), HttpStatus.OK);
         } catch (Exception ex) {
             System.out.println(ex.getMessage());
