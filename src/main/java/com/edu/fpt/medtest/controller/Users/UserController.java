@@ -336,6 +336,9 @@ public class UserController {
             if (!Validate.isValidUserName(checkOTPModel.getName())) {
                 return new ResponseEntity<>(new ApiResponse(false, "Tên người dùng chỉ bao gồm kí tự chữ!"), HttpStatus.OK);
             }
+            if(checkOTPModel.getName().length()>50){
+                return new ResponseEntity<>(new ApiResponse(false, "Tên hiển thị quá dài! Hãy điền tên ngắn hơn!"), HttpStatus.OK);
+            }
             if (!Validate.isValidEmail(checkOTPModel.getEmail())) {
                 return new ResponseEntity<>(new ApiResponse(false, "Email không đúng định dạng!"), HttpStatus.OK);
             }
@@ -434,6 +437,9 @@ public class UserController {
                 if (!Validate.isValidUserName(employeeCreatedUser.getName())) {
                     return new ResponseEntity<>(new ApiResponse(false, "Tên người dùng chỉ được chứa kí tự chữ!"), HttpStatus.OK);
                 }
+                if(employeeCreatedUser.getName().length()>50){
+                    return new ResponseEntity<>(new ApiResponse(false, "Tên hiển thị quá dài! Hãy điền tên ngắn hơn!"), HttpStatus.OK);
+                }
                 if (!Validate.isValidEmail(employeeCreatedUser.getEmail())) {
                     return new ResponseEntity<>(new ApiResponse(false, "Email không đúng định dạng!"), HttpStatus.OK);
                 }
@@ -450,6 +456,9 @@ public class UserController {
                 }
                 if (townRepository.existsByTownCodeAndDistrictCode(employeeCreatedUser.getTownCode(), employeeCreatedUser.getDistrictCode()) == false) {
                     return new ResponseEntity<>(new ApiResponse(false, "Mã phường/xã không đúng!"), HttpStatus.OK);
+                }
+                if(employeeCreatedUser.getAddress().length()>90){
+                    return new ResponseEntity<>(new ApiResponse(false, "Địa chỉ quá dài! Hãy điền tên ngắn hơn!"), HttpStatus.OK);
                 }
                 boolean isExistByPhoneNumberAndRole = userRepository.existsByPhoneNumberAndRole(employeeCreatedUser.getPhoneNumber(), employeeCreatedUser.getRole());
                 if (isExistByPhoneNumberAndRole) {
@@ -578,6 +587,9 @@ public class UserController {
             if (!Validate.isValidUserName(user.getName())) {
                 return new ResponseEntity<>(new ApiResponse(false, "Tên người dùng chỉ bao gồm kí tự chữ!"), HttpStatus.OK);
             }
+            if(user.getName().length()>50){
+                return new ResponseEntity<>(new ApiResponse(false, "Tên hiển thị quá dài! Hãy điền tên ngắn hơn!"), HttpStatus.OK);
+            }
             if (!Validate.isValidEmail(user.getEmail())) {
                 return new ResponseEntity<>(new ApiResponse(false, "Email không đúng định dạng!"), HttpStatus.OK);
             }
@@ -586,6 +598,9 @@ public class UserController {
             }
             if (townRepository.existsByTownCodeAndDistrictCode(user.getTownCode(), user.getDistrictCode()) == false) {
                 return new ResponseEntity<>(new ApiResponse(false, "Mã phường/xã không đúng!"), HttpStatus.OK);
+            }
+            if(user.getAddress().length()>90){
+                return new ResponseEntity<>(new ApiResponse(false, "Địa chỉ quá dài! Hãy điền tên ngắn hơn!"), HttpStatus.OK);
             }
             if (!(user.getActive() == 1 || user.getActive() == 0)) {
                 return new ResponseEntity<>(new ApiResponse(false, "Không xác định được trạng thái người dùng!"), HttpStatus.OK);

@@ -242,6 +242,12 @@ public class CustomerController {
             if (townRepository.existsByTownCodeAndDistrictCode(customer.getTownCode(), customer.getDistrictCode()) == false) {
                 return new ResponseEntity<>(new ApiResponse(false, "Mã phường/xã không đúng!"), HttpStatus.OK);
             }
+            if(customer.getName().length()>50){
+                return new ResponseEntity<>(new ApiResponse(false, "Tên hiển thị quá dài! Hãy điền tên ngắn hơn!"), HttpStatus.OK);
+            }
+            if(customer.getAddress().length()>90){
+                return new ResponseEntity<>(new ApiResponse(false, "Địa chỉ quá dài! Hãy điền tên ngắn hơn!"), HttpStatus.OK);
+            }
             Optional<User> getCustomer = userService.getUserByID(id);
             if (!getCustomer.isPresent()) {
                 return new ResponseEntity<>(new ApiResponse(false, "Không tìm thấy người dùng!"), HttpStatus.OK);
@@ -277,6 +283,9 @@ public class CustomerController {
             }
             if (townRepository.existsByTownCodeAndDistrictCode(customer.getTownCode(), customer.getDistrictCode()) == false) {
                 return new ResponseEntity<>(new ApiResponse(false, "Mã phường/xã không đúng!"), HttpStatus.OK);
+            }
+            if(customer.getAddress().length()>90){
+                return new ResponseEntity<>(new ApiResponse(false, "Địa chỉ quá dài! Hãy điền tên ngắn hơn!"), HttpStatus.OK);
             }
             Optional<User> getCustomer = userService.getUserByID(id);
             if (!getCustomer.isPresent()) {
