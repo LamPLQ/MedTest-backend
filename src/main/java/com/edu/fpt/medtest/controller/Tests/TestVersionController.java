@@ -71,23 +71,45 @@ public class TestVersionController {
     @PostMapping("/upgrade-version")
     public ResponseEntity<?> upGradeVersion(@RequestBody UpgradeVersionModel upgradeVersionModel) {
         try {
+            try {
+                if (upgradeVersionModel.getCreatorID() == 0) {
+                    return new ResponseEntity<>(new ApiResponse(false, "Người dùng không tồn tại"), HttpStatus.OK);
+                }
+            } catch (Exception e) {
+                return new ResponseEntity<>(new ApiResponse(false, "Người dùng không tồn tại"), HttpStatus.OK);
+            }
             Optional<User> accessCoor = userRepository.getUserByIdAndRole(upgradeVersionModel.getCreatorID(), "COORDINATOR");
             Optional<User> accessAdmin = userRepository.getUserByIdAndRole(upgradeVersionModel.getCreatorID(), "ADMIN");
             if (!accessCoor.isPresent() && !accessAdmin.isPresent()) {
                 return new ResponseEntity<>(new ApiResponse(true, "Người dùng không có quyền đăng nhập vào tính năng này"), HttpStatus.OK);
             }
+            Optional<User> getUser = userRepository.findById(upgradeVersionModel.getCreatorID());
+            if(getUser.get().getActive() == 0){
+                return new ResponseEntity<>(new ApiResponse(false,"Người dùng đang bị khoá!"), HttpStatus.OK);
+            }
             //check test
             List<Test> lsInputTest = upgradeVersionModel.getLsInputTest();
+            try {
             if (lsInputTest.isEmpty()) {
+                return new ResponseEntity<>(new ApiResponse(true, "Không cập nhật được phiên bản test mới vì danh sách test trống!"), HttpStatus.OK);
+            }}catch (Exception ex){
                 return new ResponseEntity<>(new ApiResponse(true, "Không cập nhật được phiên bản test mới vì danh sách test trống!"), HttpStatus.OK);
             }
 
             for (Test checkTest : lsInputTest) {
-                if (checkTest.getPrice() == null ||
-                        checkTest.getTestName().isEmpty() ||
-                        checkTest.getTestTypeID() == 0 ||
-                        checkTest.getVersionID() == 0) {
-                    return new ResponseEntity<>(new ApiResponse(true, "Không cập nhật được phiên bản test mới vì bài test không hợp lệ!"), HttpStatus.OK);
+                try {
+                    if (checkTest.getPrice() == null ||
+                            checkTest.getTestName().isEmpty() ||
+                            checkTest.getTestTypeID() == 0 ||
+                            checkTest.getVersionID() == 0) {
+                        return new ResponseEntity<>(new ApiResponse(true, "Không cập nhật được phiên bản test mới vì bài test không hợp lệ!"), HttpStatus.OK);
+                    }
+                    Optional<TestType> getTestType = testTypeService.findTestTypeByID(checkTest.getTestTypeID());
+                    if (!getTestType.isPresent()) {
+                        return new ResponseEntity<>(new ApiResponse(true, "Không tồn tại loại bài test!"), HttpStatus.OK);
+                    }
+                } catch (Exception ex) {
+                    return new ResponseEntity<>(new ApiResponse(true, "Không tồn tại loại bài test!"), HttpStatus.OK);
                 }
             }
             //create a new version
@@ -139,6 +161,9 @@ public class TestVersionController {
             }
             //set list test
             testsOfVersion.setLsTests(apiResponse);
+            if (testsOfVersion == null) {
+                return new ResponseEntity<>(new ApiResponse(true, "Phiên bản mới chưa được tạo!"), HttpStatus.OK);
+            }
             return new ResponseEntity<>(testsOfVersion, HttpStatus.OK);
         } catch (Exception e) {
             System.out.println(e.getMessage());
@@ -183,6 +208,9 @@ public class TestVersionController {
             }
             //set list test
             returnAllTestOfThisVersion.setLsTests(apiResponse);
+            if (returnAllTestOfThisVersion == null) {
+                return new ResponseEntity<>(new ApiResponse(true, "Không có xét nghiệm nào tại phiên bản hiện tại"), HttpStatus.OK);
+            }
             return new ResponseEntity<>(returnAllTestOfThisVersion, HttpStatus.OK);
         } catch (Exception ex) {
             System.out.println(ex.getMessage());
@@ -234,6 +262,9 @@ public class TestVersionController {
             }
             //set list test
             returnAllTestOfThisVersion.setLsTests(apiResponse);
+            if (returnAllTestOfThisVersion == null) {
+                return new ResponseEntity<>(new ApiResponse(true, "Không có bài test nào tại version mới nhất!"), HttpStatus.OK);
+            }
             return new ResponseEntity<>(returnAllTestOfThisVersion, HttpStatus.OK);
         } catch (Exception ex) {
             System.out.println(ex.getMessage());

@@ -83,15 +83,19 @@ public class AppointmentController {
     @PostMapping("/create")
     public ResponseEntity<?> createNewAppointment(@RequestBody Appointment appointment) {
         try {
-            Optional<User> createUser = userRepository.findById(appointment.getCustomerID());
-            if(!createUser.isPresent()){
-                return new ResponseEntity<>(new ApiResponse(false,"Người dùng không tồn tại"), HttpStatus.OK);
-            }
-            if(createUser.get().getActive() == 0){
-                return new ResponseEntity<>(new ApiResponse(false,"Người dùng hiện tại đang bị khoá! Vui lòng liên hệ tới phòng khám để xử lý!"), HttpStatus.OK);
-            }
-            if (appointment.getMeetingTime().toString().isEmpty() || appointment.getCustomerID() == 0) {
+            try {
+                if (appointment.getMeetingTime().toString().isEmpty() || appointment.getCustomerID() == 0) {
+                    return new ResponseEntity<>(new ApiResponse(false, "Người dùng cần nhập đủ thông tin trước khi tạo cuộc hẹn mới!"), HttpStatus.OK);
+                }
+            } catch (NullPointerException ex) {
                 return new ResponseEntity<>(new ApiResponse(false, "Người dùng cần nhập đủ thông tin trước khi tạo cuộc hẹn mới!"), HttpStatus.OK);
+            }
+            Optional<User> createUser = userRepository.findById(appointment.getCustomerID());
+            if (!createUser.isPresent()) {
+                return new ResponseEntity<>(new ApiResponse(false, "Người dùng không tồn tại"), HttpStatus.OK);
+            }
+            if (createUser.get().getActive() == 0) {
+                return new ResponseEntity<>(new ApiResponse(false, "Người dùng hiện tại đang bị khoá! Vui lòng liên hệ tới phòng khám để xử lý!"), HttpStatus.OK);
             }
             Optional<User> userCreateAppointment = userRepository.getUserByIdAndRole(appointment.getCustomerID(), "CUSTOMER");
             if (!userCreateAppointment.isPresent()) {
@@ -170,16 +174,23 @@ public class AppointmentController {
     @PutMapping(value = "/update/{id}")
     public ResponseEntity<?> updateAppointment(@RequestBody Appointment appointment, @PathVariable("id") String id) {
         try {
+            try {
+                if(!appointment.getStatus().equals("canceled")){
+                    return new ResponseEntity<>(new ApiResponse(false,"Không xác định được yêu cầu!"), HttpStatus.OK);
+                }
+            }catch (Exception e){
+                return new ResponseEntity<>(new ApiResponse(false,"Không xác định được yêu cầu!"), HttpStatus.OK);
+            }
             Appointment appointmentExecuting = appointmentService.getAppointmentByID(id);
             Optional<User> createUser = userRepository.findById(appointmentExecuting.getCustomerID());
-            if(!createUser.isPresent()){
-                return new ResponseEntity<>(new ApiResponse(false,"Người dùng không tồn tại!"), HttpStatus.OK);
+            if (!createUser.isPresent()) {
+                return new ResponseEntity<>(new ApiResponse(false, "Người dùng không tồn tại!"), HttpStatus.OK);
             }
-            if(createUser.get().getActive() == 0){
-                return new ResponseEntity<>(new ApiResponse(false,"Người dùng hiện tại đang bị khoá! Vui lòng liên hệ tới phòng khám để xử lý!"), HttpStatus.OK);
+            if (createUser.get().getActive() == 0) {
+                return new ResponseEntity<>(new ApiResponse(false, "Người dùng hiện tại đang bị khoá! Vui lòng liên hệ tới phòng khám để xử lý!"), HttpStatus.OK);
             }
-            if(appointmentExecuting.getStatus().equals(appointment.getStatus())){
-                return new ResponseEntity<>(new ApiResponse(false,"Cuộc hẹn đã ở trạng thái bị huỷ!"), HttpStatus.OK);
+            if (appointmentExecuting.getStatus().equals(appointment.getStatus())) {
+                return new ResponseEntity<>(new ApiResponse(false, "Cuộc hẹn đã ở trạng thái bị huỷ!"), HttpStatus.OK);
             }
             if (appointmentExecuting == null) {
                 return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy cuộc hẹn!"), HttpStatus.OK);
@@ -210,16 +221,23 @@ public class AppointmentController {
     @PostMapping(value = "/accept/{id}")
     public ResponseEntity<?> updateAppointmentByCoordinator(@RequestBody Appointment appointment, @PathVariable("id") String id) {
         try {
-            Optional<User> processUser = userRepository.findById(appointment.getCoordinatorID());
-            if(!processUser.isPresent()){
-                return new ResponseEntity<>(new ApiResponse(false,"Người dùng không tồn tại"), HttpStatus.OK);
+            try {
+                if(!appointment.getStatus().equals("accepted")){
+                    return new ResponseEntity<>(new ApiResponse(false,"Không xác định được yêu cầu!"), HttpStatus.OK);
+                }
+            }catch (Exception e){
+                return new ResponseEntity<>(new ApiResponse(false,"Không xác định được yêu cầu!"), HttpStatus.OK);
             }
-            if(processUser.get().getActive() == 0){
-                return new ResponseEntity<>(new ApiResponse(false,"Người dùng hiện tại đang bị khoá! Vui lòng liên hệ tới phòng khám để xử lý!"), HttpStatus.OK);
+            Optional<User> processUser = userRepository.getUserByIdAndRole(appointment.getCoordinatorID(),"COORDINATOR");
+            if (!processUser.isPresent()) {
+                return new ResponseEntity<>(new ApiResponse(false, "Người dùng không có quyền thực hiện chức năng này!"), HttpStatus.OK);
+            }
+            if (processUser.get().getActive() == 0) {
+                return new ResponseEntity<>(new ApiResponse(false, "Người dùng hiện tại đang bị khoá! Vui lòng liên hệ tới phòng khám để xử lý!"), HttpStatus.OK);
             }
             Appointment appointmentExecuting = appointmentService.getAppointmentByID(id);
-            if(appointmentExecuting.getStatus().equals(appointment.getStatus())){
-                return new ResponseEntity<>(new ApiResponse(false,"Cuộc hẹn đã ở trạng thái đã nhận!"), HttpStatus.OK);
+            if (appointmentExecuting.getStatus().equals(appointment.getStatus())) {
+                return new ResponseEntity<>(new ApiResponse(false, "Cuộc hẹn đã ở trạng thái đã nhận!"), HttpStatus.OK);
             }
             if (appointmentExecuting == null) {
                 return new ResponseEntity<>(new ApiResponse(false, "Không tìm thấy cuộc hẹn!"), HttpStatus.OK);
@@ -251,23 +269,33 @@ public class AppointmentController {
     @PostMapping(value = "/reject/{id}")
     public ResponseEntity<?> cancelAppointmentByCoordinator(@RequestBody Appointment appointment, @PathVariable("id") String id) {
         try {
-            //Optional<Appointment> getAppointment = appointmentService.getAppointmentByID(id);
-            Optional<User> processUser = userRepository.findById(appointment.getCoordinatorID());
-            if(!processUser.isPresent()){
-                return new ResponseEntity<>(new ApiResponse(false,"Người dùng không tồn tại"), HttpStatus.OK);
+            try {
+                if(!appointment.getStatus().equals("rejected")){
+                    return new ResponseEntity<>(new ApiResponse(false,"Không xác định được yêu cầu!"), HttpStatus.OK);
+                }
+            }catch (Exception e){
+                return new ResponseEntity<>(new ApiResponse(false,"Không xác định được yêu cầu!"), HttpStatus.OK);
             }
-            if(processUser.get().getActive() == 0){
-                return new ResponseEntity<>(new ApiResponse(false,"Người dùng hiện tại đang bị khoá! Vui lòng liên hệ tới phòng khám để xử lý!"), HttpStatus.OK);
+            //Optional<Appointment> getAppointment = appointmentService.getAppointmentByID(id);
+            Optional<User> processUser = userRepository.getUserByIdAndRole(appointment.getCoordinatorID(),"COORDINATOR");
+            if (!processUser.isPresent()) {
+                return new ResponseEntity<>(new ApiResponse(false, "Người dùng không thể thực hiện được chức năng này!"), HttpStatus.OK);
+            }
+            if (processUser.get().getActive() == 0) {
+                return new ResponseEntity<>(new ApiResponse(false, "Người dùng hiện tại đang bị khoá! Vui lòng liên hệ tới phòng khám để xử lý!"), HttpStatus.OK);
             }
             Appointment appointmentExecuting = appointmentService.getAppointmentByID(id);
-            if(appointmentExecuting.getStatus().equals(appointment.getStatus())){
-                return new ResponseEntity<>(new ApiResponse(false,"Cuộc hẹn đã ở trạng thái bị từ chối!"), HttpStatus.OK);
+            if (appointmentExecuting.getStatus().equals(appointment.getStatus())) {
+                return new ResponseEntity<>(new ApiResponse(false, "Cuộc hẹn đã ở trạng thái bị từ chối!"), HttpStatus.OK);
             }
             if (appointmentExecuting == null) {
                 return new ResponseEntity<>(new ApiResponse(false, "Không tìm thấy cuộc hẹn!"), HttpStatus.OK);
             }
             if (appointmentExecuting.getStatus().equals("canceled") || appointmentExecuting.getStatus().equals("rejected")) {
                 return new ResponseEntity<>(new ApiResponse(false, "Cuộc hẹn đã bị huỷ!"), HttpStatus.OK);
+            }
+            if (appointmentExecuting.getStatus().equals("accepted") || appointmentExecuting.getStatus().equals("rejected")) {
+                return new ResponseEntity<>(new ApiResponse(false, "Không thể huỷ cuộc hẹn đã được chấp nhận!"), HttpStatus.OK);
             }
             appointment.setID(id);
             appointmentService.rejectAppointment(appointment);

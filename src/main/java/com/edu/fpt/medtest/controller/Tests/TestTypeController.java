@@ -103,6 +103,9 @@ public class TestTypeController {
                 testTypeListModel.setListTest(testList);
                 lsResult.add(testTypeListModel);
             }
+            if(lsResult.isEmpty()){
+                return new ResponseEntity<>(new ApiResponse(true,"Danh sách không có kết quả nào!"), HttpStatus.OK);
+            }
             return new ResponseEntity<>(lsResult, HttpStatus.OK);
         } catch (Exception ex) {
             System.out.println(ex.getMessage());

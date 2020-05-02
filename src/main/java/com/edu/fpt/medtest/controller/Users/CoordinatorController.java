@@ -10,6 +10,7 @@ import com.edu.fpt.medtest.security.SecurityUtils;
 import com.edu.fpt.medtest.service.UserService;
 import com.edu.fpt.medtest.utils.ApiResponse;
 import com.edu.fpt.medtest.utils.ComfirmResponse;
+import com.edu.fpt.medtest.utils.Validate;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +42,18 @@ public class CoordinatorController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginModel loginUser) {
         try {
+            if (!Validate.isPhoneNumber(loginUser.getPhoneNumber())) {
+                return new ResponseEntity<>(new ApiResponse(true, "Số điện thoại không đúng định dạng!"), HttpStatus.OK);
+            }
+            if (!loginUser.getRole().equals("COORDINATOR")) {
+                return new ResponseEntity<>(new ApiResponse(true, "Người dùng hiện tại không phải điểu phối viên!"), HttpStatus.OK);
+            }
+            if (loginUser.getPassword().isEmpty()) {
+                return new ResponseEntity<>(new ApiResponse(true, "Mật khẩu không được trống"), HttpStatus.OK);
+            }
+            if (loginUser.getPassword().length() < 6) {
+                return new ResponseEntity<>(new ApiResponse(true, "Mật khẩu phải nhiều hơn 6 kí tự!"), HttpStatus.OK);
+            }
             boolean existByPhoneNumberAndRole = userRepository.existsByPhoneNumberAndRole(loginUser.getPhoneNumber(), loginUser.getRole());
             if (!existByPhoneNumberAndRole == true) {
                 return new ResponseEntity<>(new ApiResponse(true, "Người dùng không tồn tại!"), HttpStatus.OK);
@@ -117,8 +130,8 @@ public class CoordinatorController {
             if (!getCoordinator.isPresent()) {
                 return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy người dùng!"), HttpStatus.OK);
             }
-            if(getCoordinator.get().getActive() == 0){
-                return new ResponseEntity<>(new ApiResponse(false,"Người dùng hiện tại đang bị khoá! Vui lòng liên hệ tới phòng khám để xử lý!"), HttpStatus.OK);
+            if (getCoordinator.get().getActive() == 0) {
+                return new ResponseEntity<>(new ApiResponse(false, "Người dùng hiện tại đang bị khoá! Vui lòng liên hệ tới phòng khám để xử lý!"), HttpStatus.OK);
             }
             return new ResponseEntity<>(getCoordinator, HttpStatus.OK);
         } catch (Exception e) {
@@ -135,8 +148,8 @@ public class CoordinatorController {
             if (!getCoordinator.isPresent()) {
                 return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy người dùng!"), HttpStatus.OK);
             }
-            if(getCoordinator.get().getActive() == 0){
-                return new ResponseEntity<>(new ApiResponse(false,"Người dùng hiện tại đang bị khoá! Vui lòng liên hệ tới phòng khám để xử lý!"), HttpStatus.OK);
+            if (getCoordinator.get().getActive() == 0) {
+                return new ResponseEntity<>(new ApiResponse(false, "Người dùng hiện tại đang bị khoá! Vui lòng liên hệ tới phòng khám để xử lý!"), HttpStatus.OK);
             }
             coordinator.setId(id);
             userService.update(coordinator);
@@ -151,18 +164,28 @@ public class CoordinatorController {
     @PostMapping("/change-password/{id}")
     public ResponseEntity<?> changePassword(@RequestBody ChangePasswordModel changePasswordModel, @PathVariable("id") int id) {
         try {
+            try {
+                if (changePasswordModel.getNewPassword().isEmpty() || changePasswordModel.getOldPassword().isEmpty()) {
+                    return new ResponseEntity<>(new ApiResponse(false, "Mật khẩu không được để trống!"), HttpStatus.OK);
+                }
+            } catch (Exception e) {
+                return new ResponseEntity<>(new ApiResponse(false, "Mật khẩu không được để trống!"), HttpStatus.OK);
+            }
+            if (changePasswordModel.getOldPassword().length() < 6 || changePasswordModel.getNewPassword().length() < 6) {
+                return new ResponseEntity<>(new ApiResponse(false, "Mật khẩu phải nhiều hơn 6 kí tự"), HttpStatus.OK);
+            }
             Optional<User> getCustomer = userRepository.getUserByIdAndRole(id, "COORDINATOR");
             if (!getCustomer.isPresent()) {
                 return new ResponseEntity<>(new ApiResponse(true, "Người dùng không tồn tại!"), HttpStatus.OK);
             }
-            if(getCustomer.get().getActive() == 0){
-                return new ResponseEntity<>(new ApiResponse(false,"Người dùng hiện tại đang bị khoá! Vui lòng liên hệ tới phòng khám để xử lý!"), HttpStatus.OK);
+            if (getCustomer.get().getActive() == 0) {
+                return new ResponseEntity<>(new ApiResponse(false, "Người dùng hiện tại đang bị khoá! Vui lòng liên hệ tới phòng khám để xử lý!"), HttpStatus.OK);
             }
             if (!BCrypt.checkpw(changePasswordModel.getOldPassword(), getCustomer.get().getPassword())) {
                 return new ResponseEntity<>(new ApiResponse(true, "Mật khẩu hiện tại không đúng!"), HttpStatus.OK);
             }
-            if(changePasswordModel.getOldPassword().equals(changePasswordModel.getNewPassword())){
-                return new ResponseEntity<>(new ComfirmResponse(true,"Mật khẩu mới phải khác mật khẩu cũ", false),HttpStatus.OK);
+            if (changePasswordModel.getOldPassword().equals(changePasswordModel.getNewPassword())) {
+                return new ResponseEntity<>(new ComfirmResponse(true, "Mật khẩu mới phải khác mật khẩu cũ", false), HttpStatus.OK);
             }
             changePasswordModel.setID(id);
             getCustomer.get().setPassword(bCryptPasswordEncoder.encode(changePasswordModel.getNewPassword()));

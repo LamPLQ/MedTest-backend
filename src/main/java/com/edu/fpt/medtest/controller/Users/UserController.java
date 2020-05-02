@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -349,7 +350,7 @@ public class UserController {
                 return new ResponseEntity<>(new ApiResponse(false, "Không thể tạo người dùng mới vì thiếu thông tin"), HttpStatus.OK);
             }
             boolean isExistByPhoneNumberAndRole = userRepository.existsByPhoneNumberAndRole(employeeCreatedUser.getPhoneNumber(), employeeCreatedUser.getRole());
-            if (isExistByPhoneNumberAndRole == true) {
+            if (isExistByPhoneNumberAndRole) {
                 return new ResponseEntity<>(new CreatedSuccessApi(true, "Số điện thoại đã được đăng kí.", false), HttpStatus.OK);
             }
             if (employeeCreatedUser.getRole().equals("ADMIN")) {
@@ -376,7 +377,12 @@ public class UserController {
             System.out.println(exception.getMessage());
             return new ResponseEntity<>(new CreatedSuccessApi(false, "Số điện thoại không tồn tại!", false), HttpStatus.OK);
         }
-        userService.saveUser(employeeCreatedUser);
+        try {
+            userService.saveUser(employeeCreatedUser);
+        }catch (Exception ex){
+            ex.getMessage();
+            return new ResponseEntity<>(new CreatedSuccessApi(true, "Số điện thoại đã được đăng kí.", false), HttpStatus.OK);
+        }
         return new ResponseEntity<>(employeeCreatedUser, HttpStatus.OK);
     }
 

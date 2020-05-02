@@ -9,6 +9,7 @@ import com.edu.fpt.medtest.service.Request.RequestService;
 import com.edu.fpt.medtest.service.UserService;
 import com.edu.fpt.medtest.utils.ApiResponse;
 import com.edu.fpt.medtest.utils.ComfirmResponse;
+import com.edu.fpt.medtest.utils.Validate;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,6 +69,33 @@ public class CustomerController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginModel loginUser) {
         try {
+            try {
+                if (!loginUser.getRole().equals("CUSTOMER")) {
+                    return new ResponseEntity<>(new ApiResponse(false, "Người dùng hiện tại không được đăng nhập vào hệ thống!"), HttpStatus.OK);
+                }
+            } catch (Exception ex) {
+                return new ResponseEntity<>(new ApiResponse(false, "Không xác định được người dùng!"), HttpStatus.OK);
+            }
+            try {
+                if (!Validate.isPhoneNumber(loginUser.getPhoneNumber())) {
+                    return new ResponseEntity<>(new ApiResponse(false, "Số điện thoại không đúng định dạng!"), HttpStatus.OK);
+                }
+            } catch (Exception ex) {
+                //null pointer exception
+                //ex.printStackTrace();
+                return new ResponseEntity<>(new ApiResponse(false, "Số điện thoại không đúng định dạng!"), HttpStatus.OK);
+            }
+            try {
+                if (loginUser.getPassword().isEmpty()) {
+                    return new ResponseEntity<>(new ApiResponse(false, "Mật khẩu không được để trống!"), HttpStatus.OK);
+                }
+            } catch (Exception e) {
+                return new ResponseEntity<>(new ApiResponse(false, "Mật khẩu không được để trống!"), HttpStatus.OK);
+            }
+            if (loginUser.getPassword().length() < 6) {
+                return new ResponseEntity<>(new ApiResponse(false, "Mật khẩu phải có nhiều hơn 6 kí tự"), HttpStatus.OK);
+            }
+
             boolean existByPhoneNumberAndRole = userRepository.existsByPhoneNumberAndRole(loginUser.getPhoneNumber(), loginUser.getRole());
             if (!existByPhoneNumberAndRole == true) {
                 return new ResponseEntity<>(new ApiResponse(true, "Người dùng không tồn tại!"), HttpStatus.OK);
@@ -103,6 +131,28 @@ public class CustomerController {
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody User customer) {
         try {
+            if (customer.getName().isEmpty() ||
+                    customer.getPhoneNumber().isEmpty() ||
+                    customer.getEmail().isEmpty() ||
+                    customer.getDob().toString().isEmpty() ||
+                    customer.getPassword().isEmpty()) {
+                return new ResponseEntity<>(new ApiResponse(false, "Phải nhập đầy đủ thông tin người dùng trước khi đăng kí!"), HttpStatus.OK);
+            }
+            if (!Validate.isPhoneNumber(customer.getPhoneNumber())) {
+                return new ResponseEntity<>(new ApiResponse(false, "Số điện thoại không đúng định dạng!"), HttpStatus.OK);
+            }
+            if (!Validate.isValidUserName(customer.getName())) {
+                return new ResponseEntity<>(new ApiResponse(false, "Tên người dùng chỉ chứa kí tự chữ!"), HttpStatus.OK);
+            }
+            if (!Validate.isValidEmail(customer.getEmail())) {
+                return new ResponseEntity<>(new ApiResponse(false, "Email không đúng định dạng!"), HttpStatus.OK);
+            }
+            if (!(customer.getGender() == 0 || customer.getGender() == 1)) {
+                return new ResponseEntity<>(new ApiResponse(false, "Phải nhập giới tính người dùng!"), HttpStatus.OK);
+            }
+            if (customer.getPassword().length() < 6) {
+                return new ResponseEntity<>(new ApiResponse(false, "Mật khẩu phải nhiều hơn 6 kí tự!"), HttpStatus.OK);
+            }
             boolean existByPhoneAndRole = userRepository.existsByPhoneNumberAndRole(customer.getPhoneNumber(), "CUSTOMER");
             if (existByPhoneAndRole == true) {
                 return new ResponseEntity<>(new ApiResponse(false, "Số điện thoại đã tồn tại!"), HttpStatus.OK);
@@ -147,7 +197,7 @@ public class CustomerController {
     @GetMapping("/detail/{id}")
     public ResponseEntity<?> getUser(@PathVariable("id") int id) {
         try {
-            Optional<User> getCustomer = userService.getUserByID(id);
+            Optional<User> getCustomer = userRepository.getUserByIdAndRole(id,"CUSTOMER");
             if (!getCustomer.isPresent()) {
                 return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy người dùng!"), HttpStatus.OK);
             }
@@ -165,9 +215,39 @@ public class CustomerController {
     @PutMapping("/detail/update/{id}")
     public ResponseEntity<?> updateUser(@RequestBody User customer, @PathVariable("id") int id) {
         try {
+            try {
+                if (customer.getName().isEmpty() ||
+                        customer.getDob().toString().isEmpty() ||
+                        customer.getAddress().isEmpty() ||
+                        customer.getTownCode().isEmpty() ||
+                        customer.getDistrictCode().isEmpty() ||
+                        customer.getEmail().isEmpty()) {
+                    return new ResponseEntity<>(new ApiResponse(false, "Thông tin cập nhật không được để trống!"), HttpStatus.OK);
+                }
+            } catch (Exception ex) {
+                return new ResponseEntity<>(new ApiResponse(false, "Thông tin cập nhật không được để trống!"), HttpStatus.OK);
+            }
+            if (!Validate.isValidUserName(customer.getName())) {
+                return new ResponseEntity<>(new ApiResponse(false, "Tên người dùng chỉ được chứa kí tự chữ!"), HttpStatus.OK);
+            }
+            if (!(customer.getGender() == 0 || customer.getGender() == 1)) {
+                return new ResponseEntity<>(new ApiResponse(false, "Người dùng phải nhập giới tính!"), HttpStatus.OK);
+            }
+            if (!Validate.isValidEmail(customer.getEmail())) {
+                return new ResponseEntity<>(new ApiResponse(false, "Email không đúng định dạng!"), HttpStatus.OK);
+            }
+            if (districtRepository.existsByDistrictCode(customer.getDistrictCode()) == false) {
+                return new ResponseEntity<>(new ApiResponse(false, "Mã quận/huyện không tồn tại!"), HttpStatus.OK);
+            }
+            if (townRepository.existsByTownCodeAndDistrictCode(customer.getTownCode(), customer.getDistrictCode()) == false) {
+                return new ResponseEntity<>(new ApiResponse(false, "Mã phường/xã không đúng!"), HttpStatus.OK);
+            }
             Optional<User> getCustomer = userService.getUserByID(id);
             if (!getCustomer.isPresent()) {
-                return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy người dùng!"), HttpStatus.OK);
+                return new ResponseEntity<>(new ApiResponse(false, "Không tìm thấy người dùng!"), HttpStatus.OK);
+            }
+            if (!getCustomer.get().getRole().equals("CUSTOMER")) {
+                return new ResponseEntity<>(new ApiResponse(false, "Người dùng không có quyền truy cập tính năng nàY!"), HttpStatus.OK);
             }
             if (getCustomer.get().getActive() == 0) {
                 return new ResponseEntity<>(new ApiResponse(false, "Người dùng hiện tại đang bị khoá! Vui lòng liên hệ tới phòng khám để xử lý!"), HttpStatus.OK);
@@ -185,12 +265,28 @@ public class CustomerController {
     @PutMapping("/detail/address/update/{id}")
     public ResponseEntity<?> updateAddressUser(@RequestBody User customer, @PathVariable("id") int id) {
         try {
+            try {
+                if (customer.getAddress().isEmpty() || customer.getDistrictCode().isEmpty() || customer.getTownCode().isEmpty()) {
+                    return new ResponseEntity<>(new ApiResponse(false, "Thông tin cập nhật không được để trống!"), HttpStatus.OK);
+                }
+            } catch (NullPointerException ex) {
+                return new ResponseEntity<>(new ApiResponse(false, "Thông tin cập nhật không được để trống!"), HttpStatus.OK);
+            }
+            if (districtRepository.existsByDistrictCode(customer.getDistrictCode()) == false) {
+                return new ResponseEntity<>(new ApiResponse(false, "Mã quận/huyện không tồn tại!"), HttpStatus.OK);
+            }
+            if (townRepository.existsByTownCodeAndDistrictCode(customer.getTownCode(), customer.getDistrictCode()) == false) {
+                return new ResponseEntity<>(new ApiResponse(false, "Mã phường/xã không đúng!"), HttpStatus.OK);
+            }
             Optional<User> getCustomer = userService.getUserByID(id);
             if (!getCustomer.isPresent()) {
-                return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy người dùng!"), HttpStatus.OK);
+                return new ResponseEntity<>(new ApiResponse(false, "Không tìm thấy người dùng!"), HttpStatus.OK);
             }
             if (getCustomer.get().getActive() == 0) {
                 return new ResponseEntity<>(new ApiResponse(false, "Người dùng hiện tại đang bị khoá! Vui lòng liên hệ tới phòng khám để xử lý!"), HttpStatus.OK);
+            }
+            if (!getCustomer.get().getRole().equals("CUSTOMER")) {
+                return new ResponseEntity<>(new ApiResponse(false, "Người dùng không có quyền truy cập tính năng này!"), HttpStatus.OK);
             }
             customer.setId(id);
             userService.updateAddress(customer);
@@ -208,6 +304,9 @@ public class CustomerController {
             Optional<User> user = userRepository.findById(id);
             if (!user.isPresent()) {
                 return new ResponseEntity<>(new ApiResponse(false, "Không tồn tại người dùng!"), HttpStatus.OK);
+            }
+            if (!user.get().getRole().equals("CUSTOMER")) {
+                return new ResponseEntity<>(new ApiResponse(false, "Người dùng không được truy cập tính năng này!"), HttpStatus.OK);
             }
             if (user.get().getActive() == 0) {
                 return new ResponseEntity<>(new ApiResponse(false, "Người dùng hiện tại đang bị khoá! Vui lòng liên hệ tới phòng khám để xử lý!"), HttpStatus.OK);
@@ -246,23 +345,33 @@ public class CustomerController {
     @PostMapping("/change-password/{id}")
     public ResponseEntity<?> changePassword(@RequestBody ChangePasswordModel changePasswordModel, @PathVariable("id") int id) {
         try {
-            Optional<User> getCustomer = userService.getUserByID(id);
-            if (!getCustomer.isPresent()) {
-                return new ResponseEntity<>(new ComfirmResponse(true, "Người dùng không tồn tại!", false), HttpStatus.OK);
+            try {
+                if (changePasswordModel.getNewPassword().isEmpty() || changePasswordModel.getOldPassword().isEmpty()) {
+                    return new ResponseEntity<>(new ApiResponse(false, "Mật khẩu không được để trống!"), HttpStatus.OK);
+                }
+            } catch (Exception e) {
+                return new ResponseEntity<>(new ApiResponse(false, "Mật khẩu không được để trống!"), HttpStatus.OK);
             }
-            if(getCustomer.get().getActive() == 0){
-                return new ResponseEntity<>(new ApiResponse(false,"Người dùng hiện tại đang bị khoá! Vui lòng liên hệ tới phòng khám để xử lý!"), HttpStatus.OK);
+            if (changePasswordModel.getOldPassword().length() < 6 || changePasswordModel.getNewPassword().length() < 6) {
+                return new ResponseEntity<>(new ApiResponse(false, "Mật khẩu phải nhiều hơn 6 kí tự"), HttpStatus.OK);
+            }
+            Optional<User> getCustomer = userRepository.getUserByIdAndRole(id, "CUSTOMER");
+            if (!getCustomer.isPresent()) {
+                return new ResponseEntity<>(new ApiResponse(true, "Người dùng không tồn tại!"), HttpStatus.OK);
+            }
+            if (getCustomer.get().getActive() == 0) {
+                return new ResponseEntity<>(new ApiResponse(false, "Người dùng hiện tại đang bị khoá! Vui lòng liên hệ tới phòng khám để xử lý!"), HttpStatus.OK);
             }
             if (!BCrypt.checkpw(changePasswordModel.getOldPassword(), getCustomer.get().getPassword())) {
-                return new ResponseEntity<>(new ComfirmResponse(true, "Mật khẩu hiện tại không đúng!", false), HttpStatus.OK);
+                return new ResponseEntity<>(new ApiResponse(true, "Mật khẩu hiện tại không đúng!"), HttpStatus.OK);
             }
-            if(changePasswordModel.getOldPassword().equals(changePasswordModel.getNewPassword())){
-                return new ResponseEntity<>(new ApiResponse(true,"Mật khẩu mới phải khác mật khẩu cũ!"), HttpStatus.OK);
+            if (changePasswordModel.getOldPassword().equals(changePasswordModel.getNewPassword())) {
+                return new ResponseEntity<>(new ComfirmResponse(true, "Mật khẩu mới phải khác mật khẩu cũ", false), HttpStatus.OK);
             }
             changePasswordModel.setID(id);
             getCustomer.get().setPassword(bCryptPasswordEncoder.encode(changePasswordModel.getNewPassword()));
             userService.saveUser(getCustomer.get());
-            return new ResponseEntity<>(new ComfirmResponse(true, "Thay đổi mật khẩu thành công!", true), HttpStatus.OK);
+            return new ResponseEntity<>(new ApiResponse(true, "Thay đổi mật khẩu thành công!"), HttpStatus.OK);
         } catch (Exception ex) {
             System.out.println(ex.getMessage());
             return new ResponseEntity<>(new ApiResponse(false, "Hệ thống đang xử lý. Vui lòng tải lại!"), HttpStatus.OK);
@@ -277,8 +386,11 @@ public class CustomerController {
             if (!getUser.isPresent()) {
                 return new ResponseEntity<>(new ApiResponse(false, "Không tồn tại người dùng"), HttpStatus.OK);
             }
-            if(getUser.get().getActive() == 0){
-                return new ResponseEntity<>(new ApiResponse(false,"Người dùng hiện tại đang bị khoá! Vui lòng liên hệ tới phòng khám để xử lý!"), HttpStatus.OK);
+            if (!getUser.get().getRole().equals("CUSTOMER")) {
+                return new ResponseEntity<>(new ApiResponse(false, "Người dùng không được phép sử dụng tính năng này!"), HttpStatus.OK);
+            }
+            if (getUser.get().getActive() == 0) {
+                return new ResponseEntity<>(new ApiResponse(false, "Người dùng hiện tại đang bị khoá! Vui lòng liên hệ tới phòng khám để xử lý!"), HttpStatus.OK);
             }
             List<Request> lsRequest = requestService.getListByUser(userID);
             if (lsRequest.isEmpty()) {
@@ -447,12 +559,22 @@ public class CustomerController {
     @PostMapping("/detail/uploadImageProfile/{id}")
     public ResponseEntity<?> uploadImageProfile(@RequestBody User customer, @PathVariable("id") int id) {
         try {
+            try {
+                if (customer.getImage().isEmpty()) {
+                    return new ResponseEntity<>(new ApiResponse(false, "Người dùng phải cần ảnh đại diện để cập nhật!"), HttpStatus.OK);
+                }
+            } catch (NullPointerException e) {
+                return new ResponseEntity<>(new ApiResponse(false, "Người dùng phải cần ảnh đại diện để cập nhật!"), HttpStatus.OK);
+            }
             Optional<User> getCustomer = userService.getUserByID(id);
             if (!getCustomer.isPresent()) {
                 return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy người dùng!"), HttpStatus.OK);
             }
-            if(getCustomer.get().getActive() == 0){
-                return new ResponseEntity<>(new ApiResponse(false,"Người dùng hiện tại đang bị khoá! Vui lòng liên hệ tới phòng khám để xử lý!"), HttpStatus.OK);
+            if (!getCustomer.get().getRole().equals("CUSTOMER")) {
+                return new ResponseEntity<>(new ApiResponse(false, "Người dùng không được quyền sử dụng tính năng này!"), HttpStatus.OK);
+            }
+            if (getCustomer.get().getActive() == 0) {
+                return new ResponseEntity<>(new ApiResponse(false, "Người dùng hiện tại đang bị khoá! Vui lòng liên hệ tới phòng khám để xử lý!"), HttpStatus.OK);
             }
             customer.setId(id);
             userService.updateImageProfile(customer);

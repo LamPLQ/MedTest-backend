@@ -110,6 +110,9 @@ public class DistrictController {
                 districtModel.setListTown(townList);
                 lsResult.add(districtModel);
             }
+            if(lsResult.isEmpty()){
+                return new ResponseEntity<>(new ApiResponse(true,"Không có kết quả nào hiện tại!"), HttpStatus.OK);
+            }
             return new ResponseEntity<>(lsResult, HttpStatus.OK);
         } catch (Exception ex) {
             System.out.println(ex.getMessage());

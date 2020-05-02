@@ -1,6 +1,7 @@
 package com.edu.fpt.medtest.controller;
 
 import com.edu.fpt.medtest.entity.Article;
+import com.edu.fpt.medtest.entity.User;
 import com.edu.fpt.medtest.model.ArticleModel;
 import com.edu.fpt.medtest.repository.UserRepository;
 import com.edu.fpt.medtest.service.ArticleService;
@@ -62,8 +63,15 @@ public class ArticleController {
     @PostMapping("/create")
     public ResponseEntity<?> createArticle(@RequestBody Article article) {
         try {
-            if(article.getUserID()==0 || article.getContent().isEmpty() || article.getShortContent().isEmpty() || article.getTittle().isEmpty()){
-                return new ResponseEntity<>(new ApiResponse(false,"Cần điền đầy đủ các trường trước khi tạo bài viết mới!"), HttpStatus.OK);
+            try {
+                if (article.getUserID() == 0 || article.getContent().isEmpty() || article.getShortContent().isEmpty() || article.getTittle().isEmpty()) {
+                    return new ResponseEntity<>(new ApiResponse(false, "Cần điền đầy đủ các trường trước khi tạo bài viết mới!"), HttpStatus.OK);
+                }
+            } catch (NullPointerException e) {
+                return new ResponseEntity<>(new ApiResponse(false, "Cần điền đầy đủ các trường trước khi tạo bài viết mới!"), HttpStatus.OK);
+            }
+            if(!userRepository.findById(article.getUserID()).isPresent()){
+                return new ResponseEntity<>(new ApiResponse(false, "Người tạo bài viết không tồn tại!"), HttpStatus.OK);
             }
             articleService.saveArticle(article);
             return new ResponseEntity<>(new ApiResponse(true, "Tạo thành công 1 bài viết mới!"), HttpStatus.OK);
