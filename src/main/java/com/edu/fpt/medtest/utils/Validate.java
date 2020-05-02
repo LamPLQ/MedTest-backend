@@ -1,5 +1,6 @@
 package com.edu.fpt.medtest.utils;
 
+import java.text.Normalizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -15,9 +16,12 @@ public class Validate {
     //only alphabet character
     public static boolean isValidUserName(String s)
     {
-        Pattern p = Pattern.compile("^[a-zA-Z]+$");
-        Matcher m = p.matcher(s);
-        return (m.find() && m.group().equals(s));
+        String temp = Normalizer.normalize(s, Normalizer.Form.NFD);
+        Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
+        String k = pattern.matcher(temp).replaceAll("");
+        Pattern p = Pattern.compile("^[a-z A-Z]{1,50}$");
+        Matcher m = p.matcher(k);
+        return (m.find() && m.group().equals(k));
     }
 
     //only number character
@@ -28,13 +32,6 @@ public class Validate {
         return (m.find() && m.group().equals(s));
     }
 
-    //base64String
-    public static boolean isBase64(String s)
-    {
-        Pattern p = Pattern.compile("^[\\\\w-\\\\+]+(\\\\.[\\\\w]+)*@[\\\\w-]+(\\\\.[\\\\w]+)*(\\\\.[a-z]{2,})$");
-        Matcher m = p.matcher(s);
-        return (m.find() && m.group().equals(s));
-    }
 
     //isValidEmail
     public static boolean isValidEmail(String email) {
