@@ -104,6 +104,9 @@ public class TestVersionController {
                             checkTest.getVersionID() == 0) {
                         return new ResponseEntity<>(new ApiResponse(true, "Không cập nhật được phiên bản test mới vì bài test không hợp lệ!"), HttpStatus.OK);
                     }
+                    if(checkTest.getPrice()<0){
+                        return new ResponseEntity<>(new ApiResponse(true, "Đơn giá không thể nhỏ hơn 0!"), HttpStatus.OK);
+                    }
                     Optional<TestType> getTestType = testTypeService.findTestTypeByID(checkTest.getTestTypeID());
                     if (!getTestType.isPresent()) {
                         return new ResponseEntity<>(new ApiResponse(true, "Không tồn tại loại bài test!"), HttpStatus.OK);
