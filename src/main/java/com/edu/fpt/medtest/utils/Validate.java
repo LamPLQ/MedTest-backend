@@ -19,7 +19,7 @@ public class Validate {
         String temp = Normalizer.normalize(s, Normalizer.Form.NFD);
         Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
         String k = pattern.matcher(temp).replaceAll("");
-        Pattern p = Pattern.compile("^[a-z A-Z]{1,50}$");
+        Pattern p = Pattern.compile("^[a-z A-Z]$");
         Matcher m = p.matcher(k);
         return (m.find() && m.group().equals(k));
     }
