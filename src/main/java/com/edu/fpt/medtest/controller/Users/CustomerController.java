@@ -228,7 +228,7 @@ public class CustomerController {
                 return new ResponseEntity<>(new ApiResponse(false, "Thông tin cập nhật không được để trống!"), HttpStatus.OK);
             }
             if (!Validate.isValidUserName(customer.getName())) {
-                return new ResponseEntity<>(new ApiResponse(false, "Tên người dùng chỉ được chứa kí tự chữ!"), HttpStatus.OK);
+                return new ResponseEntity<>(new ApiResponse(false, "Tên người dùng chỉ được chứa kí tự chữ và ít hơn 50 kí tự!"), HttpStatus.OK);
             }
             if (!(customer.getGender() == 0 || customer.getGender() == 1)) {
                 return new ResponseEntity<>(new ApiResponse(false, "Người dùng phải nhập giới tính!"), HttpStatus.OK);

@@ -334,7 +334,7 @@ public class UserController {
                 return new ResponseEntity<>(new ApiResponse(false, "Số điện thoại không đúng định dạng!"), HttpStatus.OK);
             }
             if (!Validate.isValidUserName(checkOTPModel.getName())) {
-                return new ResponseEntity<>(new ApiResponse(false, "Tên người dùng chỉ bao gồm kí tự chữ!"), HttpStatus.OK);
+                return new ResponseEntity<>(new ApiResponse(false, "Tên người dùng chỉ bao gồm kí tự chữ và ít hơn 50 kí tự!"), HttpStatus.OK);
             }
             if(checkOTPModel.getName().length()>50){
                 return new ResponseEntity<>(new ApiResponse(false, "Tên hiển thị quá dài! Hãy điền tên ngắn hơn!"), HttpStatus.OK);
@@ -435,7 +435,7 @@ public class UserController {
                     return new ResponseEntity<>(new ApiResponse(false, "Số điện thoại không đúng định dạng!"), HttpStatus.OK);
                 }
                 if (!Validate.isValidUserName(employeeCreatedUser.getName())) {
-                    return new ResponseEntity<>(new ApiResponse(false, "Tên người dùng chỉ được chứa kí tự chữ!"), HttpStatus.OK);
+                    return new ResponseEntity<>(new ApiResponse(false, "Tên người dùng chỉ được chứa kí tự chữ và ít hơn 50 kí tự!"), HttpStatus.OK);
                 }
                 if(employeeCreatedUser.getName().length()>50){
                     return new ResponseEntity<>(new ApiResponse(false, "Tên hiển thị quá dài! Hãy điền tên ngắn hơn!"), HttpStatus.OK);
@@ -585,7 +585,7 @@ public class UserController {
                 return new ResponseEntity<>(new ApiResponse(false, "Phải nhập đủ dữ liệu để cập nhật người dùng!"), HttpStatus.OK);
             }
             if (!Validate.isValidUserName(user.getName())) {
-                return new ResponseEntity<>(new ApiResponse(false, "Tên người dùng chỉ bao gồm kí tự chữ!"), HttpStatus.OK);
+                return new ResponseEntity<>(new ApiResponse(false, "Tên người dùng chỉ bao gồm kí tự chữ và ít hơn 50 kí tự!"), HttpStatus.OK);
             }
             if(user.getName().length()>50){
                 return new ResponseEntity<>(new ApiResponse(false, "Tên hiển thị quá dài! Hãy điền tên ngắn hơn!"), HttpStatus.OK);
