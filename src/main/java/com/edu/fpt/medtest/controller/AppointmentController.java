@@ -228,9 +228,12 @@ public class AppointmentController {
             }catch (Exception e){
                 return new ResponseEntity<>(new ApiResponse(false,"Không xác định được yêu cầu!"), HttpStatus.OK);
             }
-            Optional<User> processUser = userRepository.getUserByIdAndRole(appointment.getCoordinatorID(),"COORDINATOR");
+            Optional<User> processUser = userRepository.findById(appointment.getCoordinatorID());
             if (!processUser.isPresent()) {
-                return new ResponseEntity<>(new ApiResponse(false, "Người dùng không có quyền thực hiện chức năng này!"), HttpStatus.OK);
+                return new ResponseEntity<>(new ApiResponse(false, "Không tìm thấy người dùng!"), HttpStatus.OK);
+            }
+            if(!(processUser.get().getRole().equals("COORDINATOR")||processUser.get().getRole().equals("ADMIN"))){
+                return new ResponseEntity<>(new ApiResponse(false, "Người dùng không thực hiện được chức năng này!"), HttpStatus.OK);
             }
             if (processUser.get().getActive() == 0) {
                 return new ResponseEntity<>(new ApiResponse(false, "Người dùng hiện tại đang bị khoá! Vui lòng liên hệ tới phòng khám để xử lý!"), HttpStatus.OK);
@@ -277,9 +280,12 @@ public class AppointmentController {
                 return new ResponseEntity<>(new ApiResponse(false,"Không xác định được yêu cầu!"), HttpStatus.OK);
             }
             //Optional<Appointment> getAppointment = appointmentService.getAppointmentByID(id);
-            Optional<User> processUser = userRepository.getUserByIdAndRole(appointment.getCoordinatorID(),"COORDINATOR");
+            Optional<User> processUser = userRepository.findById(appointment.getCoordinatorID());
             if (!processUser.isPresent()) {
-                return new ResponseEntity<>(new ApiResponse(false, "Người dùng không thể thực hiện được chức năng này!"), HttpStatus.OK);
+                return new ResponseEntity<>(new ApiResponse(false, "Không tìm thấy người dùng!"), HttpStatus.OK);
+            }
+            if(!(processUser.get().getRole().equals("COORDINATOR")||processUser.get().getRole().equals("ADMIN"))){
+                return new ResponseEntity<>(new ApiResponse(false, "Người dùng không thực hiện được chức năng này!"), HttpStatus.OK);
             }
             if (processUser.get().getActive() == 0) {
                 return new ResponseEntity<>(new ApiResponse(false, "Người dùng hiện tại đang bị khoá! Vui lòng liên hệ tới phòng khám để xử lý!"), HttpStatus.OK);
