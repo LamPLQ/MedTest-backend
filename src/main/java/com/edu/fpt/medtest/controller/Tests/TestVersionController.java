@@ -55,7 +55,12 @@ public class TestVersionController {
             for (TestVersion testVersion : lsVersions) {
                 VersionResponseModel versionResponseModel = new VersionResponseModel();
                 versionResponseModel.setVersionID(testVersion.getVersionID());
-                versionResponseModel.setCreatedTime(testVersion.getCreatedTime());
+                //=====================//
+                SimpleDateFormat sdf3 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                String displayCreatedTest = sdf3.format(testVersion.getCreatedTime());
+                String createdTime = displayCreatedTest.substring(0, 10) + "T" + displayCreatedTest.substring(11) + ".000+0000";
+                //=====================//
+                versionResponseModel.setCreatedTime(createdTime);
                 versionResponseModel.setCreatorID(testVersion.getCreatorID());
                 versionResponseModel.setCreatorName(userRepository.findById(testVersion.getCreatorID()).get().getName());
                 lsResponseVersion.add(versionResponseModel);
