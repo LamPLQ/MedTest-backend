@@ -458,7 +458,7 @@ public class RequestController {
                             + ". Chân thành xin lỗi quý khách! Trạng thái đơn hiện tại: Đang đợi lấy lại mẫu mất do y tá.");
                     break;
                 case "coordinatorlostsample":
-                    notification.setMessage("Mẫu xét nghiệm mã " + ID + " sẽ được lấy lại do sơ xuất của điều phối viên. Chân thành xin lỗi quý khách! Trạng thái đơn hiện tại: Đang đợi y tá nhận đơn.");
+                    notification.setMessage("Mẫu xét nghiệm mã " + ID + " sẽ được lấy lại do sơ xuất của điều phối viên. Chân thành xin lỗi quý khách! Trạng thái đơn hiện tại: Đang đợi y tá nhận lại đơn.");
                     break;
                 case "reaccepted":
                     notification.setMessage("Y tá " + userRepository.findById(requestHistory.getUserID()).get().getName() + " đã nhận lấy lại đơn mã " + ID + ". Trạng thái đơn hiện tại: Đã nhận lấy lại mẫu mất do điều phối viên.");
