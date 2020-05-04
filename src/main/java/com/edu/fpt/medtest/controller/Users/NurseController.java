@@ -638,7 +638,7 @@ public class NurseController {
                         if (existByRequestIDAndStatusTransporting == false) {
                             System.out.println("No request history with /transporting/ status");
                             //customer cancel when nurse accepted request
-                            /*CompletedRequestModel cancelAfterAccept = new CompletedRequestModel();
+                            CompletedRequestModel cancelAfterAccept = new CompletedRequestModel();
                             cancelAfterAccept.setRequestID(request.getRequestID());
                             ////////////////////Object Request
                             //Request cancelAfterAcceptRequest = requestRepository.getOne(request.getRequestID());
@@ -708,7 +708,7 @@ public class NurseController {
                             cancelAfterAccept.setLsSelectedTest(lsTestID1);
                             //set amount of test
                             cancelAfterAccept.setRequestAmount(String.valueOf(testAmount1));
-                            lsCompletedReqs.add(cancelAfterAccept);*/
+                            lsCompletedReqs.add(cancelAfterAccept);
                             //////////////////////////////////////////////
                         } else {
                             RequestHistory transportingStatusRequest = requestHistoryRepository.findAllByRequestIDAndStatusAndUserIDOrderByCreatedTimeDesc(request.getRequestID(), "transporting", nurseID).get(0);
