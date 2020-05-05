@@ -112,9 +112,39 @@ public class NurseController {
                     .compact();
             //return current user
             User successfulUser = (userRepository.getUserByPhoneNumberAndRole(loginUser.getPhoneNumber(), loginUser.getRole()));
+            //LoginAccountModel loginAccountModel = new LoginAccountModel();
+            //loginAccountModel.setUserInfo(successfulUser);
+            //loginAccountModel.setToken(token);
+            //
+            //new return
+            ReturnLoginModel returnLoginModel = new ReturnLoginModel();
+            returnLoginModel.setId(successfulUser.getId());
+            returnLoginModel.setPhoneNumber(successfulUser.getPhoneNumber());
+            returnLoginModel.setName(successfulUser.getName());
+            returnLoginModel.setDob(successfulUser.getDob());
+            returnLoginModel.setAddress(successfulUser.getAddress());
+            returnLoginModel.setPassword(successfulUser.getPassword());
+            returnLoginModel.setActive(successfulUser.getActive());
+            returnLoginModel.setEmail(successfulUser.getEmail());
+            returnLoginModel.setRole(successfulUser.getRole());
+            returnLoginModel.setGender(successfulUser.getGender());
+            returnLoginModel.setImage(successfulUser.getImage());
+            returnLoginModel.setTownCode(successfulUser.getTownCode());
+            returnLoginModel.setDistrictCode(successfulUser.getDistrictCode());
+            //returnLoginModel.setToken(token);
+            //System.out.println(returnLoginModel.getDistrictCode());
+            if(successfulUser.getDistrictCode()==null && successfulUser.getTownCode()==null){
+                returnLoginModel.setDistrictName("Chọn quận/huyện");
+                returnLoginModel.setTownName("Chọn phường/xã");
+            }else {
+                returnLoginModel.setTownName(townRepository.findById(successfulUser.getTownCode()).get().getTownName());
+                returnLoginModel.setDistrictName(districtRepository.findById(successfulUser.getDistrictCode()).get().getDistrictName());
+            }
+
             LoginAccountModel loginAccountModel = new LoginAccountModel();
-            loginAccountModel.setUserInfo(successfulUser);
+            loginAccountModel.setUserInfo(returnLoginModel);
             loginAccountModel.setToken(token);
+            //
             return new ResponseEntity<>(loginAccountModel, HttpStatus.OK);
         } catch (Exception e) {
             System.out.println(e.getMessage());
@@ -168,7 +198,31 @@ public class NurseController {
             if (!getNurse.isPresent()) {
                 return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy người dùng!"), HttpStatus.OK);
             }
-            return new ResponseEntity<>(getNurse, HttpStatus.OK);
+            User successfulUser = getNurse.get();
+            ReturnLoginModel returnLoginModel = new ReturnLoginModel();
+            returnLoginModel.setId(successfulUser.getId());
+            returnLoginModel.setPhoneNumber(successfulUser.getPhoneNumber());
+            returnLoginModel.setName(successfulUser.getName());
+            returnLoginModel.setDob(successfulUser.getDob());
+            returnLoginModel.setAddress(successfulUser.getAddress());
+            returnLoginModel.setPassword(successfulUser.getPassword());
+            returnLoginModel.setActive(successfulUser.getActive());
+            returnLoginModel.setEmail(successfulUser.getEmail());
+            returnLoginModel.setRole(successfulUser.getRole());
+            returnLoginModel.setGender(successfulUser.getGender());
+            returnLoginModel.setImage(successfulUser.getImage());
+            returnLoginModel.setTownCode(successfulUser.getTownCode());
+            returnLoginModel.setDistrictCode(successfulUser.getDistrictCode());
+            //returnLoginModel.setToken(token);
+            //System.out.println(returnLoginModel.getDistrictCode());
+            if(successfulUser.getDistrictCode()==null && successfulUser.getTownCode()==null){
+                returnLoginModel.setDistrictName("Chọn quận/huyện");
+                returnLoginModel.setTownName("Chọn phường/xã");
+            }else {
+                returnLoginModel.setTownName(townRepository.findById(successfulUser.getTownCode()).get().getTownName());
+                returnLoginModel.setDistrictName(districtRepository.findById(successfulUser.getDistrictCode()).get().getDistrictName());
+            }
+            return new ResponseEntity<>(returnLoginModel, HttpStatus.OK);
         } catch (Exception ex) {
             System.out.println(ex.getMessage());
             return new ResponseEntity<>(new ApiResponse(false, "Hệ thống đang xử lý. Vui lòng tải lại!"), HttpStatus.OK);

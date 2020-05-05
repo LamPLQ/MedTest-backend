@@ -117,10 +117,39 @@ public class CustomerController {
                     .compact();
             //return current user
             User successfulUser = (userRepository.getUserByPhoneNumberAndRole(loginUser.getPhoneNumber(), loginUser.getRole()));
-            LoginAccountModel loginAccountModel = new LoginAccountModel();
+            /*LoginAccountModel loginAccountModel = new LoginAccountModel();
             loginAccountModel.setUserInfo(successfulUser);
             loginAccountModel.setToken(token);
-            return new ResponseEntity<>(loginAccountModel, HttpStatus.OK);
+            return new ResponseEntity<>(loginAccountModel, HttpStatus.OK);*/
+            //new return
+            ReturnLoginModel returnLoginModel = new ReturnLoginModel();
+            returnLoginModel.setId(successfulUser.getId());
+            returnLoginModel.setPhoneNumber(successfulUser.getPhoneNumber());
+            returnLoginModel.setName(successfulUser.getName());
+            returnLoginModel.setDob(successfulUser.getDob());
+            returnLoginModel.setAddress(successfulUser.getAddress());
+            returnLoginModel.setPassword(successfulUser.getPassword());
+            returnLoginModel.setActive(successfulUser.getActive());
+            returnLoginModel.setEmail(successfulUser.getEmail());
+            returnLoginModel.setRole(successfulUser.getRole());
+            returnLoginModel.setGender(successfulUser.getGender());
+            returnLoginModel.setImage(successfulUser.getImage());
+            returnLoginModel.setTownCode(successfulUser.getTownCode());
+            returnLoginModel.setDistrictCode(successfulUser.getDistrictCode());
+            //returnLoginModel.setToken(token);
+            //System.out.println(returnLoginModel.getDistrictCode());
+            if(successfulUser.getDistrictCode()==null && successfulUser.getTownCode()==null){
+                returnLoginModel.setDistrictName("Chọn quận/huyện");
+                returnLoginModel.setTownName("Chọn phường/xã");
+            }else {
+                returnLoginModel.setTownName(townRepository.findById(successfulUser.getTownCode()).get().getTownName());
+                returnLoginModel.setDistrictName(districtRepository.findById(successfulUser.getDistrictCode()).get().getDistrictName());
+            }
+            LoginAccountModel loginAccountModel = new LoginAccountModel();
+            loginAccountModel.setUserInfo(returnLoginModel);
+            loginAccountModel.setToken(token);
+            return new ResponseEntity<>(loginAccountModel,HttpStatus.OK);
+            //
         } catch (Exception e) {
             System.out.println(e.getMessage());
             return new ResponseEntity<>(new ApiResponse(false, "Hệ thống đang xử lý. Vui lòng tải lại!"), HttpStatus.OK);
@@ -204,7 +233,29 @@ public class CustomerController {
             if (getCustomer.get().getActive() == 0) {
                 return new ResponseEntity<>(new ApiResponse(false, "Người dùng hiện tại đang bị khoá! Vui lòng liên hệ tới phòng khám để xử lý!"), HttpStatus.OK);
             }
-            return new ResponseEntity<>(getCustomer, HttpStatus.OK);
+            User successfulUser = getCustomer.get();
+            ReturnLoginModel returnLoginModel = new ReturnLoginModel();
+            returnLoginModel.setId(successfulUser.getId());
+            returnLoginModel.setPhoneNumber(successfulUser.getPhoneNumber());
+            returnLoginModel.setName(successfulUser.getName());
+            returnLoginModel.setDob(successfulUser.getDob());
+            returnLoginModel.setAddress(successfulUser.getAddress());
+            returnLoginModel.setPassword(successfulUser.getPassword());
+            returnLoginModel.setActive(successfulUser.getActive());
+            returnLoginModel.setEmail(successfulUser.getEmail());
+            returnLoginModel.setRole(successfulUser.getRole());
+            returnLoginModel.setGender(successfulUser.getGender());
+            returnLoginModel.setImage(successfulUser.getImage());
+            returnLoginModel.setTownCode(successfulUser.getTownCode());
+            returnLoginModel.setDistrictCode(successfulUser.getDistrictCode());
+            if(successfulUser.getDistrictCode()==null && successfulUser.getTownCode()==null){
+                returnLoginModel.setDistrictName("Chọn quận/huyện");
+                returnLoginModel.setTownName("Chọn phường/xã");
+            }else {
+                returnLoginModel.setTownName(townRepository.findById(successfulUser.getTownCode()).get().getTownName());
+                returnLoginModel.setDistrictName(districtRepository.findById(successfulUser.getDistrictCode()).get().getDistrictName());
+            }
+            return new ResponseEntity<>(returnLoginModel, HttpStatus.OK);
         } catch (Exception e) {
             System.out.println(e.getMessage());
             return new ResponseEntity<>(new ApiResponse(false, "Hệ thống đang xử lý. Vui lòng tải lại!"), HttpStatus.OK);

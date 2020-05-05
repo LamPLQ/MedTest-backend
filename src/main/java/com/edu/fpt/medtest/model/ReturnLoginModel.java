@@ -1,31 +1,10 @@
 package com.edu.fpt.medtest.model;
 
-public class LoginAccountModel {
+import java.util.Date;
 
-    private ReturnLoginModel userInfo;
+public class ReturnLoginModel {
 
-    private String token;
-
-    public ReturnLoginModel getUserInfo() {
-        return userInfo;
-    }
-
-    public void setUserInfo(ReturnLoginModel userInfo) {
-        this.userInfo = userInfo;
-    }
-
-    public String getToken() {
-        return token;
-    }
-
-    public void setToken(String token) {
-        this.token = token;
-    }
-
-    public LoginAccountModel() {
-    }
-
-    /* private String id;
+    private int id;
 
     private String phoneNumber;
 
@@ -37,15 +16,13 @@ public class LoginAccountModel {
 
     private String password;
 
-    //boolean type active = 1, non-active = 0
-    private String active;
+    private int active;
 
     private String email;
 
     private String role;
 
-    //boolean type: female = 0, male = 1;
-    private String gender;
+    private int gender;
 
     private String image;
 
@@ -53,17 +30,17 @@ public class LoginAccountModel {
 
     private String districtCode;
 
-    private String token;
+    private String townName;
 
-    public LoginAccountModel() {
+    private String districtName;
+
+
+    public int getId() {
+        return id;
     }
 
-    public String getToken() {
-        return token;
-    }
-
-    public void setToken(String token) {
-        this.token = token;
+    public void setId(int id) {
+        this.id = id;
     }
 
     public String getPhoneNumber() {
@@ -106,6 +83,14 @@ public class LoginAccountModel {
         this.password = password;
     }
 
+    public int getActive() {
+        return active;
+    }
+
+    public void setActive(int active) {
+        this.active = active;
+    }
+
     public String getEmail() {
         return email;
     }
@@ -122,27 +107,11 @@ public class LoginAccountModel {
         this.role = role;
     }
 
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getActive() {
-        return active;
-    }
-
-    public void setActive(String active) {
-        this.active = active;
-    }
-
-    public String getGender() {
+    public int getGender() {
         return gender;
     }
 
-    public void setGender(String gender) {
+    public void setGender(int gender) {
         this.gender = gender;
     }
 
@@ -168,5 +137,22 @@ public class LoginAccountModel {
 
     public void setDistrictCode(String districtCode) {
         this.districtCode = districtCode;
-    }*/
+    }
+
+    public String getTownName() {
+        return townName;
+    }
+
+    public void setTownName(String townName) {
+        this.townName = townName;
+    }
+
+    public String getDistrictName() {
+        return districtName;
+    }
+
+    public void setDistrictName(String districtName) {
+        this.districtName = districtName;
+    }
+
 }

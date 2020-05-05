@@ -543,10 +543,39 @@ public class UserController {
                     .compact();
 
             User successfulUser = (userRepository.getUserByPhoneNumberAndRole(userByPhone.getPhoneNumber(), userByPhone.getRole()));
+            //LoginAccountModel loginAccountModel = new LoginAccountModel();
+            //loginAccountModel.setUserInfo(successfulUser);
+            //loginAccountModel.setToken(token);
+            //return new ResponseEntity<>(loginAccountModel, HttpStatus.OK);
+            //new return
+            ReturnLoginModel returnLoginModel = new ReturnLoginModel();
+            returnLoginModel.setId(successfulUser.getId());
+            returnLoginModel.setPhoneNumber(successfulUser.getPhoneNumber());
+            returnLoginModel.setName(successfulUser.getName());
+            returnLoginModel.setDob(successfulUser.getDob());
+            returnLoginModel.setAddress(successfulUser.getAddress());
+            returnLoginModel.setPassword(successfulUser.getPassword());
+            returnLoginModel.setActive(successfulUser.getActive());
+            returnLoginModel.setEmail(successfulUser.getEmail());
+            returnLoginModel.setRole(successfulUser.getRole());
+            returnLoginModel.setGender(successfulUser.getGender());
+            returnLoginModel.setImage(successfulUser.getImage());
+            returnLoginModel.setTownCode(successfulUser.getTownCode());
+            returnLoginModel.setDistrictCode(successfulUser.getDistrictCode());
+            //returnLoginModel.setToken(token);
+            //System.out.println(returnLoginModel.getDistrictCode());
+            if(successfulUser.getDistrictCode()==null && successfulUser.getTownCode()==null){
+                returnLoginModel.setDistrictName("Chọn quận/huyện");
+                returnLoginModel.setTownName("Chọn phường/xã");
+            }else {
+                returnLoginModel.setTownName(townRepository.findById(successfulUser.getTownCode()).get().getTownName());
+                returnLoginModel.setDistrictName(districtRepository.findById(successfulUser.getDistrictCode()).get().getDistrictName());
+            }
             LoginAccountModel loginAccountModel = new LoginAccountModel();
-            loginAccountModel.setUserInfo(successfulUser);
+            loginAccountModel.setUserInfo(returnLoginModel);
             loginAccountModel.setToken(token);
-            return new ResponseEntity<>(loginAccountModel, HttpStatus.OK);
+            return new ResponseEntity<>(loginAccountModel,HttpStatus.OK);
+            //
         } catch (Exception ex) {
             System.out.println(ex.getMessage());
             return new ResponseEntity<>(new ApiResponse(false, "Hệ thống đang xử lý. Vui lòng tải lại!"), HttpStatus.OK);
@@ -660,6 +689,87 @@ public class UserController {
             getAdmin.get().setPassword(bCryptPasswordEncoder.encode(changePasswordModel.getNewPassword()));
             userService.saveUser(getAdmin.get());
             return new ResponseEntity<>(new ApiResponse(true, "Thay đổi mật khẩu thành công!"), HttpStatus.OK);
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+            return new ResponseEntity<>(new ApiResponse(false, "Hệ thống đang xử lý. Vui lòng tải lại!"), HttpStatus.OK);
+        }
+    }
+
+    @PostMapping("/test-hash")
+    public ResponseEntity<?> testHash(@RequestBody WebUserLoginModel webUserLoginModel) {
+        try {
+            try {
+                if (webUserLoginModel.getPhoneNumber().isEmpty() || webUserLoginModel.getPassword().isEmpty()) {
+                    return new ResponseEntity<>(new ApiResponse(false, "Không được để trống các trường đăng nhập!"), HttpStatus.OK);
+                }
+            } catch (Exception ex) {
+                return new ResponseEntity<>(new ApiResponse(false, "Không được để trống các trường đăng nhập!"), HttpStatus.OK);
+            }
+            if (!Validate.isPhoneNumber(webUserLoginModel.getPhoneNumber())) {
+                return new ResponseEntity<>(new ApiResponse(false, "Số điện thoại không đúng định dạng!"), HttpStatus.OK);
+            }
+            if (webUserLoginModel.getPassword().length() < 6) {
+                return new ResponseEntity<>(new ApiResponse(false, "Mật khẩu phải có ít nhất 6 kí tự!"), HttpStatus.OK);
+            }
+            boolean isCoordinator = userRepository.existsByPhoneNumberAndRole(webUserLoginModel.getPhoneNumber(), "COORDINATOR");
+            boolean isAdmin = userRepository.existsByPhoneNumberAndRole(webUserLoginModel.getPhoneNumber(), "ADMIN");
+            if (isCoordinator == false && isAdmin == false) {
+                return new ResponseEntity<>(new LoginResponse(true, "Số điện thoại không tồn tại.", false), HttpStatus.OK);
+            }
+            User userByPhone;
+            if (isAdmin == true) {
+                userByPhone = userRepository.getUserByPhoneNumberAndRole(webUserLoginModel.getPhoneNumber(), "ADMIN");
+            } else {
+                userByPhone = userRepository.getUserByPhoneNumberAndRole(webUserLoginModel.getPhoneNumber(), "COORDINATOR");
+            }
+            if (userByPhone.getActive() == 0) {
+                return new ResponseEntity<>(new ApiResponse(false, "Người dùng hiện tại đang bị khoá! Vui lòng liên hệ tới phòng khám để xử lý!"), HttpStatus.OK);
+            }
+            if (!BCrypt.checkpw(webUserLoginModel.getPassword(), userByPhone.getPassword())) {
+                return new ResponseEntity<>(new LoginResponse(true, "Sai mật khẩu", false), HttpStatus.OK);
+            }
+
+            //create BEARER token
+            String token = Jwts.builder()
+                    .setSubject(webUserLoginModel.getPhoneNumber())
+                    .setExpiration(new Date(System.currentTimeMillis() + SecurityUtils.EXPIRATION_TIME))
+                    .signWith(SignatureAlgorithm.HS512, SecurityUtils.SECRET.getBytes())
+                    .compact();
+
+            User successfulUser = (userRepository.getUserByPhoneNumberAndRole(userByPhone.getPhoneNumber(), userByPhone.getRole()));
+            //LoginAccountModel loginAccountModel = new LoginAccountModel();
+            //loginAccountModel.setUserInfo(successfulUser);
+            //loginAccountModel.setToken(token);
+            //return new ResponseEntity<>(loginAccountModel, HttpStatus.OK);
+            //new return
+            ReturnLoginModel returnLoginModel = new ReturnLoginModel();
+            returnLoginModel.setId(successfulUser.getId());
+            returnLoginModel.setPhoneNumber(successfulUser.getPhoneNumber());
+            returnLoginModel.setName(successfulUser.getName());
+            returnLoginModel.setDob(successfulUser.getDob());
+            returnLoginModel.setAddress(successfulUser.getAddress());
+            returnLoginModel.setPassword(successfulUser.getPassword());
+            returnLoginModel.setActive(successfulUser.getActive());
+            returnLoginModel.setEmail(successfulUser.getEmail());
+            returnLoginModel.setRole(successfulUser.getRole());
+            returnLoginModel.setGender(successfulUser.getGender());
+            returnLoginModel.setImage(successfulUser.getImage());
+            returnLoginModel.setTownCode(successfulUser.getTownCode());
+            returnLoginModel.setDistrictCode(successfulUser.getDistrictCode());
+            //returnLoginModel.setToken(token);
+            //System.out.println(returnLoginModel.getDistrictCode());
+            if(successfulUser.getDistrictCode()==null && successfulUser.getTownCode()==null){
+                returnLoginModel.setDistrictName("Chọn quận/huyện");
+                returnLoginModel.setTownName("Chọn phường/xã");
+            }else {
+                returnLoginModel.setTownName(townRepository.findById(successfulUser.getTownCode()).get().getTownName());
+                returnLoginModel.setDistrictName(districtRepository.findById(successfulUser.getDistrictCode()).get().getDistrictName());
+            }
+            LoginAccountModel loginAccountModel = new LoginAccountModel();
+            loginAccountModel.setUserInfo(returnLoginModel);
+            loginAccountModel.setToken(token);
+            return new ResponseEntity<>(loginAccountModel,HttpStatus.OK);
+            //
         } catch (Exception ex) {
             System.out.println(ex.getMessage());
             return new ResponseEntity<>(new ApiResponse(false, "Hệ thống đang xử lý. Vui lòng tải lại!"), HttpStatus.OK);

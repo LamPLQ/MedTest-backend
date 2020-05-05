@@ -5,6 +5,9 @@ import com.edu.fpt.medtest.entity.User;
 import com.edu.fpt.medtest.model.ChangePasswordModel;
 import com.edu.fpt.medtest.model.LoginAccountModel;
 import com.edu.fpt.medtest.model.LoginModel;
+import com.edu.fpt.medtest.model.ReturnLoginModel;
+import com.edu.fpt.medtest.repository.DistrictRepository;
+import com.edu.fpt.medtest.repository.TownRepository;
 import com.edu.fpt.medtest.repository.UserRepository;
 import com.edu.fpt.medtest.security.SecurityUtils;
 import com.edu.fpt.medtest.service.UserService;
@@ -37,6 +40,12 @@ public class CoordinatorController {
 
     @Autowired
     private BCryptPasswordEncoder bCryptPasswordEncoder;
+
+    @Autowired
+    private TownRepository townRepository;
+
+    @Autowired
+    private DistrictRepository districtRepository;
 
     //Login
     @PostMapping("/login")
@@ -72,10 +81,38 @@ public class CoordinatorController {
 
             //return current user
             User successfulUser = (userRepository.getUserByPhoneNumberAndRole(loginUser.getPhoneNumber(), loginUser.getRole()));
+            //LoginAccountModel loginAccountModel = new LoginAccountModel();
+            //loginAccountModel.setUserInfo(successfulUser);
+            //loginAccountModel.setToken(token);
+            //new return
+            ReturnLoginModel returnLoginModel = new ReturnLoginModel();
+            returnLoginModel.setId(successfulUser.getId());
+            returnLoginModel.setPhoneNumber(successfulUser.getPhoneNumber());
+            returnLoginModel.setName(successfulUser.getName());
+            returnLoginModel.setDob(successfulUser.getDob());
+            returnLoginModel.setAddress(successfulUser.getAddress());
+            returnLoginModel.setPassword(successfulUser.getPassword());
+            returnLoginModel.setActive(successfulUser.getActive());
+            returnLoginModel.setEmail(successfulUser.getEmail());
+            returnLoginModel.setRole(successfulUser.getRole());
+            returnLoginModel.setGender(successfulUser.getGender());
+            returnLoginModel.setImage(successfulUser.getImage());
+            returnLoginModel.setTownCode(successfulUser.getTownCode());
+            returnLoginModel.setDistrictCode(successfulUser.getDistrictCode());
+            //returnLoginModel.setToken(token);
+            //System.out.println(returnLoginModel.getDistrictCode());
+            if(successfulUser.getDistrictCode()==null && successfulUser.getTownCode()==null){
+                returnLoginModel.setDistrictName("Chọn quận huyện");
+                returnLoginModel.setTownName("Chọn phường/xã");
+            }else {
+                returnLoginModel.setTownName(townRepository.findById(successfulUser.getTownCode()).get().getTownName());
+                returnLoginModel.setDistrictName(districtRepository.findById(successfulUser.getDistrictCode()).get().getDistrictName());
+            }
             LoginAccountModel loginAccountModel = new LoginAccountModel();
-            loginAccountModel.setUserInfo(successfulUser);
+            loginAccountModel.setUserInfo(returnLoginModel);
             loginAccountModel.setToken(token);
-            return new ResponseEntity<>(loginAccountModel, HttpStatus.OK);
+            return new ResponseEntity<>(loginAccountModel,HttpStatus.OK);
+            //
         } catch (Exception exception) {
             System.out.println(exception.getMessage());
             return new ResponseEntity<>(new ApiResponse(false, "Hệ thống đang xử lý. Vui lòng tải lại!"), HttpStatus.OK);
