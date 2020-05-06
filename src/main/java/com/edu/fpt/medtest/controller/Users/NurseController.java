@@ -265,16 +265,16 @@ public class NurseController {
             }
             Optional<User> getNurse = userRepository.getUserByIdAndRole(id, "NURSE");
             if (!getNurse.isPresent()) {
-                return new ResponseEntity<>(new ApiResponse(true, "Người dùng không tồn tại!"), HttpStatus.OK);
+                return new ResponseEntity<>(new ApiResponse(false, "Người dùng không tồn tại!"), HttpStatus.OK);
             }
             if (getNurse.get().getActive() == 0) {
                 return new ResponseEntity<>(new ApiResponse(false, "Người dùng hiện tại đang bị khoá! Vui lòng liên hệ tới phòng khám để xử lý!"), HttpStatus.OK);
             }
             if (!BCrypt.checkpw(changePasswordModel.getOldPassword(), getNurse.get().getPassword())) {
-                return new ResponseEntity<>(new ApiResponse(true, "Mật khẩu hiện tại không đúng!"), HttpStatus.OK);
+                return new ResponseEntity<>(new ApiResponse(false, "Mật khẩu hiện tại không đúng!"), HttpStatus.OK);
             }
             if (changePasswordModel.getOldPassword().equals(changePasswordModel.getNewPassword())) {
-                return new ResponseEntity<>(new ComfirmResponse(true, "Mật khẩu mới phải khác mật khẩu cũ", false), HttpStatus.OK);
+                return new ResponseEntity<>(new ComfirmResponse(false, "Mật khẩu mới phải khác mật khẩu cũ", false), HttpStatus.OK);
             }
             changePasswordModel.setID(id);
             getNurse.get().setPassword(bCryptPasswordEncoder.encode(changePasswordModel.getNewPassword()));
