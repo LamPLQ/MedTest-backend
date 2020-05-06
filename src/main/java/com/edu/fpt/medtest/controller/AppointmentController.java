@@ -193,7 +193,7 @@ public class AppointmentController {
                 return new ResponseEntity<>(new ApiResponse(false, "Cuộc hẹn đã ở trạng thái bị huỷ!"), HttpStatus.OK);
             }
             if (appointmentExecuting.getStatus().equals("rejected") || appointmentExecuting.getStatus().equals("accepted")){
-                return new ResponseEntity<>(new ApiResponse(false, "Cuộc hẹn đã bị từ chối!"), HttpStatus.OK);
+                return new ResponseEntity<>(new ApiResponse(false, "Phòng khám đã xử lý đơn yêu cầu khám. Mọi chi tiết xin liên hệ tới phòng khám!"), HttpStatus.OK);
             }
             if (appointmentExecuting == null) {
                 return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy cuộc hẹn!"), HttpStatus.OK);
