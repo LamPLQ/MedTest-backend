@@ -138,17 +138,17 @@ public class CustomerController {
             returnLoginModel.setDistrictCode(successfulUser.getDistrictCode());
             //returnLoginModel.setToken(token);
             //System.out.println(returnLoginModel.getDistrictCode());
-            if(successfulUser.getDistrictCode()==null && successfulUser.getTownCode()==null){
+            if (successfulUser.getDistrictCode() == null && successfulUser.getTownCode() == null) {
                 returnLoginModel.setDistrictName("Chọn quận/huyện");
                 returnLoginModel.setTownName("Chọn phường/xã");
-            }else {
+            } else {
                 returnLoginModel.setTownName(townRepository.findById(successfulUser.getTownCode()).get().getTownName());
                 returnLoginModel.setDistrictName(districtRepository.findById(successfulUser.getDistrictCode()).get().getDistrictName());
             }
             LoginAccountModel loginAccountModel = new LoginAccountModel();
             loginAccountModel.setUserInfo(returnLoginModel);
             loginAccountModel.setToken(token);
-            return new ResponseEntity<>(loginAccountModel,HttpStatus.OK);
+            return new ResponseEntity<>(loginAccountModel, HttpStatus.OK);
             //
         } catch (Exception e) {
             System.out.println(e.getMessage());
@@ -226,7 +226,7 @@ public class CustomerController {
     @GetMapping("/detail/{id}")
     public ResponseEntity<?> getUser(@PathVariable("id") int id) {
         try {
-            Optional<User> getCustomer = userRepository.getUserByIdAndRole(id,"CUSTOMER");
+            Optional<User> getCustomer = userRepository.getUserByIdAndRole(id, "CUSTOMER");
             if (!getCustomer.isPresent()) {
                 return new ResponseEntity<>(new ApiResponse(true, "Không tìm thấy người dùng!"), HttpStatus.OK);
             }
@@ -248,10 +248,10 @@ public class CustomerController {
             returnLoginModel.setImage(successfulUser.getImage());
             returnLoginModel.setTownCode(successfulUser.getTownCode());
             returnLoginModel.setDistrictCode(successfulUser.getDistrictCode());
-            if(successfulUser.getDistrictCode()==null && successfulUser.getTownCode()==null){
+            if (successfulUser.getDistrictCode() == null && successfulUser.getTownCode() == null) {
                 returnLoginModel.setDistrictName("Chọn quận/huyện");
                 returnLoginModel.setTownName("Chọn phường/xã");
-            }else {
+            } else {
                 returnLoginModel.setTownName(townRepository.findById(successfulUser.getTownCode()).get().getTownName());
                 returnLoginModel.setDistrictName(districtRepository.findById(successfulUser.getDistrictCode()).get().getDistrictName());
             }
@@ -293,10 +293,10 @@ public class CustomerController {
             if (townRepository.existsByTownCodeAndDistrictCode(customer.getTownCode(), customer.getDistrictCode()) == false) {
                 return new ResponseEntity<>(new ApiResponse(false, "Mã phường/xã không đúng!"), HttpStatus.OK);
             }
-            if(customer.getName().length()>50){
+            if (customer.getName().length() > 50) {
                 return new ResponseEntity<>(new ApiResponse(false, "Tên hiển thị quá dài! Hãy điền tên ngắn hơn!"), HttpStatus.OK);
             }
-            if(customer.getAddress().length()>90){
+            if (customer.getAddress().length() > 90) {
                 return new ResponseEntity<>(new ApiResponse(false, "Địa chỉ quá dài! Hãy điền tên ngắn hơn!"), HttpStatus.OK);
             }
             Optional<User> getCustomer = userService.getUserByID(id);
@@ -327,10 +327,10 @@ public class CustomerController {
             returnLoginModel.setImage(successfulUser.getImage());
             returnLoginModel.setTownCode(successfulUser.getTownCode());
             returnLoginModel.setDistrictCode(successfulUser.getDistrictCode());
-            if(successfulUser.getDistrictCode()==null && successfulUser.getTownCode()==null){
+            if (successfulUser.getDistrictCode() == null && successfulUser.getTownCode() == null) {
                 returnLoginModel.setDistrictName("Chọn quận/huyện");
                 returnLoginModel.setTownName("Chọn phường/xã");
-            }else {
+            } else {
                 returnLoginModel.setTownName(townRepository.findById(successfulUser.getTownCode()).get().getTownName());
                 returnLoginModel.setDistrictName(districtRepository.findById(successfulUser.getDistrictCode()).get().getDistrictName());
             }
@@ -360,7 +360,7 @@ public class CustomerController {
             if (townRepository.existsByTownCodeAndDistrictCode(customer.getTownCode(), customer.getDistrictCode()) == false) {
                 return new ResponseEntity<>(new ApiResponse(false, "Mã phường/xã không đúng!"), HttpStatus.OK);
             }
-            if(customer.getAddress().length()>90){
+            if (customer.getAddress().length() > 90) {
                 return new ResponseEntity<>(new ApiResponse(false, "Địa chỉ quá dài! Hãy điền tên ngắn hơn!"), HttpStatus.OK);
             }
             Optional<User> getCustomer = userService.getUserByID(id);
@@ -375,7 +375,25 @@ public class CustomerController {
             }
             customer.setId(id);
             userService.updateAddress(customer);
-            return new ResponseEntity<>(getCustomer, HttpStatus.OK);
+            User successfulUser = getCustomer.get();
+            ReturnLoginModel returnLoginModel = new ReturnLoginModel();
+            returnLoginModel.setId(successfulUser.getId());
+            returnLoginModel.setPhoneNumber(successfulUser.getPhoneNumber());
+            returnLoginModel.setName(successfulUser.getName());
+            returnLoginModel.setDob(successfulUser.getDob());
+            returnLoginModel.setAddress(successfulUser.getAddress());
+            returnLoginModel.setPassword(successfulUser.getPassword());
+            returnLoginModel.setActive(successfulUser.getActive());
+            returnLoginModel.setEmail(successfulUser.getEmail());
+            returnLoginModel.setRole(successfulUser.getRole());
+            returnLoginModel.setGender(successfulUser.getGender());
+            returnLoginModel.setImage(successfulUser.getImage());
+            returnLoginModel.setTownCode(successfulUser.getTownCode());
+            returnLoginModel.setDistrictCode(successfulUser.getDistrictCode());
+            returnLoginModel.setTownName(townRepository.findById(successfulUser.getTownCode()).get().getTownName());
+            returnLoginModel.setDistrictName(districtRepository.findById(successfulUser.getDistrictCode()).get().getDistrictName());
+            return new ResponseEntity<>(returnLoginModel, HttpStatus.OK);
+            //return new ResponseEntity<>(getCustomer, HttpStatus.OK);
         } catch (Exception ex) {
             System.out.println(ex.getMessage());
             return new ResponseEntity<>(new ApiResponse(false, "Hệ thống đang xử lý. Vui lòng tải lại!"), HttpStatus.OK);
@@ -679,10 +697,10 @@ public class CustomerController {
             returnLoginModel.setImage(successfulUser.getImage());
             returnLoginModel.setTownCode(successfulUser.getTownCode());
             returnLoginModel.setDistrictCode(successfulUser.getDistrictCode());
-            if(successfulUser.getDistrictCode()==null && successfulUser.getTownCode()==null){
+            if (successfulUser.getDistrictCode() == null && successfulUser.getTownCode() == null) {
                 returnLoginModel.setDistrictName("Chọn quận/huyện");
                 returnLoginModel.setTownName("Chọn phường/xã");
-            }else {
+            } else {
                 returnLoginModel.setTownName(townRepository.findById(successfulUser.getTownCode()).get().getTownName());
                 returnLoginModel.setDistrictName(districtRepository.findById(successfulUser.getDistrictCode()).get().getDistrictName());
             }
