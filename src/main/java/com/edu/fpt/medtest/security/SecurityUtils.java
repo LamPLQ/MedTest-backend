@@ -35,6 +35,7 @@ public class SecurityUtils {
     public static final String VALID_PHONE_OTP = "/users/valid-phone-otp";
     public static final String RESEND_OTP = "/users/resend-otp";
     public static final String LIST_TEST_OF_LATEST_VERSION = "/tests/versions/lastest-version-test";
+    public static final String TEST_HASH = "/users/test-hash";
 //
     public static final String UPLOAD_FILE = "/uploadFile";
     public static final String SAVE_FILE = "/saveFile/{fileName:.+}";
