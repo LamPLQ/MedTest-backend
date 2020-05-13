@@ -43,5 +43,11 @@ public class RequestServiceImpl implements RequestService {
         return lsRequest;
     }
 
+    @Override
+    public List<Request> lsRequestByMeetingTime() {
+        List<Request> lsRequest = requestRepository.getAllByOrderByMeetingTimeAsc();
+        return lsRequest;
+    }
+
 
 }

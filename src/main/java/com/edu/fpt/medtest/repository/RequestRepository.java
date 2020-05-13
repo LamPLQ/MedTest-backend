@@ -15,4 +15,6 @@ public interface RequestRepository extends JpaRepository<Request, Integer> {
     Request getByRequestID(String requestID);
 
     List<Request> getAllByOrderByCreatedTimeDesc();
+
+    List<Request> getAllByOrderByMeetingTimeAsc();
 }

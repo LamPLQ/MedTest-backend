@@ -529,7 +529,8 @@ public class NurseController {
             List<DetailRequestModel> lsNurseHandling = new ArrayList<>();
 
             //List all created request
-            List<Request> lsAllRequest = requestService.lsRequest();
+            //List<Request> lsAllRequest = requestService.lsRequest();
+            List<Request> lsAllRequest = requestService.lsRequestByMeetingTime();
             if (lsAllRequest.isEmpty()) {
                 return new ResponseEntity<>(new ApiResponse(false, "Hiện tại không có đơn đang chờ lấy mẫu!"), HttpStatus.OK);
             }

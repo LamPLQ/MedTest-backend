@@ -17,4 +17,6 @@ public interface RequestService {
     List<Request> getListByUser(int userID);
 
     List<Request> lsRequestByCreatedTimeDesc();
+
+    List<Request> lsRequestByMeetingTime();
 }
