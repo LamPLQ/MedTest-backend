@@ -453,6 +453,15 @@ public class RequestController {
                     break;
                 case "canceled":
                     notification.setMessage("Khách hàng " + userRepository.findById(requestHistory.getUserID()).get().getName() + " đã huỷ đơn xét nghiệm có mã " + ID + ". Trạng thái đơn hiện tại: Đã huỷ.");
+                    Notification notiForNurseWhenCancel = new Notification();
+                    RequestHistory requestOfNurseWhenCancel = requestHistoryRepository.findAllByRequestIDOrderByCreatedTimeDesc(ID).get(1);
+                    notiForNurseWhenCancel.setUserID(requestOfNurseWhenCancel.getUserID());
+                    notiForNurseWhenCancel.setRequestID(requestOfNurseWhenCancel.getRequestID());
+                    notiForNurseWhenCancel.setAppointmentID(appointmentService.listAppoinment().get(0).getID());
+                    notiForNurseWhenCancel.setIsRead(0);
+                    notiForNurseWhenCancel.setType("REQUEST");
+                    notiForNurseWhenCancel.setMessage("Khách hàng đã huỷ đơn mã " + requestOfNurseWhenCancel.getRequestID() + ". Trạng thái đơn hiện tại: Đã huỷ.");
+                    notificationService.saveNoti(notiForNurseWhenCancel);
                     break;
                 case "pending":
                     notification.setMessage("Mẫu xét nghiệm mã " + ID + " đang đợi y tá nhận đơn. Trạng thái đơn hiện tại: Đang đợi y tá nhận đơn.");
