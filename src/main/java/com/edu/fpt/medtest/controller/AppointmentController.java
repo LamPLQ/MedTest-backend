@@ -7,9 +7,11 @@ import com.edu.fpt.medtest.model.AppointmentModelInput;
 import com.edu.fpt.medtest.model.UserAppointmentModel;
 import com.edu.fpt.medtest.repository.AppointmentModelRepository;
 import com.edu.fpt.medtest.repository.AppointmentRepository;
+import com.edu.fpt.medtest.repository.RequestRepository;
 import com.edu.fpt.medtest.repository.UserRepository;
 import com.edu.fpt.medtest.service.AppointmentService;
 import com.edu.fpt.medtest.service.NotificationService;
+import com.edu.fpt.medtest.service.Request.RequestService;
 import com.edu.fpt.medtest.utils.ApiResponse;
 import com.edu.fpt.medtest.utils.GetRandomString;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +42,9 @@ public class AppointmentController {
 
     @Autowired
     private AppointmentModelRepository appointmentModelRepository;
+
+    @Autowired
+    private RequestService requestService;
 
     //list appointment
     @GetMapping("/list")
@@ -206,7 +211,7 @@ public class AppointmentController {
             notification.setAppointmentID(notiAppointment.getID());
             notification.setType("APPOINTMENT");
             notification.setIsRead(0);
-            notification.setRequestID("000000");
+            notification.setRequestID(requestService.lsRequest().get(0).getRequestID());
             notification.setUserID(notiAppointment.getCustomerID());
             SimpleDateFormat sdf3 = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
             String displayTime = sdf3.format(notiAppointment.getMeetingTime());
@@ -259,7 +264,7 @@ public class AppointmentController {
             notification.setAppointmentID(notiAppointment.getID());
             notification.setType("APPOINTMENT");
             notification.setIsRead(0);
-            notification.setRequestID("000000");
+            notification.setRequestID(requestService.lsRequest().get(0).getRequestID());
             notification.setUserID(notiAppointment.getCustomerID());
             notification.setMessage("Cuộc hẹn mã " + notiAppointment.getID() + " đã được xác nhận bởi điểu phối viên " +
                     userRepository.findById(notiAppointment.getCoordinatorID()).get().getName() + ". Trạng thái: Đã nhận đơn.");
@@ -314,7 +319,7 @@ public class AppointmentController {
             notification.setAppointmentID(notiAppointment.getID());
             notification.setType("APPOINTMENT");
             notification.setIsRead(0);
-            notification.setRequestID("000000");
+            notification.setRequestID(requestService.lsRequest().get(0).getRequestID());
             notification.setUserID(notiAppointment.getCustomerID());
             notification.setMessage("Cuộc hẹn mã " + notiAppointment.getID() +
                     " bị huỷ bởi điểu phối viên " + userRepository.findById(notiAppointment.getCoordinatorID()).get().getName()

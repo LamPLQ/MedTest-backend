@@ -3,6 +3,7 @@ package com.edu.fpt.medtest.controller;
 import com.edu.fpt.medtest.entity.*;
 import com.edu.fpt.medtest.model.*;
 import com.edu.fpt.medtest.repository.*;
+import com.edu.fpt.medtest.service.AppointmentService;
 import com.edu.fpt.medtest.service.NotificationService;
 import com.edu.fpt.medtest.service.Request.RequestHistoryService;
 import com.edu.fpt.medtest.service.Request.RequestService;
@@ -66,6 +67,9 @@ public class RequestController {
 
     @Autowired
     private TestTypeService testTypeService;
+
+    @Autowired
+    private AppointmentService appointmentService;
 
     @PostMapping("/create")
     public ResponseEntity<?> createNewRequest(@RequestBody RequestModelInput requestModelInput) {
@@ -419,7 +423,7 @@ public class RequestController {
             Notification notification = new Notification();
             notification.setUserID(requestPresenting.getUserID());
             notification.setRequestID(ID);
-            notification.setAppointmentID("000000");
+            notification.setAppointmentID(appointmentService.listAppoinment().get(0).getID());
             notification.setIsRead(0);
             notification.setType("REQUEST");
             //set message of notification
@@ -437,7 +441,7 @@ public class RequestController {
                     RequestHistory requestOfNurse = requestHistoryRepository.findAllByRequestIDOrderByCreatedTimeDesc(ID).get(1);
                     notiForNurse.setUserID(requestOfNurse.getUserID());
                     notiForNurse.setRequestID(requestOfNurse.getRequestID());
-                    notiForNurse.setAppointmentID("000000");
+                    notiForNurse.setAppointmentID(appointmentService.listAppoinment().get(0).getID());
                     notiForNurse.setIsRead(0);
                     notiForNurse.setType("REQUEST");
                     notiForNurse.setMessage("Điều phối viên " + userRepository.findById(requestHistory.getUserID()).get().getName() + " đã tiếp nhận mẫu xét nghiệm mã " + ID + " từ y tá "
