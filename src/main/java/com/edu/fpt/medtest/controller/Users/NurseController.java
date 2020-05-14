@@ -837,7 +837,8 @@ public class NurseController {
                     }
                     /////////////////////////////////
                     boolean existByRequestIDAndStatusReAccepted = requestHistoryRepository.existsByRequestIDAndStatusAndUserID(request.getRequestID(), "reaccepted", nurseID);
-                    if (existByRequestIDAndStatusReAccepted == false) {
+                    boolean existByRequestIDAndStatusHasBeenAccepted = requestHistoryRepository.existsByRequestIDAndStatusAndUserID(request.getRequestID(), "accepted", nurseID);
+                    if (existByRequestIDAndStatusReAccepted == false || existByRequestIDAndStatusHasBeenAccepted == true) {
                         System.out.println("No request history with /reaccepted/ status");
                     } else {
                         RequestHistory acceptedStatusRequest = requestHistoryRepository.findAllByRequestIDAndStatusAndUserIDOrderByCreatedTimeDesc(request.getRequestID(), "reaccepted", nurseID).get(0);
