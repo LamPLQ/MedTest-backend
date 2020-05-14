@@ -732,7 +732,7 @@ public class RequestController {
                 return new ResponseEntity<>(new ApiResponse(true, "Không có yêu cầu xét nghiệm!"), HttpStatus.OK);
             }
             List<DetailRequestModel> returnList = new ArrayList<>();
-            for (Request request : lsAllRequest.subList(1, lsAllRequest.size())) {
+            for (Request request : lsAllRequest) {
                 String requestId = request.getRequestID();
                 //Object will return as a request detail
                 DetailRequestModel detailRequestModel = new DetailRequestModel();

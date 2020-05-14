@@ -300,7 +300,7 @@ public class NurseController {
                 return new ResponseEntity<>(new ApiResponse(false, "Hiện tại không có đơn đang chờ lấy mẫu!"), HttpStatus.OK);
             }
             //with each request in list request
-            for (Request requestPending : lsAllRequest.subList(0, lsAllRequest.size() - 1)) {
+            for (Request requestPending : lsAllRequest) {
                 DetailRequestModel detailRequestModel = new DetailRequestModel();
                 String requestId = requestPending.getRequestID();
 
@@ -536,7 +536,7 @@ public class NurseController {
             }
             //with each request in list request
             List<RequestHistory> lsLastStatus = new ArrayList<>();
-            for (Request requestPending : lsAllRequest.subList(1, lsAllRequest.size())) {
+            for (Request requestPending : lsAllRequest) {
                 boolean existRequestID = requestHistoryRepository.existsByRequestID(requestPending.getRequestID());
                 if (existRequestID == false) {
                     System.out.println("Don't have this requestID");
@@ -663,7 +663,7 @@ public class NurseController {
             }
             //with each request in list request
             List<RequestHistory> lsLastStatus = new ArrayList<>();
-            for (Request requestPending : lsAllRequest.subList(1, lsAllRequest.size())) {
+            for (Request requestPending : lsAllRequest) {
                 boolean existRequestID = requestHistoryRepository.existsByRequestID(requestPending.getRequestID());
                 if (existRequestID == false) {
                     //System.out.println(requestPending + "Don't have this requestID");
