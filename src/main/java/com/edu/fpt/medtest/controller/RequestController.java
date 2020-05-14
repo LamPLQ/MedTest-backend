@@ -727,7 +727,7 @@ public class RequestController {
     @GetMapping("/list-all-request")
     public ResponseEntity<?> getAllRequest() {
         try {
-            List<Request> lsAllRequest = requestService.lsRequest();
+            List<Request> lsAllRequest = requestService.lsRequestByCreatedTimeDesc();
             if (lsAllRequest.isEmpty()) {
                 return new ResponseEntity<>(new ApiResponse(true, "Không có yêu cầu xét nghiệm!"), HttpStatus.OK);
             }

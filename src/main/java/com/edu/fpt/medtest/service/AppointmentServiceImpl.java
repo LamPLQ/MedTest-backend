@@ -65,6 +65,12 @@ public class AppointmentServiceImpl implements AppointmentService {
         return lsAppointmentByStatus;
     }
 
+    @Override
+    public List<Appointment> listAllAppointmentByCreatedTimeDesc() {
+        List<Appointment> lsAppoitmentByCreatedTimeDesc = appointmentRepository.getAllByOrderByCreatedTimeDesc();
+        return lsAppoitmentByCreatedTimeDesc;
+    }
+
     /*@Override
     public List<Appointment> listAppointmentByListStatus(Set<String> status) {
         List<Appointment> lsAppointmentByStatusList = appointmentRepository.findAllByStatusList(status);

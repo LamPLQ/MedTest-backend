@@ -45,7 +45,7 @@ public class AppointmentController {
     @GetMapping("/list")
     public ResponseEntity<?> listAppoinment() {
         try {
-            List<Appointment> listAppointment = appointmentService.listAppoinment();
+            List<Appointment> listAppointment = appointmentService.listAllAppointmentByCreatedTimeDesc();
             if (listAppointment.isEmpty()) {
                 return new ResponseEntity<>(new ApiResponse(true, "Không có lịch hẹn nào trong hệ thống!"), HttpStatus.OK);
             }

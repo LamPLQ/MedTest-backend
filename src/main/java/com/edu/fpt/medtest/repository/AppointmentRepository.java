@@ -18,6 +18,8 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Intege
 
     boolean existsByID(String ID);
 
+    List<Appointment> getAllByOrderByCreatedTimeDesc();
+
     /*@Query(value = "SELECT appointment.ID FROM appointment  WHERE appointment.Status IN (:status)")
     List<Appointment> findAllByStatusList(@Param("status") Set<String> statusList);*/
 }
