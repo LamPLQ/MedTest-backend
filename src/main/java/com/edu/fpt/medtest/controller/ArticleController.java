@@ -111,7 +111,7 @@ public class ArticleController {
     }
 
     //update 1 article
-    @PutMapping(value = "/update/{id}")
+    @PostMapping(value = "/update/{id}")
     public ResponseEntity<?> updateArticle(@RequestBody Article article, @PathVariable("id") int id) {
         try {
             Optional<Article> getArticle = articleService.getArticle(id);
