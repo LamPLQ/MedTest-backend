@@ -142,4 +142,20 @@ public class ArticleController {
             return new ResponseEntity<>(new ApiResponse(false, "Hệ thống đang xử lý. Vui lòng tải lại!"), HttpStatus.OK);
         }
     }
+    
+    @PostMapping(value = "/deleteAll")
+    public  ResponseEntity deleteAllArticle(){
+        try {
+            List<Article> lsArticle = articleService.listArticle();
+            do{
+                for(Article article:lsArticle){
+                    deleteArticle(article.getID());
+                }
+            }while (lsArticle.isEmpty());
+            return new ResponseEntity<>(new ApiResponse(true, "Xoá bài viết thành công!"), HttpStatus.OK);
+        }catch (Exception e){
+            e.printStackTrace();
+            return new ResponseEntity<>(new ApiResponse(false, "Hệ thống đang xử lý. Vui lòng tải lại!"), HttpStatus.OK);
+        }
+    }
 }
